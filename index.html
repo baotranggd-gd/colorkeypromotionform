@@ -49,9 +49,15 @@
       </button>
     </nav>
 
-    <div class="p-4 border-t border-slate-800 text-xs text-slate-400">
-      <div class="text-slate-300 font-semibold">Hệ thống đồng bộ Colorkey</div>
-      <div>382 Sản phẩm | 190 Khách hàng</div>
+    <!-- RANK DISCOUNT INFO BOX -->
+    <div class="p-4 border-t border-slate-800 text-xs text-slate-400 space-y-1">
+      <div class="text-slate-300 font-semibold mb-1 flex items-center gap-1.5">
+        <i data-lucide="percent" class="w-3.5 h-3.5 text-amber-400"></i> Chính Sách Chiết Khấu
+      </div>
+      <div class="flex justify-between"><span>Distributor:</span> <strong class="text-purple-300 font-mono">CK 57%</strong></div>
+      <div class="flex justify-between"><span>Retailer 2:</span> <strong class="text-blue-300 font-mono">CK 54%</strong></div>
+      <div class="flex justify-between"><span>Retailer 1:</span> <strong class="text-emerald-300 font-mono">CK 52%</strong></div>
+      <div class="flex justify-between"><span>Key Account:</span> <strong class="text-indigo-300 font-mono">KA = 1 (100%)</strong></div>
     </div>
   </aside>
 
@@ -61,7 +67,7 @@
     <header class="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between shadow-sm">
       <div>
         <h2 id="page-title" class="text-xl font-bold text-slate-800">Xử Lý Đơn Hàng & Tính Khuyến Mãi Tự Động</h2>
-        <p class="text-xs text-slate-500 mt-0.5">Tải file Excel đơn hàng để tự động tính quà tặng & chiết khấu theo Rank/Hạng</p>
+        <p class="text-xs text-slate-500 mt-0.5">Tải file Excel đơn hàng để tự động tính giá theo Rank khách hàng & quy đổi quà tặng CTKM</p>
       </div>
       <button onclick="downloadSampleExcel()" class="flex items-center gap-1.5 text-xs text-blue-600 bg-blue-50 hover:bg-blue-100 px-3.5 py-2 rounded-lg font-medium transition border border-blue-200">
         <i data-lucide="download" class="w-4 h-4"></i> Tải File Mẫu Đơn Hàng
@@ -107,7 +113,7 @@
       <div id="results-box" class="hidden bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
         <div class="p-5 border-b border-slate-200 flex flex-wrap items-center justify-between gap-4 bg-slate-50">
           <div>
-            <span class="font-bold text-slate-800 text-sm">Kết Quả Áp Dụng CTKM Tự Động</span>
+            <span class="font-bold text-slate-800 text-sm">Kết Quả Áp Dụng CTKM & Giá Theo Rank</span>
             <span id="badge-item-count" class="ml-2 text-xs bg-emerald-100 text-emerald-800 font-semibold px-2.5 py-0.5 rounded-full">0 mặt hàng</span>
           </div>
           <div class="flex gap-3">
@@ -127,8 +133,8 @@
                 <th class="p-3.5">Mã Sản Phẩm / Barcode</th>
                 <th class="p-3.5">Tên Sản Phẩm</th>
                 <th class="p-3.5 text-right">SL Đặt</th>
-                <th class="p-3.5 text-right">Giá Sỉ Gốc</th>
-                <th class="p-3.5 text-right">Đơn Giá Sau Rank</th>
+                <th class="p-3.5 text-right">Giá Niêm Yết</th>
+                <th class="p-3.5 text-right">Đơn Giá Sau CK Rank</th>
                 <th class="p-3.5 text-right">Thành Tiền</th>
                 <th class="p-3.5 text-left">Quà Tặng CTKM Đạt Được</th>
               </tr>
@@ -139,8 +145,8 @@
 
         <div class="p-6 bg-slate-50 border-t border-slate-200 flex flex-col md:flex-row justify-between items-end gap-4">
           <div class="text-xs text-slate-500 space-y-1">
-            <div>* Đã tự động áp dụng quy đổi quà tặng dựa trên chính sách Q3.</div>
-            <div>* Hạng khách hàng: <strong id="summary-rank-badge">-</strong> | Chiết khấu ưu đãi: <strong id="summary-rank-discount">0%</strong></div>
+            <div>* Giá sản phẩm được tự động tính theo Rank: <strong>Distributor (CK 57%)</strong>, <strong>Retailer 2 (CK 54%)</strong>, <strong>Retailer 1 (CK 52%)</strong>, <strong>KA = 1 (100% Niêm yết)</strong>.</div>
+            <div>* Hạng khách hàng: <strong id="summary-rank-badge">-</strong> | Tỷ lệ chiết khấu: <strong id="summary-rank-discount" class="text-blue-600 font-bold">0%</strong></div>
           </div>
           <div class="w-full md:w-80 space-y-2 text-sm">
             <div class="flex justify-between text-slate-600">
@@ -216,7 +222,7 @@
                 <th class="p-3.5">Tên Sản Phẩm</th>
                 <th class="p-3.5 text-right">Giá Niêm Yết</th>
                 <th class="p-3.5 text-right">Giá Khuyến Nghị</th>
-                <th class="p-3.5 text-right">Giá Sỉ Sau CK</th>
+                <th class="p-3.5 text-right">Giá Sỉ Chuẩn (CK 52%)</th>
                 <th class="p-3.5 text-center">Trạng Thái</th>
                 <th class="p-3.5">CTKM Q3 Mặc Định</th>
               </tr>
@@ -229,22 +235,67 @@
 
     <!-- CONTENT 4: CUSTOMERS -->
     <section id="section-customers" class="hidden flex-1 overflow-y-auto p-8 space-y-6">
-      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
-        <div class="relative w-full md:w-96">
-          <input 
-            type="text" 
-            id="search-cust-table" 
-            placeholder="Tìm theo mã KH, tên, rank, khu vực..." 
-            oninput="filterCustomerTable(this.value)"
-            class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i>
+      <!-- MULTI-FILTER CONTROL BAR -->
+      <div class="bg-white p-5 rounded-xl border border-slate-200 shadow-sm space-y-4">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
+          <div class="flex items-center gap-2 text-slate-800 font-bold text-sm">
+            <i data-lucide="filter" class="w-4 h-4 text-blue-600"></i> Bộ Lọc Danh Sách Khách Hàng
+          </div>
+          <div class="text-xs text-slate-500">
+            Hiển thị: <strong class="text-blue-600 font-bold" id="filtered-cust-count">190</strong> / <span id="total-cust-count">190</span> khách hàng
+          </div>
         </div>
-        <div class="text-xs text-slate-500">
-          Tổng số khách hàng: <strong class="text-slate-800" id="total-cust-count">190</strong>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+          <!-- 1. Search text input -->
+          <div class="relative">
+            <input 
+              type="text" 
+              id="search-cust-keyword" 
+              placeholder="Tìm mã, tên, địa chỉ, PIC..." 
+              oninput="filterCustomerTable()"
+              class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-blue-500"
+            />
+            <i data-lucide="search" class="w-3.5 h-3.5 absolute left-3 top-2.5 text-slate-400"></i>
+          </div>
+
+          <!-- 2. Filter by Rank / Grade -->
+          <div>
+            <select id="filter-cust-rank" onchange="filterCustomerTable()" class="w-full py-2 px-3 bg-slate-50 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-blue-500 font-medium">
+              <option value="ALL">Tất cả Rank / Grade</option>
+              <option value="Retailer 1">Retailer 1 (Chiết khấu 52%)</option>
+              <option value="Retailer 2">Retailer 2 (Chiết khấu 54%)</option>
+              <option value="Distributor">Distributor (Chiết khấu 57%)</option>
+              <option value="Key Account">Key Account (KA = 1)</option>
+              <option value="OTHER">Các rank khác</option>
+            </select>
+          </div>
+
+          <!-- 3. Filter by Channel -->
+          <div>
+            <select id="filter-cust-channel" onchange="filterCustomerTable()" class="w-full py-2 px-3 bg-slate-50 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-blue-500 font-medium">
+              <option value="ALL">Tất cả Kênh (Channel)</option>
+              <option value="Offline">Kênh Offline</option>
+              <option value="Online">Kênh Online</option>
+              <option value="KA">Kênh KA</option>
+            </select>
+          </div>
+
+          <!-- 4. Filter by Region -->
+          <div>
+            <select id="filter-cust-region" onchange="filterCustomerTable()" class="w-full py-2 px-3 bg-slate-50 border border-slate-300 rounded-lg text-xs outline-none focus:ring-2 focus:ring-blue-500 font-medium">
+              <option value="ALL">Tất cả Khu Vực</option>
+              <option value="GT SOUTH">Miền Nam (GT SOUTH)</option>
+              <option value="GT CENTRAL">Miền Trung (GT CENTRAL)</option>
+              <option value="GT NORTH">Miền Bắc (GT NORTH)</option>
+              <option value="Key Account">Key Account</option>
+              <option value="Online">Online</option>
+            </select>
+          </div>
         </div>
       </div>
 
+      <!-- CUSTOMER TABLE -->
       <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
         <div class="max-h-[600px] overflow-y-auto">
           <table class="w-full text-left border-collapse text-sm">
@@ -253,9 +304,11 @@
                 <th class="p-3.5">Mã KH</th>
                 <th class="p-3.5">Tên Khách Hàng</th>
                 <th class="p-3.5">Grade / Rank</th>
+                <th class="p-3.5 text-center">Chính Sách Chiết Khấu</th>
                 <th class="p-3.5">Kênh (Channel)</th>
                 <th class="p-3.5">Khu Vực</th>
                 <th class="p-3.5">PIC</th>
+                <th class="p-3.5 text-center">Thao Tác</th>
               </tr>
             </thead>
             <tbody id="customers-table-body" class="divide-y divide-slate-200"></tbody>
@@ -283,6 +336,24 @@
     let currentCalculation = null;
     let selectedCustomer = customers[0];
 
+    // CƠ CHẾ CHIẾT KHẤU THEO RANK KHÁCH HÀNG
+    // Retailer 1: 52% | Retailer 2: 54% | Distributor: 57% | KA = 1 (100% giá niêm yết)
+    function getDiscountByRank(rank) {
+      const r = (rank || '').toLowerCase().trim();
+      if (r.includes('distributor')) {
+        return { discountRate: 0.57, factor: 0.43, label: 'CK 57%', badgeClass: 'bg-purple-100 text-purple-700' };
+      } else if (r.includes('retailer 2')) {
+        return { discountRate: 0.54, factor: 0.46, label: 'CK 54%', badgeClass: 'bg-blue-100 text-blue-700' };
+      } else if (r.includes('retailer 1')) {
+        return { discountRate: 0.52, factor: 0.48, label: 'CK 52%', badgeClass: 'bg-emerald-100 text-emerald-700' };
+      } else if (r.includes('key account') || r === 'ka') {
+        return { discountRate: 0.00, factor: 1.00, label: 'KA = 1 (100%)', badgeClass: 'bg-indigo-100 text-indigo-700' };
+      } else {
+        // Mặc định cho các mã đại lý khác (LT, SAMMI, MINT... theo chuẩn Retailer 1)
+        return { discountRate: 0.52, factor: 0.48, label: 'CK 52%', badgeClass: 'bg-slate-100 text-slate-700' };
+      }
+    }
+
     // INIT
     function init() {
       const datalist = document.getElementById('customer-datalist');
@@ -293,7 +364,7 @@
 
       renderPromotions();
       filterProductTable();
-      renderCustomers(customers);
+      filterCustomerTable();
       lucide.createIcons();
     }
 
@@ -306,9 +377,21 @@
       }
     }
 
+    function selectCustomerAndGoToOrder(code) {
+      const matched = customers.find(c => c.code === code);
+      if (matched) {
+        selectedCustomer = matched;
+        document.getElementById('customer-input').value = `${selectedCustomer.code} | ${selectedCustomer.name} (${selectedCustomer.rank})`;
+        updateCustomerInfoDisplay();
+        recalculateOrder();
+        switchTab('orders');
+      }
+    }
+
     function updateCustomerInfoDisplay() {
       const info = document.getElementById('selected-customer-info');
-      info.innerText = `Đã chọn: [${selectedCustomer.code}] ${selectedCustomer.name} | Rank: ${selectedCustomer.rank} | Kênh: ${selectedCustomer.channel} | KV: ${selectedCustomer.region}`;
+      const disc = getDiscountByRank(selectedCustomer.rank);
+      info.innerText = `Đã chọn: [${selectedCustomer.code}] ${selectedCustomer.name} | Rank: ${selectedCustomer.rank} (${disc.label}) | Kênh: ${selectedCustomer.channel} | KV: ${selectedCustomer.region}`;
     }
 
     // TAB SWITCHING
@@ -332,7 +415,7 @@
       lucide.createIcons();
     }
 
-    // RENDER SCREENS
+    // RENDER PROMOTIONS
     function renderPromotions() {
       const grid = document.getElementById('promotions-grid');
       grid.innerHTML = promotions.map(p => `
@@ -351,6 +434,7 @@
       `).join('');
     }
 
+    // RENDER PRODUCTS
     function renderProducts(list) {
       const tb = document.getElementById('products-table-body');
       document.getElementById('filtered-prod-count').innerText = list.length;
@@ -389,39 +473,72 @@
       renderProducts(filtered);
     }
 
+    // RENDER & MULTI-FILTER CUSTOMERS
     function renderCustomers(list) {
       const tb = document.getElementById('customers-table-body');
-      document.getElementById('total-cust-count').innerText = `${list.length} / ${customers.length}`;
-      tb.innerHTML = list.map(c => `
-        <tr class="hover:bg-slate-50">
-          <td class="p-3.5 font-mono text-xs font-bold text-slate-700">${c.code}</td>
-          <td class="p-3.5 font-medium text-slate-800">${c.name}</td>
-          <td class="p-3.5 text-xs">
-            <span class="px-2 py-0.5 rounded font-bold ${
-              c.rank === 'Distributor' ? 'bg-purple-100 text-purple-700' :
-              c.rank === 'Key Account' ? 'bg-indigo-100 text-indigo-700' :
-              c.rank === 'Retailer 1' ? 'bg-blue-100 text-blue-700' :
-              'bg-slate-100 text-slate-700'
-            }">
+      document.getElementById('filtered-cust-count').innerText = list.length;
+      document.getElementById('total-cust-count').innerText = customers.length;
+      
+      tb.innerHTML = list.map(c => {
+        const disc = getDiscountByRank(c.rank);
+        return `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="p-3.5 font-mono text-xs font-bold text-slate-700">${c.code}</td>
+            <td class="p-3.5 font-medium text-slate-800">${c.name}</td>
+            <td class="p-3.5 text-xs font-bold text-slate-700">
               ${c.rank}
-            </span>
-          </td>
-          <td class="p-3.5 text-xs"><span class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded">${c.channel}</span></td>
-          <td class="p-3.5 text-xs text-slate-600">${c.region}</td>
-          <td class="p-3.5 text-xs text-slate-500">${c.pic || '-'}</td>
-        </tr>
-      `).join('');
+            </td>
+            <td class="p-3.5 text-center">
+              <span class="px-2.5 py-1 rounded-full text-xs font-bold ${disc.badgeClass} font-mono">
+                ${disc.label}
+              </span>
+            </td>
+            <td class="p-3.5 text-xs"><span class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded">${c.channel}</span></td>
+            <td class="p-3.5 text-xs text-slate-600">${c.region}</td>
+            <td class="p-3.5 text-xs text-slate-500">${c.pic || '-'}</td>
+            <td class="p-3.5 text-center">
+              <button onclick="selectCustomerAndGoToOrder('${c.code}')" class="text-xs bg-blue-50 text-blue-600 hover:bg-blue-600 hover:text-white px-2.5 py-1 rounded-md font-medium transition">
+                Tạo Đơn
+              </button>
+            </td>
+          </tr>
+        `;
+      }).join('');
+      lucide.createIcons();
     }
 
-    function filterCustomerTable(query) {
-      const q = query.toLowerCase().trim();
-      const filtered = customers.filter(c => 
-        c.code.toLowerCase().includes(q) || 
-        c.name.toLowerCase().includes(q) || 
-        c.rank.toLowerCase().includes(q) || 
-        c.region.toLowerCase().includes(q) ||
-        (c.pic && c.pic.toLowerCase().includes(q))
-      );
+    function filterCustomerTable() {
+      const keyword = (document.getElementById('search-cust-keyword')?.value || '').toLowerCase().trim();
+      const rankFilter = document.getElementById('filter-cust-rank')?.value || 'ALL';
+      const channelFilter = document.getElementById('filter-cust-channel')?.value || 'ALL';
+      const regionFilter = document.getElementById('filter-cust-region')?.value || 'ALL';
+
+      const filtered = customers.filter(c => {
+        // 1. Text search
+        const matchKeyword = !keyword || 
+          c.code.toLowerCase().includes(keyword) || 
+          c.name.toLowerCase().includes(keyword) || 
+          c.rank.toLowerCase().includes(keyword) || 
+          c.region.toLowerCase().includes(keyword) ||
+          (c.pic && c.pic.toLowerCase().includes(keyword));
+
+        // 2. Rank filter
+        let matchRank = true;
+        if (rankFilter === 'Retailer 1') matchRank = c.rank.toLowerCase().includes('retailer 1');
+        else if (rankFilter === 'Retailer 2') matchRank = c.rank.toLowerCase().includes('retailer 2');
+        else if (rankFilter === 'Distributor') matchRank = c.rank.toLowerCase().includes('distributor');
+        else if (rankFilter === 'Key Account') matchRank = c.rank.toLowerCase().includes('key account') || c.rank.toLowerCase() === 'ka';
+        else if (rankFilter === 'OTHER') matchRank = !['retailer 1', 'retailer 2', 'distributor', 'key account'].some(r => c.rank.toLowerCase().includes(r));
+
+        // 3. Channel filter
+        const matchChannel = (channelFilter === 'ALL') || (c.channel === channelFilter);
+
+        // 4. Region filter
+        const matchRegion = (regionFilter === 'ALL') || (c.region === regionFilter);
+
+        return matchKeyword && matchRank && matchChannel && matchRegion;
+      });
+
       renderCustomers(filtered);
     }
 
@@ -472,21 +589,13 @@
       reader.readAsBinaryString(file);
     }
 
-    // CALCULATION LOGIC
+    // CALCULATION LOGIC: GIÁ THAY ĐỔI THEO RANK KHÁCH HÀNG
     function recalculateOrder() {
       if (currentOrderItems.length === 0) return;
 
       const cust = selectedCustomer;
       const region = document.getElementById('select-promo').value;
-
-      let rankDiscount = 0;
-      if (cust.rank === 'Distributor' || cust.rank === 'Key Account') {
-        rankDiscount = 0.03;
-      } else if (cust.rank === 'Retailer 1') {
-        rankDiscount = 0.015;
-      } else {
-        rankDiscount = 0.00;
-      }
+      const rankPolicy = getDiscountByRank(cust.rank);
 
       let subTotal = 0;
       const calculatedItems = currentOrderItems.map(item => {
@@ -498,8 +607,22 @@
         const name = prod ? prod.name : (item.name || 'Sản phẩm đặt hàng');
         const code = prod ? prod.productCode : (item.productCode || '-');
         const barcode = prod ? prod.barcode : (item.barcode || '-');
-        const priceWholesale = prod ? prod.priceWholesale : 100320;
-        const priceAfterRank = Math.round(priceWholesale * (1 - rankDiscount));
+        
+        // Giá gốc cơ sở (Base Listing Price)
+        const priceList = (prod && prod.priceList > 0) ? prod.priceList : (prod && prod.priceDaily > 0 ? prod.priceDaily : (prod ? prod.priceWholesale : 209000));
+        
+        // Giá sau chiết khấu theo Rank:
+        // Retailer 1: 52% (x 0.48)
+        // Retailer 2: 54% (x 0.46)
+        // Distributor: 57% (x 0.43)
+        // KA = 1: x 1.0 (100% Giá niêm yết)
+        let priceAfterRank = 0;
+        if (rankPolicy.factor === 1.0) {
+          priceAfterRank = Math.round(priceList);
+        } else {
+          priceAfterRank = Math.round(priceList * rankPolicy.factor);
+        }
+
         const lineTotal = item.qty * priceAfterRank;
         subTotal += lineTotal;
 
@@ -536,13 +659,13 @@
           promoText = prod.promoNote;
         }
 
-        return { code, barcode, name, qty: item.qty, priceWholesale, priceAfterRank, lineTotal, promoText };
+        return { code, barcode, name, qty: item.qty, priceList, priceAfterRank, lineTotal, promoText };
       });
 
       const vat = Math.round(subTotal * 0.1);
       const grandTotal = subTotal + vat;
 
-      currentCalculation = { cust, region, rankDiscount, items: calculatedItems, subTotal, vat, grandTotal };
+      currentCalculation = { cust, region, rankPolicy, items: calculatedItems, subTotal, vat, grandTotal };
       renderOrderResults();
     }
 
@@ -553,7 +676,7 @@
       const r = currentCalculation;
       document.getElementById('badge-item-count').innerText = `${r.items.length} mặt hàng`;
       document.getElementById('summary-rank-badge').innerText = `${r.cust.rank} (${r.cust.code})`;
-      document.getElementById('summary-rank-discount').innerText = `${r.rankDiscount * 100}%`;
+      document.getElementById('summary-rank-discount').innerText = r.rankPolicy.label;
       document.getElementById('summary-subtotal').innerText = `${r.subTotal.toLocaleString()} đ`;
       document.getElementById('summary-vat').innerText = `${r.vat.toLocaleString()} đ`;
       document.getElementById('summary-grandtotal').innerText = `${r.grandTotal.toLocaleString()} đ`;
@@ -567,9 +690,9 @@
           </td>
           <td class="p-3.5 font-medium text-slate-800">${it.name}</td>
           <td class="p-3.5 text-right font-bold text-slate-900">${it.qty}</td>
-          <td class="p-3.5 text-right text-slate-500">${it.priceWholesale.toLocaleString()} đ</td>
-          <td class="p-3.5 text-right font-medium text-slate-700">${it.priceAfterRank.toLocaleString()} đ</td>
-          <td class="p-3.5 text-right font-bold text-blue-600">${it.lineTotal.toLocaleString()} đ</td>
+          <td class="p-3.5 text-right text-slate-500">${it.priceList.toLocaleString()} đ</td>
+          <td class="p-3.5 text-right font-bold text-blue-600">${it.priceAfterRank.toLocaleString()} đ</td>
+          <td class="p-3.5 text-right font-bold text-slate-900">${it.lineTotal.toLocaleString()} đ</td>
           <td class="p-3.5 text-xs text-amber-800 font-medium bg-amber-50/60 rounded">${it.promoText}</td>
         </tr>
       `).join('');
@@ -585,7 +708,8 @@
         'Mã Vạch': it.barcode,
         'Tên Hàng': it.name,
         'Số Lượng': it.qty,
-        'Giá Sỉ Sau Rank': it.priceAfterRank,
+        'Giá Niêm Yết': it.priceList,
+        'Giá Sau CK Rank': it.priceAfterRank,
         'Thành Tiền': it.lineTotal,
         'Khuyến Mãi Đạt Được': it.promoText
       })));
@@ -603,12 +727,12 @@
       doc.setFontSize(15);
       doc.text('DON HANG & KHUYEN MAI Q3', 14, 15);
       doc.setFontSize(10);
-      doc.text(`Khach: ${r.cust.name} (${r.cust.code} - ${r.cust.rank}) | Kenh: ${r.cust.channel} | Khu vuc: ${r.region}`, 14, 22);
+      doc.text(`Khach: ${r.cust.name} (${r.cust.code} - ${r.cust.rank}) | Chinh sach: ${r.rankPolicy.label} | Khu vuc: ${r.region}`, 14, 22);
 
-      const body = r.items.map(i => [i.code, i.name, i.qty, i.priceAfterRank.toLocaleString() + ' d', i.lineTotal.toLocaleString() + ' d', i.promoText]);
+      const body = r.items.map(i => [i.code, i.name, i.qty, i.priceList.toLocaleString() + ' d', i.priceAfterRank.toLocaleString() + ' d', i.lineTotal.toLocaleString() + ' d', i.promoText]);
       doc.autoTable({
         startY: 28,
-        head: [['Ma SP', 'Ten San Pham', 'SL', 'Don Gia', 'Thanh Tien', 'Qua Tang CTKM']],
+        head: [['Ma SP', 'Ten San Pham', 'SL', 'Gia Niem Yet', 'Gia Sau CK Rank', 'Thanh Tien', 'Qua Tang CTKM']],
         body: body,
         theme: 'grid'
       });
@@ -633,4 +757,4 @@
     window.onload = init;
   </script>
 </body>
-</html
+</html>
