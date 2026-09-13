@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hệ Thống Tự Động Tính Khuyến Mãi Q3</title>
+  <title>Hệ Thống Tự Động Tính Khuyến Mãi Q3 - Colorkey</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- SheetJS (đọc & xuất Excel) -->
@@ -44,12 +44,13 @@
       </button>
       <button onclick="switchTab('customers')" id="btn-tab-customers" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition text-slate-400 hover:bg-slate-800 hover:text-white">
         <i data-lucide="users" class="w-4 h-4"></i> Danh Sách Khách Hàng
+        <span class="ml-auto text-xs bg-slate-800 text-blue-400 px-2 py-0.5 rounded-full font-bold">190</span>
       </button>
     </nav>
 
     <div class="p-4 border-t border-slate-800 text-xs text-slate-400">
       <div class="text-slate-300 font-semibold">GitHub Pages Ready</div>
-      <div>Chạy trực tiếp 1 file HTML duy nhất</div>
+      <div>190 Khách hàng đã cập nhật</div>
     </div>
   </aside>
 
@@ -59,7 +60,7 @@
     <header class="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between shadow-sm">
       <div>
         <h2 id="page-title" class="text-xl font-bold text-slate-800">Xử Lý Đơn Hàng & Tính Khuyến Mãi Tự Động</h2>
-        <p class="text-xs text-slate-500 mt-0.5">Tải file Excel đơn hàng để tự động tính quà tặng & chiết khấu theo Rank</p>
+        <p class="text-xs text-slate-500 mt-0.5">Tải file Excel đơn hàng để tự động tính quà tặng & chiết khấu theo Rank/Hạng</p>
       </div>
       <button onclick="downloadSampleExcel()" class="flex items-center gap-1.5 text-xs text-blue-600 bg-blue-50 hover:bg-blue-100 px-3.5 py-2 rounded-lg font-medium transition border border-blue-200">
         <i data-lucide="download" class="w-4 h-4"></i> Tải File Mẫu Đơn Hàng
@@ -75,14 +76,24 @@
             <option value="ALL">CTKM Quý 3 - Toàn Quốc</option>
             <option value="GT CENTRAL">CTKM Q3 - GT CENTRAL (Miền Trung)</option>
             <option value="GT SOUTH" selected>CTKM GT - SOUTH (Miền Nam)</option>
+            <option value="GT NORTH">CTKM Q3 - GT NORTH (Miền Bắc)</option>
           </select>
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-slate-600 uppercase mb-2">2. Chọn Khách Hàng (Rank & Vùng)</label>
-          <select id="select-customer" onchange="recalculateOrder()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500">
-            <!-- Rendered by JS -->
-          </select>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-2">2. Chọn Khách Hàng (Tìm kiếm nhanh)</label>
+          <input 
+            type="text" 
+            id="customer-input" 
+            list="customer-datalist" 
+            placeholder="Gõ mã hoặc tên khách hàng..." 
+            onchange="onCustomerSelect(this.value)"
+            class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <datalist id="customer-datalist"></datalist>
+          <div id="selected-customer-info" class="text-xs text-blue-600 font-medium mt-1.5 truncate">
+            Chưa chọn khách hàng (Mặc định: CUST1184 - PMARK)
+          </div>
         </div>
 
         <div>
@@ -128,7 +139,7 @@
         <div class="p-6 bg-slate-50 border-t border-slate-200 flex flex-col md:flex-row justify-between items-end gap-4">
           <div class="text-xs text-slate-500 space-y-1">
             <div>* Đã tự động áp dụng quy đổi quà tặng dựa trên chính sách Q3.</div>
-            <div>* Chiết khấu hạng khách hàng: <strong id="summary-rank-discount">0%</strong></div>
+            <div>* Hạng khách hàng: <strong id="summary-rank-badge">-</strong> | Chiết khấu ưu đãi: <strong id="summary-rank-discount">0%</strong></div>
           </div>
           <div class="w-full md:w-80 space-y-2 text-sm">
             <div class="flex justify-between text-slate-600">
@@ -188,32 +199,45 @@
 
     <!-- CONTENT 4: CUSTOMERS -->
     <section id="section-customers" class="hidden flex-1 overflow-y-auto p-8 space-y-6">
+      <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
+        <div class="relative w-full md:w-96">
+          <input 
+            type="text" 
+            id="search-cust-table" 
+            placeholder="Tìm theo mã KH, tên, rank, khu vực..." 
+            oninput="filterCustomerTable(this.value)"
+            class="w-full pl-9 pr-4 py-2 bg-slate-50 border border-slate-300 rounded-lg text-sm outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i>
+        </div>
+        <div class="text-xs text-slate-500">
+          Tổng số khách hàng: <strong class="text-slate-800" id="total-cust-count">190</strong>
+        </div>
+      </div>
+
       <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
-        <table class="w-full text-left border-collapse text-sm">
-          <thead>
-            <tr class="bg-slate-100 text-slate-600 text-xs uppercase font-semibold border-b">
-              <th class="p-3.5">Mã KH</th>
-              <th class="p-3.5">Tên Khách Hàng / Đơn Vị</th>
-              <th class="p-3.5">Mã Số Thuế</th>
-              <th class="p-3.5">Khu Vực</th>
-              <th class="p-3.5">Rank Hạng</th>
-              <th class="p-3.5">Địa Chỉ Nhận Hàng</th>
-            </tr>
-          </thead>
-          <tbody id="customers-table-body" class="divide-y divide-slate-200"></tbody>
-        </table>
+        <div class="max-h-[600px] overflow-y-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead class="sticky top-0 bg-slate-100 shadow-sm">
+              <tr class="text-slate-600 text-xs uppercase font-semibold border-b">
+                <th class="p-3.5">Mã KH</th>
+                <th class="p-3.5">Tên Khách Hàng</th>
+                <th class="p-3.5">Grade / Rank</th>
+                <th class="p-3.5">Kênh (Channel)</th>
+                <th class="p-3.5">Khu Vực</th>
+                <th class="p-3.5">PIC</th>
+              </tr>
+            </thead>
+            <tbody id="customers-table-body" class="divide-y divide-slate-200"></tbody>
+          </table>
+        </div>
       </div>
     </section>
   </main>
 
   <script>
-    // 1. DATA MẪU LẤY TỪ FILE EXCEL
-    const customers = [
-      { id: 'CUST-001', name: 'Đại Lý Mỹ Phẩm An Bình', code: 'AB-HCM', region: 'GT SOUTH', rank: 'Diamond', taxId: '0312345678', address: '128 Hai Bà Trưng, Quận 1, TP. HCM', phone: '0903123456' },
-      { id: 'CUST-002', name: 'Mỹ Phẩm Hương Giang Central', code: 'HG-DN', region: 'GT CENTRAL', rank: 'Gold', taxId: '0498765432', address: '45 Lê Duẩn, Hải Châu, Đà Nẵng', phone: '0912345678' },
-      { id: 'CUST-003', name: 'Chuỗi Shop Ngọc Mai', code: 'NM-BD', region: 'GT SOUTH', rank: 'Silver', taxId: '3701239876', address: '88 Đại Lộ Bình Dương, Thủ Dầu Một', phone: '0933999888' },
-      { id: 'CUST-004', name: 'Đại Lý Miền Bắc Hưng Thịnh', code: 'HT-HN', region: 'GT NORTH', rank: 'Standard', taxId: '0102938475', address: '210 Phố Huế, Hai Bà Trưng, Hà Nội', phone: '0988776655' }
-    ];
+    // 1. DANH SÁCH KHÁCH HÀNG MỚI ĐỒNG BỘ TỪ FILE 'customer list clk.xlsx'
+    const customers = [{"id": "CUST1184", "code": "CUST1184", "name": "CÔNG TY CỔ PHẦN THƯƠNG MẠI PMARK", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1195", "code": "CUST1195", "name": "Lê Thị Hải Yến", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1202", "code": "CUST1202", "name": "PHẠM THU TRANG", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1206", "code": "CUST1206", "name": "Nguyễn Năng Hoàng Thương", "rank": "Retailer 2", "region": "GT SOUTH", "channel": "Offline", "pic": "Liem"}, {"id": "CUST1204", "code": "CUST1204", "name": "PHẠM THỊ THANH HẢI", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1212", "code": "CUST1212", "name": "CONG TY TNHH WATSONS (VIET NAM)", "rank": "Key Account", "region": "Key Account", "channel": "KA", "pic": "Anh"}, {"id": "CUST1220", "code": "CUST1220", "name": "PHAN THỊ PHƯƠNG", "rank": "Retailer 1", "region": "Online", "channel": "Online", "pic": ""}, {"id": "CUST1209", "code": "CUST1209", "name": "CONG TY CO PHAN HASAKI BEAUTY & CLINIC", "rank": "Key Account", "region": "Key Account", "channel": "KA", "pic": "Chi"}, {"id": "CUST1226", "code": "CUST1226", "name": "NGUYỄN THỊ THÙY TRANG", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1239", "code": "CUST1239", "name": "Nguyen Thi Hai Yen", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1237", "code": "CUST1237", "name": "Công Ty TNHH Quốc Tế Thương Mại Lê Minh", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1240", "code": "CUST1240", "name": "LƯU THỊ THANH THÚY", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1241", "code": "CUST1241", "name": "CÔNG TY TNHH THƯƠNG MẠI MAI VÀNG COSMETICS", "rank": "Distributor", "region": "GT NORTH", "channel": "Offline", "pic": "Thanh"}, {"id": "CUST1251", "code": "CUST1251", "name": "HO KINH DOANH SUM SPACE", "rank": "Retailer 1", "region": "GT NORTH", "channel": "Online", "pic": "Trang KA"}, {"id": "CUST1260", "code": "CUST1260", "name": "PHAM THI NHU QUYNH", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1261", "code": "CUST1261", "name": "Công ty TNHH phát triển và đầu tư DoHa", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": "Oanh"}, {"id": "CUST1263", "code": "CUST1263", "name": "NGUYEN THI THU HIEN", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1264", "code": "CUST1264", "name": "LUONG THI MAI TRINH", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1275", "code": "CUST1275", "name": "NGUYEN TIEN DUNG", "rank": "NTD", "region": "Key Account", "channel": "Online", "pic": "Uyen"}, {"id": "CUST1280", "code": "CUST1280", "name": "CÔNG TY TNHH THƯƠNG MẠI LINH SAM", "rank": "Retailer 2", "region": "GT CENTRAL", "channel": "Online", "pic": "Phu"}, {"id": "CUST1279", "code": "CUST1279", "name": "TRẦN TẤN PHÁT", "rank": "Distributor", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1283", "code": "CUST1283", "name": "Lê Thị Giang", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1284", "code": "CUST1284", "name": "CÔNG TY TNHH MÊ ĐI CA", "rank": "Key Account", "region": "GT CENTRAL", "channel": "KA", "pic": "Khoa"}, {"id": "CUST1268", "code": "CUST1268", "name": "CONG TY TNHH SOCIAL BELLA RETAIL VIET NAM", "rank": "Key Account", "region": "Key Account", "channel": "KA", "pic": "Minh"}, {"id": "CUST1289", "code": "CUST1289", "name": "DO HOANG THUONG", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1286", "code": "CUST1286", "name": "Ngô Thị Thu Thùy", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1296", "code": "CUST1296", "name": "Vũ Thị Thu Thảo", "rank": "Retailer 1", "region": "Online", "channel": "Online", "pic": ""}, {"id": "CUST1270", "code": "CUST1270", "name": "CÔNG TY TNHH MỘT THÀNH VIÊN THƯƠNG MẠI DỊCH VỤ BLUE OCEAN", "rank": "TGSF", "region": "GT CENTRAL", "channel": "KA", "pic": "Ngoc Hien"}, {"id": "CUST1270", "code": "CUST1270", "name": "CÔNG TY TNHH MỘT THÀNH VIÊN THƯƠNG MẠI DỊCH VỤ BLUE OCEAN-Q3", "rank": "TGSF3", "region": "GT CENTRAL", "channel": "KA", "pic": "Ngoc Hien"}, {"id": "CUST1303", "code": "CUST1303", "name": "PHAM THI THANH THAO", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1306", "code": "CUST1306", "name": "Công ty TNHH Thương mại dịch vụ xuất nhập khẩu Nga Việt", "rank": "Retailer 2", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1312", "code": "CUST1312", "name": "PHẠM THỊ HOA", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1314", "code": "CUST1314", "name": "CÔNG TY TNHH HDG CORPORATION", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1311", "code": "CUST1311", "name": "Nguyễn Thị Bảo Ân", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1320", "code": "CUST1320", "name": "Ngô Hồng Tâm", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1323", "code": "CUST1323", "name": "Phạm Minh Đăng", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1327", "code": "CUST1327", "name": "CÔNG TY TNHH LAM THẢO COSMETICS", "rank": "LT", "region": "GT NORTH", "channel": "KA", "pic": "Huy"}, {"id": "CUST1327", "code": "CUST1327", "name": "CÔNG TY TNHH LAM THẢO COSMETICS-2H", "rank": "LT2H", "region": "GT NORTH", "channel": "KA", "pic": "Huy"}, {"id": "CUST1322", "code": "CUST1322", "name": "Công ty TNHH Mỹ Phẩm Meishang Việt Nam", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1329", "code": "CUST1329", "name": "Chi nhánh Nha Trang - Công ty TNHH Việt Ý Hà Nội Center", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1336", "code": "CUST1336", "name": "Nguyễn Thị Huyền", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1340", "code": "CUST1340", "name": "Nguyễn Hoàng Hưng", "rank": "Retailer 2", "region": "GT NORTH", "channel": "Online", "pic": "Trang"}, {"id": "CUST1341", "code": "CUST1341", "name": "Hồ Thị Ngàn", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1343", "code": "CUST1343", "name": "HO KINH DOANH MOCHI MINI", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1357", "code": "CUST1357", "name": "Công ty TNHH Thương mại Quốc tế Mida", "rank": "Retailer 2", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1358", "code": "CUST1358", "name": "CÔNG TY TNHH OCADO", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1361", "code": "CUST1361", "name": "Nguyễn Viết Trường", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1369", "code": "CUST1369", "name": "PHẠM THỊ NGA", "rank": "Retailer 1", "region": "Key Account", "channel": "Offline", "pic": "Thu"}, {"id": "CUST1297", "code": "CUST1297", "name": "Công ty TNHH AEON Việt Nam", "rank": "Key Account", "region": "GT NORTH", "channel": "KA", "pic": "Binh"}, {"id": "CUST1374", "code": "CUST1374", "name": "Trần Thị Hùy", "rank": "Distributor", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1375", "code": "CUST1375", "name": "ĐẶNG THỊ NGỌC HƯỜNG", "rank": "Distributor", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1378", "code": "CUST1378", "name": "CÔNG TY TNHH TM VINH PHONG", "rank": "Distributor", "region": "GT SOUTH", "channel": "Offline", "pic": "Thanh Hien"}, {"id": "CUST1372", "code": "CUST1372", "name": "Nguyen Le Thanh Ha", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1382", "code": "CUST1382", "name": "Công Ty TNHH Nhật Phong skin care", "rank": "Distributor", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1385", "code": "CUST1385", "name": "NGUYEN TUAN DUNG", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1395", "code": "CUST1395", "name": "LE THI THUY HAN", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1396", "code": "CUST1396", "name": "CÔNG TY CỔ PHẦN TOYAR INC", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1388", "code": "CUST1388", "name": "NGUYỄN THỊ MINH NGUYỆT", "rank": "Distributor", "region": "GT CENTRAL", "channel": "Offline", "pic": "Lua"}, {"id": "CUST1398", "code": "CUST1398", "name": "HỘ KINH DOANH PHẠM VĂN HÀ", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1391", "code": "CUST1391", "name": "Lê Hoàng Anh", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1410", "code": "CUST1410", "name": "VÕ QUỐC THỊNH", "rank": "Retailer 1", "region": "Online", "channel": "Online", "pic": ""}, {"id": "CUST1423", "code": "CUST1423", "name": "Lưu Đỗ Khánh Trinh", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1422", "code": "CUST1422", "name": "DƯƠNG THỊ TÂM PHƯƠNG", "rank": "Distributor", "region": "GT CENTRAL", "channel": "Offline", "pic": "Thuy"}, {"id": "CUST1431", "code": "CUST1431", "name": "NGUYEN VU HOANG", "rank": "Retailer 1", "region": "Online", "channel": "Online", "pic": ""}, {"id": "CUST1428", "code": "CUST1428", "name": "Nhữ Quang Cường", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1436", "code": "CUST1436", "name": "Nguyễn Thị Tuyết", "rank": "Distributor", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1441", "code": "CUST1441", "name": "HKD Đặng Xuân Thắng", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1440", "code": "CUST1440", "name": "CÔNG TY TNHH XUẤT NHẬP KHẨU MỸ PHẨM HOÀNG LÊ VŨ", "rank": "MINT", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1443", "code": "CUST1443", "name": "Nguyễn Thị Thùy", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1437", "code": "CUST1437", "name": "Công Ty Thư Lê HT", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1444", "code": "CUST1444", "name": "Trang Trang Cosmetic", "rank": "Retailer 2", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1450", "code": "CUST1450", "name": "CÔNG TY TNHH CHANH GROUP", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1449", "code": "CUST1449", "name": "BÙI KIM THẢO", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1451", "code": "CUST1451", "name": "Nguyễn Thị Huyền Trang", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1454", "code": "CUST1454", "name": "CÔNG TY TNHH THƯƠNG MẠI NHẬP KHẨU SÀI GÒN", "rank": "Distributor", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1457", "code": "CUST1457", "name": "Phạm Huyền Trang", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1461", "code": "CUST1461", "name": "Trương Thị Huyền Trang", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1459", "code": "CUST1459", "name": "Hồ Phan Diệu Nhi", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1468", "code": "CUST1468", "name": "Lê Minh Dũng", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1469", "code": "CUST1469", "name": "NGUYỄN THỊ HUYỀN SÂM", "rank": "Retailer 2", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1470", "code": "CUST1470", "name": "TRINH XUAN SON", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1471", "code": "CUST1471", "name": "NGUYEN THI KIM THANH", "rank": "Retailer 1", "region": "Online", "channel": "Online", "pic": ""}, {"id": "CUST1474", "code": "CUST1474", "name": "CÔNG TY CỔ PHẦN ĐẦU TƯ THƯƠNG MẠI VÀ DỊCH VỤ TASO", "rank": "Distributor", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1475", "code": "CUST1475", "name": "NGUYỄN THỊ THÙY ĐOAN", "rank": "Retailer 1", "region": "Online", "channel": "Online", "pic": ""}, {"id": "CUST1482", "code": "CUST1482", "name": "HỘ KINH DOANH NGUYỄN THỊ ÁNH TUYẾT", "rank": "Retailer 2", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1483", "code": "CUST1483", "name": "Công ty TNHH Joli Cosmetics", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1487", "code": "CUST1487", "name": "Nguyễn Thị Thu Hương", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1486", "code": "CUST1486", "name": "Công ty TNHH TTIT Group", "rank": "Retailer 2", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1484", "code": "CUST1484", "name": "Võ Thị Thuỳ Trang", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1485", "code": "CUST1485", "name": "Nguyễn Minh Hưng", "rank": "Retailer 1", "region": "Online", "channel": "Online", "pic": ""}, {"id": "CUST1489", "code": "CUST1489", "name": "HKD Dược sĩ Mai Khanh", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1488", "code": "CUST1488", "name": "HO KINH DOANH THANH THIEN", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1492", "code": "CUST1492", "name": "CÔNG TY TNHH THƯƠNG MAI DỊCH VỤ GLD", "rank": "Distributor", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1495", "code": "CUST1495", "name": "PHẠM HOÀI PHÚC", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1499", "code": "CUST1499", "name": "HỘ KINH DOANH - MINH CHÂU", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1503", "code": "CUST1503", "name": "HỘ KINH DOANH MỸ PHẨM KATI COSMETIC", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1512", "code": "CUST1512", "name": "CONG TY CO PHAN GAIA CONSUMER", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1516", "code": "CUST1516", "name": "ROSSLYN CO., LTD", "rank": "Retailer 1", "region": "Online", "channel": "Online", "pic": ""}, {"id": "CUST1513", "code": "CUST1513", "name": "CONG TY TNHH MTV KIM QUANG MINH", "rank": "Distributor", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1521", "code": "CUST1521", "name": "TRẦN THỊ THANH THƯ", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1529", "code": "CUST1529", "name": "CONG TY TNHH THUONG MAI VA DICH VU XSHINE BEAUTY", "rank": "Retailer 1", "region": "Online", "channel": "Online", "pic": ""}, {"id": "CUST1529", "code": "CUST1529", "name": "CONG TY TNHH THUONG MAI VA DICH VU XSHINE BEAUTY-2H", "rank": "Retailer 2", "region": "Online", "channel": "Online", "pic": ""}, {"id": "CUST1536", "code": "CUST1536", "name": "Tô Phương Nhung", "rank": "Retailer 2", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1534", "code": "CUST1534", "name": "HỒ KIM PHỤNG", "rank": "Distributor", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1545", "code": "CUST1545", "name": "CÔNG TY CP TM DV TỔNG HỢP HOÀN VŨ", "rank": "Key Account", "region": "Key Account", "channel": "KA", "pic": ""}, {"id": "CUST1548", "code": "CUST1548", "name": "CÔNG TY TNHH THƯƠNG MẠI DỊCH VỤ THẢO LÊ", "rank": "Distributor", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1552", "code": "CUST1552", "name": "NGUYỄN THỊ NI KA", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1554", "code": "CUST1554", "name": "DƯƠNG THỊ KIM NGÂN", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1555", "code": "CUST1555", "name": "CÔNG TY CP DỊCH VỤ THƯƠNG MẠI TỔNG HỢP WINCOMMERCE", "rank": "Key Account", "region": "Key Account", "channel": "KA", "pic": ""}, {"id": "CUST1556", "code": "CUST1556", "name": "CÔNG TY TNHH THƯƠNG MẠI THCOS", "rank": "Retailer 2", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1557", "code": "CUST1557", "name": "Hộ Kinh Doanh Trần Thị Ngân", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1560", "code": "CUST1560", "name": "CÔNG TY TNHH THƯƠNG MẠI VÀ ĐẦU TƯ XUẤT NHẬP KHẨU VIỆT NAM", "rank": "Retailer 2", "region": "Key Account", "channel": "KA", "pic": ""}, {"id": "CUST1564", "code": "CUST1564", "name": "Công Ty TNHH Thương Mại và Dịch Vụ CHOIP ATH", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1540", "code": "CUST1540", "name": "CÔNG TY TNHH MỘT THÀNH VIÊN NHÀ THUỐC TSURUHA VIỆT NAM", "rank": "Retailer 1", "region": "Key Account", "channel": "KA", "pic": ""}, {"id": "CUST1563", "code": "CUST1563", "name": "VŨ THỊ HÀ", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1565", "code": "CUST1565", "name": "HKD MP Chính Hãng Nguyễn Huy Hoàng", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1567", "code": "CUST1567", "name": "NGUYỄN THỊ THU HỒNG", "rank": "Retailer 1", "region": "Online", "channel": "Online", "pic": ""}, {"id": "CUST1569", "code": "CUST1569", "name": "CÔNG TY TNHH SẢN XUẤT VÀ THƯƠNG MẠI HUYỀN LINH BAN MÊ", "rank": "Retailer 2", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1570", "code": "CUST1570", "name": "Võ Minh Đức", "rank": "Retailer 1", "region": "Online", "channel": "Online", "pic": ""}, {"id": "CUST1572", "code": "CUST1572", "name": "HỘ KINH DOANH NGUYỄN KIM LIÊN", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1526", "code": "CUST1526", "name": "CÔNG TY TNHH GS25 VIET NAM", "rank": "Key Account", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1574", "code": "CUST1574", "name": "CÔNG TY TNHH MỘT THÀNH VIÊN SKINLALA VIỆT NAM", "rank": "Retailer 2", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1581", "code": "CUST1581", "name": "HỘ KINH DOANH SHOP DIỆP THÚY", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1585", "code": "CUST1585", "name": "HỘ KINH DOANH C-H-E-N-N-Y S-H-O-P", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1579", "code": "CUST1579", "name": "CÔNG TY TNHH ONE CLICK", "rank": "Retailer 1", "region": "Online", "channel": "Online", "pic": ""}, {"id": "CUST1491", "code": "CUST1491", "name": "CÔNG TY TNHH VÒNG TRÒN ĐỎ", "rank": "Key Account", "region": "Key Account", "channel": "KA", "pic": ""}, {"id": "CUST1582", "code": "CUST1582", "name": "HỘ KINH DOANH NGÔ THỊ MINH TÂN", "rank": "Retailer 1", "region": "Online", "channel": "Online", "pic": ""}, {"id": "CUST1590", "code": "CUST1590", "name": "HỘ KINH DOANH VŨ HUẾ", "rank": "Retailer 1", "region": "Online", "channel": "Online", "pic": ""}, {"id": "CUST1586", "code": "CUST1586", "name": "Công Ty TNHH Mỹ Phẩm Xuân Trang", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1596", "code": "CUST1596", "name": "Vũ Thị Thuỳ Linh", "rank": "Retailer 1", "region": "Online", "channel": "Online", "pic": ""}, {"id": "CUST1604", "code": "CUST1604", "name": "HKD Nguyễn Thị Ngát 1", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1605", "code": "CUST1605", "name": "Nguyễn Thái Minh Hằng", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1591", "code": "CUST1591", "name": "CÔNG TY TNHH DOCAS", "rank": "Retailer 1", "region": "Online", "channel": "Online", "pic": ""}, {"id": "CUST1610", "code": "CUST1610", "name": "Công Ty TNHH ATCOS HD", "rank": "Retailer 2", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1618", "code": "CUST1618", "name": "CÔNG TY TNHH TM DV ĐẠI CÁT TƯỜNG", "rank": "Distributor", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1618", "code": "CUST1618", "name": "CÔNG TY TNHH TM DV ĐẠI CÁT TƯỜNG", "rank": "Distributor", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1618", "code": "CUST1618", "name": "CÔNG TY TNHH TM DV ĐẠT CÁT TƯỜNG", "rank": "Distributor", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1618", "code": "CUST1618", "name": "CÔNG TY TNHH TM DV ĐẠT CÁT TƯỜNG", "rank": "Distributor", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1611", "code": "CUST1611", "name": "HỘ KINH DOANH PUN", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1644", "code": "CUST1644", "name": "CÔNG TY TNHH BÁN LẺ SAMMISHOP", "rank": "SAMMI", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1646", "code": "CUST1646", "name": "HỘ KINH DOANH MARIE JAPAN", "rank": "Retailer 1", "region": "Online", "channel": "Online", "pic": ""}, {"id": "CUST1670", "code": "CUST1670", "name": "Công ty TNHH Ngọc Huy Khoa", "rank": "Distributor", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1669", "code": "CUST1669", "name": "CÔNG TY TNHH 2T DRAGON", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1676", "code": "CUST1676", "name": "Nguyễn Thế Hòa", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1685", "code": "CUST1685", "name": "NGUYỄN NGỌC LỆ HIỀN", "rank": "Retailer 1", "region": "Online", "channel": "Online", "pic": ""}, {"id": "CUST1637", "code": "CUST1637", "name": "CÔNG TY TNHH DAXI P&T", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1689", "code": "CUST1689", "name": "Công ty TNHH Thương Mại và Phân Phối Thịnh Vượng", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1666", "code": "CUST1666", "name": "CÔNG TY TNHH SOLASO", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1722", "code": "CUST1722", "name": "CÔNG TY TNHH NNCOS", "rank": "Retailer 2", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1725", "code": "CUST1725", "name": "SÁI KIỀU OANH", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1731", "code": "CUST1731", "name": "Chẩu Văn Vĩnh", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1734", "code": "CUST1734", "name": "CÔNG TY TNHH MIKI GROUP", "rank": "Retailer 1", "region": "Online", "channel": "Online", "pic": ""}, {"id": "CUST1732", "code": "CUST1732", "name": "CÔNG TY CỔ PHẦN SEEDCOM FASHION GROUP", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1735", "code": "CUST1735", "name": "CÔNG TY TNHH PHÂN PHỐI THƯƠNG MẠI VŨ MINH ĐỨC", "rank": "Distributor", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1735", "code": "CUST1735", "name": "CÔNG TY TNHH PHÂN PHỐI THƯƠNG MẠI VŨ MINH ĐỨC", "rank": "Distributor", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1735", "code": "CUST1735", "name": "CÔNG TY TNHH PHÂN PHỐI THƯƠNG MẠI VŨ ĐỨC MINH", "rank": "Distributor", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1735", "code": "CUST1735", "name": "CÔNG TY TNHH PHÂN PHỐI THƯƠNG MẠI VŨ ĐỨC MINH", "rank": "Distributor", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1738", "code": "CUST1738", "name": "ĐINH BÌNH DŨ", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "nan", "code": "nan", "name": "CÔNG TY TNHH WIND SUPPLY CHAIN ONE (VIỆT NAM)", "rank": "Key Account", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "nan", "code": "nan", "name": "PAN ASIA TRADING AND INVESTMENT ONE MEMBER CO LTD", "rank": "Key Account", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "nan", "code": "nan", "name": "CÔNG TY CỔ PHẦN TRUNG TÂM THƯƠNG MẠI LOTTE VIỆT NAM", "rank": "Key Account", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "nan", "code": "nan", "name": "CÔNG TY CỔ PHẦN THƯƠNG MẠI BÁCH HÓA XANH", "rank": "Key Account", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "nan", "code": "nan", "name": "CÔNG TY TNHH CHUỖI CUNG ỨNG JINHE", "rank": "Key Account", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1741", "code": "CUST1741", "name": "HỘ KINH DOANH MOON COSMETIC", "rank": "Retailer 1", "region": "Online", "channel": "Online", "pic": ""}, {"id": "CUST1761", "code": "CUST1761", "name": "CÔNG TY TNHH BOSHOP", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "Cust1774", "code": "Cust1774", "name": "CÔNG TY TNHH V&P CORPORATION", "rank": "Retailer 1", "region": "Online", "channel": "Online", "pic": ""}, {"id": "Cust1778", "code": "Cust1778", "name": "HỘ KINH DOANH YUNAA COSMETICS", "rank": "Retailer 1", "region": "Online", "channel": "Online", "pic": ""}, {"id": "CUST1792", "code": "CUST1792", "name": "CÔNG TY TNHH THƯƠNG MẠI MINODERM", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1791", "code": "CUST1791", "name": "CÔNG TY TNHH THƯƠNG MẠI VÀ DỊCH VỤ QUỐC TẾ PHH", "rank": "Retailer 2", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1812", "code": "CUST1812", "name": "CÔNG TY TNHH NP GLOBAL CONNECT", "rank": "Retailer 1", "region": "Online", "channel": "Online", "pic": ""}, {"id": "CUST1798", "code": "CUST1798", "name": "HKD Nguyễn Trung Nghĩa", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1861", "code": "CUST1861", "name": "CÔNG TY TNHH THƯƠNG MẠI DỊCH VỤ KHẢI PHƯƠNG", "rank": "Distributor", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1862", "code": "CUST1862", "name": "CÔNG TY TNHH HT COP", "rank": "Distributor", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1799", "code": "CUST1799", "name": "Công Ty TNHH Thương Mại Tina House Group", "rank": "Retailer 2", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1768", "code": "CUST1768", "name": "CÔNG TY TNHH CỬA HÀNG TIỆN LỢI GIA ĐÌNH VIỆT NAM", "rank": "Key Account", "region": "Key Account", "channel": "KA", "pic": ""}, {"id": "CUST1919", "code": "CUST1919", "name": "Công ty TNHH Thương mại và Dịch vụ Uân Nga", "rank": "Distributor", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1132", "code": "CUST1132", "name": "PAN ASIA TRADING AND INVESTMENT ONE MEMBER CO LTD", "rank": "Retailer 1", "region": "GT CENTRAL", "channel": "KA", "pic": "Lam"}, {"id": "CUST1508", "code": "CUST1508", "name": "CÔNG TY TNHH WIND SUPPLY CHAIN ONE (VIỆT NAM)", "rank": "Retailer 1", "region": "Key Account", "channel": "KA", "pic": ""}, {"id": "CUST1562", "code": "CUST1562", "name": "CÔNG TY TNHH GS25 VIET NAM", "rank": "Retailer 1", "region": "Key Account", "channel": "KA", "pic": ""}, {"id": "Cust1610", "code": "Cust1610", "name": "Công Ty TNHH ATCOS HD", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "Cust1644", "code": "Cust1644", "name": "CÔNG TY TNHH BÁN LẺ SAMMISHOP", "rank": "Retailer 1", "region": "Key Account", "channel": "KA", "pic": ""}, {"id": "cust1650", "code": "cust1650", "name": "CÔNG TY CỔ PHẦN TRUNG TÂM THƯƠNG MẠI LOTTE VIỆT NAM", "rank": "Retailer 1", "region": "Key Account", "channel": "KA", "pic": ""}, {"id": "Cust1669", "code": "Cust1669", "name": "CÔNG TY TNHH 2T DRAGON", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "Cust 1666", "code": "Cust 1666", "name": "CÔNG TY TNHH SOLASO", "rank": "Retailer 1", "region": "Online", "channel": "Online", "pic": ""}, {"id": "Cust1722", "code": "Cust1722", "name": "CÔNG TY TNHH NNCOS", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "Cust1725", "code": "Cust1725", "name": "SÁI KIỀU OANH", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "Cust1738", "code": "Cust1738", "name": "ĐINH BÌNH DŨ", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "Cust1322", "code": "Cust1322", "name": "Công ty TNHH Mỹ Phẩm Meishang Việt Nam", "rank": "Retailer 1", "region": "GT SOUTH", "channel": "Offline", "pic": ""}, {"id": "CUST1807", "code": "CUST1807", "name": "CÔNG TY CỔ PHẦN THƯƠNG MẠI BÁCH HÓA XANH", "rank": "Retailer 1", "region": "Key Account", "channel": "KA", "pic": ""}, {"id": "CUST1827", "code": "CUST1827", "name": "CÔNG TY TNHH CHUỖI CUNG ỨNG JINHE", "rank": "Retailer 1", "region": "Key Account", "channel": "KA", "pic": ""}];
 
     const products = [
       { productCode: '2C01A414AO308-01', barcode: '6977304934659', name: 'COLORKEY soft matte water tint #O308', priceList: 215000, priceWholesale: 103200, promoNote: 'MUA 19 TẶNG 1 & MUA 57 TẶNG 3 HỘP MASK B5 TÍM' },
@@ -226,22 +250,41 @@
     const promotions = [
       { id: 'PROMO-1', name: 'CTKM Quý 3 (Toàn Quốc)', quarter: 'Q3', region: 'ALL', desc: 'Chương trình chuẩn Q3 áp dụng các kênh GT & MT', rules: 15 },
       { id: 'PROMO-2', name: 'CTKM Q3 - GT CENTRAL', quarter: 'Q3', region: 'GT CENTRAL', desc: 'Áp dụng riêng cho các đại lý khu vực Miền Trung', rules: 18 },
-      { id: 'PROMO-3', name: 'CTKM GT - SOUTH', quarter: 'Q3', region: 'GT SOUTH', desc: 'Áp dụng cho các nhà phân phối và đại lý Miền Nam', rules: 22 }
+      { id: 'PROMO-3', name: 'CTKM GT - SOUTH', quarter: 'Q3', region: 'GT SOUTH', desc: 'Áp dụng cho các nhà phân phối và đại lý Miền Nam', rules: 22 },
+      { id: 'PROMO-4', name: 'CTKM Q3 - GT NORTH', quarter: 'Q3', region: 'GT NORTH', desc: 'Áp dụng cho đại lý và nhà thuốc Miền Bắc', rules: 16 }
     ];
 
     let currentOrderItems = [];
     let currentCalculation = null;
+    let selectedCustomer = customers[0];
 
     // INIT
     function init() {
-      // Init Select Customer
-      const custSelect = document.getElementById('select-customer');
-      custSelect.innerHTML = customers.map(c => `<option value="${c.id}">${c.name} - Rank: ${c.rank} (${c.region})</option>`).join('');
+      // Populate customer datalist for fast search
+      const datalist = document.getElementById('customer-datalist');
+      datalist.innerHTML = customers.map(c => `<option value="${c.code} | ${c.name} (${c.rank})">`).join('');
+
+      document.getElementById('customer-input').value = `${selectedCustomer.code} | ${selectedCustomer.name} (${selectedCustomer.rank})`;
+      updateCustomerInfoDisplay();
 
       renderPromotions();
       renderProducts();
-      renderCustomers();
+      renderCustomers(customers);
       lucide.createIcons();
+    }
+
+    function onCustomerSelect(val) {
+      const matched = customers.find(c => val.includes(c.code) || c.name.toLowerCase() === val.trim().toLowerCase());
+      if (matched) {
+        selectedCustomer = matched;
+        updateCustomerInfoDisplay();
+        recalculateOrder();
+      }
+    }
+
+    function updateCustomerInfoDisplay() {
+      const info = document.getElementById('selected-customer-info');
+      info.innerText = `Đã chọn: [${selectedCustomer.code}] ${selectedCustomer.name} | Rank: ${selectedCustomer.rank} | Kênh: ${selectedCustomer.channel} | KV: ${selectedCustomer.region}`;
     }
 
     // TAB SWITCHING
@@ -259,7 +302,7 @@
         orders: 'Xử Lý Đơn Hàng & Tính Khuyến Mãi Tự Động',
         promotions: 'Quản Lý Chương Trình Khuyến Mãi (CTKM)',
         products: 'Danh Mục Sản Phẩm & Bảng Giá Phân Phối',
-        customers: 'Quản Lý Khách Hàng, Khu Vực & Rank'
+        customers: 'Danh Sách Khách Hàng (190 Khách Hàng)'
       };
       document.getElementById('page-title').innerText = titles[tab];
       lucide.createIcons();
@@ -298,18 +341,40 @@
       `).join('');
     }
 
-    function renderCustomers() {
+    function renderCustomers(list) {
       const tb = document.getElementById('customers-table-body');
-      tb.innerHTML = customers.map(c => `
+      document.getElementById('total-cust-count').innerText = `${list.length} / ${customers.length}`;
+      tb.innerHTML = list.map(c => `
         <tr class="hover:bg-slate-50">
           <td class="p-3.5 font-mono text-xs font-bold text-slate-700">${c.code}</td>
           <td class="p-3.5 font-medium text-slate-800">${c.name}</td>
-          <td class="p-3.5 text-xs font-mono text-slate-600">${c.taxId}</td>
-          <td class="p-3.5 text-xs"><span class="px-2 py-1 bg-slate-100 rounded font-medium">${c.region}</span></td>
-          <td class="p-3.5 text-xs font-bold text-purple-700">${c.rank}</td>
-          <td class="p-3.5 text-xs text-slate-500">${c.address}</td>
+          <td class="p-3.5 text-xs">
+            <span class="px-2 py-0.5 rounded font-bold ${
+              c.rank === 'Distributor' ? 'bg-purple-100 text-purple-700' :
+              c.rank === 'Key Account' ? 'bg-indigo-100 text-indigo-700' :
+              c.rank === 'Retailer 1' ? 'bg-blue-100 text-blue-700' :
+              'bg-slate-100 text-slate-700'
+            }">
+              ${c.rank}
+            </span>
+          </td>
+          <td class="p-3.5 text-xs"><span class="px-2 py-0.5 bg-slate-100 text-slate-600 rounded">${c.channel}</span></td>
+          <td class="p-3.5 text-xs text-slate-600">${c.region}</td>
+          <td class="p-3.5 text-xs text-slate-500">${c.pic || '-'}</td>
         </tr>
       `).join('');
+    }
+
+    function filterCustomerTable(query) {
+      const q = query.toLowerCase().trim();
+      const filtered = customers.filter(c => 
+        c.code.toLowerCase().includes(q) || 
+        c.name.toLowerCase().includes(q) || 
+        c.rank.toLowerCase().includes(q) || 
+        c.region.toLowerCase().includes(q) ||
+        (c.pic && c.pic.toLowerCase().includes(q))
+      );
+      renderCustomers(filtered);
     }
 
     // EXCEL FILE HANDLER
@@ -363,13 +428,18 @@
     function recalculateOrder() {
       if (currentOrderItems.length === 0) return;
 
-      const custId = document.getElementById('select-customer').value;
-      const cust = customers.find(c => c.id === custId) || customers[0];
+      const cust = selectedCustomer;
       const region = document.getElementById('select-promo').value;
 
+      // Chiết khấu theo Grade / Rank
       let rankDiscount = 0;
-      if (cust.rank === 'Diamond') rankDiscount = 0.03;
-      else if (cust.rank === 'Gold') rankDiscount = 0.015;
+      if (cust.rank === 'Distributor' || cust.rank === 'Key Account') {
+        rankDiscount = 0.03; // Nhà phân phối / Chuỗi lớn: 3%
+      } else if (cust.rank === 'Retailer 1') {
+        rankDiscount = 0.015; // Đại lý cấp 1: 1.5%
+      } else {
+        rankDiscount = 0.00; // Retailer 2 / NTD: 0%
+      }
 
       let subTotal = 0;
       const calculatedItems = currentOrderItems.map(item => {
@@ -420,7 +490,8 @@
 
       const r = currentCalculation;
       document.getElementById('badge-item-count').innerText = `${r.items.length} mặt hàng`;
-      document.getElementById('summary-rank-discount').innerText = `${r.rankDiscount * 100}% (${r.cust.rank})`;
+      document.getElementById('summary-rank-badge').innerText = `${r.cust.rank} (${r.cust.code})`;
+      document.getElementById('summary-rank-discount').innerText = `${r.rankDiscount * 100}%`;
       document.getElementById('summary-subtotal').innerText = `${r.subTotal.toLocaleString()} đ`;
       document.getElementById('summary-vat').innerText = `${r.vat.toLocaleString()} đ`;
       document.getElementById('summary-grandtotal').innerText = `${r.grandTotal.toLocaleString()} đ`;
@@ -452,13 +523,13 @@
         'Mã Vạch': it.barcode,
         'Tên Hàng': it.name,
         'Số Lượng': it.qty,
-        'Giá Sỉ': it.priceAfterRank,
+        'Giá Sỉ Sau Rank': it.priceAfterRank,
         'Thành Tiền': it.lineTotal,
         'Khuyến Mãi Đạt Được': it.promoText
       })));
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Don_Hang");
-      XLSX.writeFile(wb, `Don_Hang_${r.cust.code}.xlsx`);
+      XLSX.writeFile(wb, `Don_Hang_${r.cust.code}_${Date.now()}.xlsx`);
     }
 
     function exportToPDF() {
@@ -470,7 +541,7 @@
       doc.setFontSize(15);
       doc.text('DON HANG & KHUYEN MAI Q3', 14, 15);
       doc.setFontSize(10);
-      doc.text(`Khach: ${r.cust.name} (${r.cust.rank}) - MST: ${r.cust.taxId} | Khu vuc: ${r.region}`, 14, 22);
+      doc.text(`Khach: ${r.cust.name} (${r.cust.code} - ${r.cust.rank}) | Kenh: ${r.cust.channel} | Khu vuc: ${r.region}`, 14, 22);
 
       const body = r.items.map(i => [i.code, i.name, i.qty, i.priceAfterRank.toLocaleString() + ' d', i.lineTotal.toLocaleString() + ' d', i.promoText]);
       doc.autoTable({
