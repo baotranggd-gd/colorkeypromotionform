@@ -1,0 +1,502 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hệ Thống Tự Động Tính Khuyến Mãi Q3</title>
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- SheetJS (đọc & xuất Excel) -->
+  <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+  <!-- jsPDF & autoTable (xuất PDF) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
+  <!-- Lucide Icons -->
+  <script src="https://unpkg.com/lucide@latest"></script>
+  <style>
+    body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; }
+    .tab-active { background-color: #2563eb !important; color: white !important; }
+  </style>
+</head>
+<body class="bg-slate-100 text-slate-800 flex h-screen overflow-hidden">
+
+  <!-- SIDEBAR -->
+  <aside class="w-64 bg-slate-900 text-slate-200 flex flex-col shadow-xl">
+    <div class="p-5 border-b border-slate-800 flex items-center gap-3">
+      <div class="p-2 bg-blue-600 rounded-lg text-white">
+        <i data-lucide="sparkles" class="w-5 h-5"></i>
+      </div>
+      <div>
+        <h1 class="font-bold text-base tracking-wide text-white">PROMO PORTAL</h1>
+        <p class="text-xs text-slate-400">Tự động hoá CTKM Q3</p>
+      </div>
+    </div>
+
+    <nav class="flex-1 p-4 space-y-1.5">
+      <button onclick="switchTab('orders')" id="btn-tab-orders" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition tab-active">
+        <i data-lucide="layers" class="w-4 h-4"></i> Xử Lý Đơn Hàng
+      </button>
+      <button onclick="switchTab('promotions')" id="btn-tab-promotions" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition text-slate-400 hover:bg-slate-800 hover:text-white">
+        <i data-lucide="gift" class="w-4 h-4"></i> CT Khuyến Mãi (CTKM)
+      </button>
+      <button onclick="switchTab('products')" id="btn-tab-products" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition text-slate-400 hover:bg-slate-800 hover:text-white">
+        <i data-lucide="package" class="w-4 h-4"></i> Danh Mục Sản Phẩm
+      </button>
+      <button onclick="switchTab('customers')" id="btn-tab-customers" class="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition text-slate-400 hover:bg-slate-800 hover:text-white">
+        <i data-lucide="users" class="w-4 h-4"></i> Danh Sách Khách Hàng
+      </button>
+    </nav>
+
+    <div class="p-4 border-t border-slate-800 text-xs text-slate-400">
+      <div class="text-slate-300 font-semibold">GitHub Pages Ready</div>
+      <div>Chạy trực tiếp 1 file HTML duy nhất</div>
+    </div>
+  </aside>
+
+  <!-- MAIN VIEW -->
+  <main class="flex-1 flex flex-col overflow-hidden">
+    <!-- TOPBAR -->
+    <header class="bg-white border-b border-slate-200 px-8 py-4 flex items-center justify-between shadow-sm">
+      <div>
+        <h2 id="page-title" class="text-xl font-bold text-slate-800">Xử Lý Đơn Hàng & Tính Khuyến Mãi Tự Động</h2>
+        <p class="text-xs text-slate-500 mt-0.5">Tải file Excel đơn hàng để tự động tính quà tặng & chiết khấu theo Rank</p>
+      </div>
+      <button onclick="downloadSampleExcel()" class="flex items-center gap-1.5 text-xs text-blue-600 bg-blue-50 hover:bg-blue-100 px-3.5 py-2 rounded-lg font-medium transition border border-blue-200">
+        <i data-lucide="download" class="w-4 h-4"></i> Tải File Mẫu Đơn Hàng
+      </button>
+    </header>
+
+    <!-- CONTENT 1: ORDERS -->
+    <section id="section-orders" class="flex-1 overflow-y-auto p-8 space-y-6">
+      <div class="bg-white p-6 rounded-xl border border-slate-200 shadow-sm grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-2">1. Chọn CTKM Áp Dụng</label>
+          <select id="select-promo" onchange="recalculateOrder()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+            <option value="ALL">CTKM Quý 3 - Toàn Quốc</option>
+            <option value="GT CENTRAL">CTKM Q3 - GT CENTRAL (Miền Trung)</option>
+            <option value="GT SOUTH" selected>CTKM GT - SOUTH (Miền Nam)</option>
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-2">2. Chọn Khách Hàng (Rank & Vùng)</label>
+          <select id="select-customer" onchange="recalculateOrder()" class="w-full bg-slate-50 border border-slate-300 rounded-lg p-2.5 text-sm outline-none focus:ring-2 focus:ring-blue-500">
+            <!-- Rendered by JS -->
+          </select>
+        </div>
+
+        <div>
+          <label class="block text-xs font-bold text-slate-600 uppercase mb-2">3. Upload Đơn Hàng (.xlsx, .xls)</label>
+          <input type="file" id="order-file-input" accept=".xlsx, .xls" onchange="handleFile(event)" class="w-full text-sm text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-lg file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer border border-slate-300 rounded-lg bg-slate-50" />
+        </div>
+      </div>
+
+      <!-- RESULTS BOX -->
+      <div id="results-box" class="hidden bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <div class="p-5 border-b border-slate-200 flex flex-wrap items-center justify-between gap-4 bg-slate-50">
+          <div>
+            <span class="font-bold text-slate-800 text-sm">Kết Quả Áp Dụng CTKM Tự Động</span>
+            <span id="badge-item-count" class="ml-2 text-xs bg-emerald-100 text-emerald-800 font-semibold px-2.5 py-0.5 rounded-full">0 mặt hàng</span>
+          </div>
+          <div class="flex gap-3">
+            <button onclick="exportToExcel()" class="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-4 py-2 rounded-lg font-medium shadow transition">
+              <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Xuất File Excel
+            </button>
+            <button onclick="exportToPDF()" class="flex items-center gap-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs px-4 py-2 rounded-lg font-medium shadow transition">
+              <i data-lucide="file-text" class="w-4 h-4"></i> Xuất File PDF
+            </button>
+          </div>
+        </div>
+
+        <div class="overflow-x-auto">
+          <table class="w-full text-left border-collapse text-sm">
+            <thead>
+              <tr class="bg-slate-100 text-slate-600 text-xs uppercase font-semibold border-b">
+                <th class="p-3.5">Mã Sản Phẩm / Barcode</th>
+                <th class="p-3.5">Tên Sản Phẩm</th>
+                <th class="p-3.5 text-right">SL Đặt</th>
+                <th class="p-3.5 text-right">Giá Sỉ Gốc</th>
+                <th class="p-3.5 text-right">Đơn Giá Sau Rank</th>
+                <th class="p-3.5 text-right">Thành Tiền</th>
+                <th class="p-3.5 text-left">Quà Tặng CTKM Đạt Được</th>
+              </tr>
+            </thead>
+            <tbody id="order-table-body" class="divide-y divide-slate-200"></tbody>
+          </table>
+        </div>
+
+        <div class="p-6 bg-slate-50 border-t border-slate-200 flex flex-col md:flex-row justify-between items-end gap-4">
+          <div class="text-xs text-slate-500 space-y-1">
+            <div>* Đã tự động áp dụng quy đổi quà tặng dựa trên chính sách Q3.</div>
+            <div>* Chiết khấu hạng khách hàng: <strong id="summary-rank-discount">0%</strong></div>
+          </div>
+          <div class="w-full md:w-80 space-y-2 text-sm">
+            <div class="flex justify-between text-slate-600">
+              <span>Tổng tiền hàng (chưa VAT):</span>
+              <span id="summary-subtotal" class="font-semibold">0 đ</span>
+            </div>
+            <div class="flex justify-between text-slate-600">
+              <span>Thuế VAT (10%):</span>
+              <span id="summary-vat" class="font-semibold">0 đ</span>
+            </div>
+            <div class="flex justify-between text-base font-bold text-slate-900 pt-2 border-t border-slate-200">
+              <span>TỔNG CỘNG THANH TOÁN:</span>
+              <span id="summary-grandtotal" class="text-blue-600">0 đ</span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- PLACEHOLDER EMPTY STATE -->
+      <div id="empty-state" class="bg-white border-2 border-dashed border-slate-300 rounded-xl p-12 text-center">
+        <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+          <i data-lucide="upload" class="w-8 h-8"></i>
+        </div>
+        <h3 class="font-bold text-slate-700 text-base">Chưa có dữ liệu đơn hàng</h3>
+        <p class="text-slate-500 text-sm max-w-md mx-auto mt-1 mb-5">
+          Tải lên file Excel đơn hàng của bạn hoặc tải file mẫu để kiểm tra tính toán quà tặng tự động.
+        </p>
+        <button onclick="downloadSampleExcel()" class="inline-flex items-center gap-2 bg-slate-800 hover:bg-slate-900 text-white text-xs font-semibold px-4 py-2.5 rounded-lg transition">
+          <i data-lucide="download" class="w-4 h-4"></i> Tải file mẫu .XLSX thử nghiệm
+        </button>
+      </div>
+    </section>
+
+    <!-- CONTENT 2: PROMOTIONS -->
+    <section id="section-promotions" class="hidden flex-1 overflow-y-auto p-8 space-y-6">
+      <div class="grid grid-cols-1 md:grid-cols-3 gap-6" id="promotions-grid"></div>
+    </section>
+
+    <!-- CONTENT 3: PRODUCTS -->
+    <section id="section-products" class="hidden flex-1 overflow-y-auto p-8 space-y-6">
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <table class="w-full text-left border-collapse text-sm">
+          <thead>
+            <tr class="bg-slate-100 text-slate-600 text-xs uppercase font-semibold border-b">
+              <th class="p-3.5">Product Code</th>
+              <th class="p-3.5">Barcode</th>
+              <th class="p-3.5">Tên Sản Phẩm</th>
+              <th class="p-3.5 text-right">Giá Niêm Yết</th>
+              <th class="p-3.5 text-right">Giá Sỉ Sau CK</th>
+              <th class="p-3.5">CTKM Q3 Mặc Định</th>
+            </tr>
+          </thead>
+          <tbody id="products-table-body" class="divide-y divide-slate-200"></tbody>
+        </table>
+      </div>
+    </section>
+
+    <!-- CONTENT 4: CUSTOMERS -->
+    <section id="section-customers" class="hidden flex-1 overflow-y-auto p-8 space-y-6">
+      <div class="bg-white rounded-xl border border-slate-200 shadow-sm overflow-hidden">
+        <table class="w-full text-left border-collapse text-sm">
+          <thead>
+            <tr class="bg-slate-100 text-slate-600 text-xs uppercase font-semibold border-b">
+              <th class="p-3.5">Mã KH</th>
+              <th class="p-3.5">Tên Khách Hàng / Đơn Vị</th>
+              <th class="p-3.5">Mã Số Thuế</th>
+              <th class="p-3.5">Khu Vực</th>
+              <th class="p-3.5">Rank Hạng</th>
+              <th class="p-3.5">Địa Chỉ Nhận Hàng</th>
+            </tr>
+          </thead>
+          <tbody id="customers-table-body" class="divide-y divide-slate-200"></tbody>
+        </table>
+      </div>
+    </section>
+  </main>
+
+  <script>
+    // 1. DATA MẪU LẤY TỪ FILE EXCEL
+    const customers = [
+      { id: 'CUST-001', name: 'Đại Lý Mỹ Phẩm An Bình', code: 'AB-HCM', region: 'GT SOUTH', rank: 'Diamond', taxId: '0312345678', address: '128 Hai Bà Trưng, Quận 1, TP. HCM', phone: '0903123456' },
+      { id: 'CUST-002', name: 'Mỹ Phẩm Hương Giang Central', code: 'HG-DN', region: 'GT CENTRAL', rank: 'Gold', taxId: '0498765432', address: '45 Lê Duẩn, Hải Châu, Đà Nẵng', phone: '0912345678' },
+      { id: 'CUST-003', name: 'Chuỗi Shop Ngọc Mai', code: 'NM-BD', region: 'GT SOUTH', rank: 'Silver', taxId: '3701239876', address: '88 Đại Lộ Bình Dương, Thủ Dầu Một', phone: '0933999888' },
+      { id: 'CUST-004', name: 'Đại Lý Miền Bắc Hưng Thịnh', code: 'HT-HN', region: 'GT NORTH', rank: 'Standard', taxId: '0102938475', address: '210 Phố Huế, Hai Bà Trưng, Hà Nội', phone: '0988776655' }
+    ];
+
+    const products = [
+      { productCode: '2C01A414AO308-01', barcode: '6977304934659', name: 'COLORKEY soft matte water tint #O308', priceList: 215000, priceWholesale: 103200, promoNote: 'MUA 19 TẶNG 1 & MUA 57 TẶNG 3 HỘP MASK B5 TÍM' },
+      { productCode: '2C01A414AR300-01', barcode: '6977304934604', name: 'COLORKEY soft matte water tint #R300', priceList: 215000, priceWholesale: 103200, promoNote: 'MUA 19 TẶNG 1 & MUA 57 TẶNG 3 HỘP MASK B5 TÍM' },
+      { productCode: '2C01A414AP307-01', barcode: '6977304934628', name: 'COLORKEY soft matte water tint #P307', priceList: 215000, priceWholesale: 103200, promoNote: 'MUA 19 TẶNG 1 & MUA 57 TẶNG 3 HỘP MASK B5 TÍM' },
+      { productCode: '2C06B009AAAAA-01', barcode: '8936231780089', name: 'Nước Tẩy Trang Colorkey Micellar 500ml', priceList: 199000, priceWholesale: 95520, promoNote: 'MUA 22 TẶNG 2 | MUA 110 TẶNG 24 MINI | MUA 1 TẶNG 1 BÔNG TT' },
+      { productCode: '2C06A010AAA01-01', barcode: '6937467658205', name: 'COLORKEY LUMINOUS LOTUS CLAY CLEANSER 100g', priceList: 135000, priceWholesale: 64800, promoNote: 'MUA 7 TẶNG 1' }
+    ];
+
+    const promotions = [
+      { id: 'PROMO-1', name: 'CTKM Quý 3 (Toàn Quốc)', quarter: 'Q3', region: 'ALL', desc: 'Chương trình chuẩn Q3 áp dụng các kênh GT & MT', rules: 15 },
+      { id: 'PROMO-2', name: 'CTKM Q3 - GT CENTRAL', quarter: 'Q3', region: 'GT CENTRAL', desc: 'Áp dụng riêng cho các đại lý khu vực Miền Trung', rules: 18 },
+      { id: 'PROMO-3', name: 'CTKM GT - SOUTH', quarter: 'Q3', region: 'GT SOUTH', desc: 'Áp dụng cho các nhà phân phối và đại lý Miền Nam', rules: 22 }
+    ];
+
+    let currentOrderItems = [];
+    let currentCalculation = null;
+
+    // INIT
+    function init() {
+      // Init Select Customer
+      const custSelect = document.getElementById('select-customer');
+      custSelect.innerHTML = customers.map(c => `<option value="${c.id}">${c.name} - Rank: ${c.rank} (${c.region})</option>`).join('');
+
+      renderPromotions();
+      renderProducts();
+      renderCustomers();
+      lucide.createIcons();
+    }
+
+    // TAB SWITCHING
+    function switchTab(tab) {
+      ['orders', 'promotions', 'products', 'customers'].forEach(t => {
+        document.getElementById(`section-${t}`).classList.add('hidden');
+        document.getElementById(`btn-tab-${t}`).classList.remove('tab-active');
+        document.getElementById(`btn-tab-${t}`).classList.add('text-slate-400');
+      });
+      document.getElementById(`section-${tab}`).classList.remove('hidden');
+      document.getElementById(`btn-tab-${tab}`).classList.add('tab-active');
+      document.getElementById(`btn-tab-${tab}`).classList.remove('text-slate-400');
+
+      const titles = {
+        orders: 'Xử Lý Đơn Hàng & Tính Khuyến Mãi Tự Động',
+        promotions: 'Quản Lý Chương Trình Khuyến Mãi (CTKM)',
+        products: 'Danh Mục Sản Phẩm & Bảng Giá Phân Phối',
+        customers: 'Quản Lý Khách Hàng, Khu Vực & Rank'
+      };
+      document.getElementById('page-title').innerText = titles[tab];
+      lucide.createIcons();
+    }
+
+    // RENDER SCREENS
+    function renderPromotions() {
+      const grid = document.getElementById('promotions-grid');
+      grid.innerHTML = promotions.map(p => `
+        <div class="bg-white rounded-xl border border-slate-200 p-6 shadow-sm">
+          <div class="flex justify-between items-start mb-4">
+            <span class="px-2.5 py-1 rounded text-xs font-bold bg-blue-100 text-blue-800">${p.quarter}</span>
+            <span class="px-2.5 py-1 rounded text-xs font-semibold bg-emerald-100 text-emerald-800">Active</span>
+          </div>
+          <h3 class="font-bold text-slate-800 text-base mb-2">${p.name}</h3>
+          <p class="text-xs text-slate-500 mb-4">${p.desc}</p>
+          <div class="text-xs text-slate-600 border-t border-slate-100 pt-3 flex justify-between">
+            <span>Khu vực: <strong>${p.region}</strong></span>
+            <span>${p.rules} quy tắc</span>
+          </div>
+        </div>
+      `).join('');
+    }
+
+    function renderProducts() {
+      const tb = document.getElementById('products-table-body');
+      tb.innerHTML = products.map(p => `
+        <tr class="hover:bg-slate-50">
+          <td class="p-3.5 font-mono text-xs font-semibold text-slate-700">${p.productCode}</td>
+          <td class="p-3.5 font-mono text-xs text-slate-500">${p.barcode}</td>
+          <td class="p-3.5 font-medium text-slate-800">${p.name}</td>
+          <td class="p-3.5 text-right text-slate-500">${p.priceList.toLocaleString()} đ</td>
+          <td class="p-3.5 text-right font-bold text-blue-600">${p.priceWholesale.toLocaleString()} đ</td>
+          <td class="p-3.5 text-xs text-amber-700 font-medium">${p.promoNote}</td>
+        </tr>
+      `).join('');
+    }
+
+    function renderCustomers() {
+      const tb = document.getElementById('customers-table-body');
+      tb.innerHTML = customers.map(c => `
+        <tr class="hover:bg-slate-50">
+          <td class="p-3.5 font-mono text-xs font-bold text-slate-700">${c.code}</td>
+          <td class="p-3.5 font-medium text-slate-800">${c.name}</td>
+          <td class="p-3.5 text-xs font-mono text-slate-600">${c.taxId}</td>
+          <td class="p-3.5 text-xs"><span class="px-2 py-1 bg-slate-100 rounded font-medium">${c.region}</span></td>
+          <td class="p-3.5 text-xs font-bold text-purple-700">${c.rank}</td>
+          <td class="p-3.5 text-xs text-slate-500">${c.address}</td>
+        </tr>
+      `).join('');
+    }
+
+    // EXCEL FILE HANDLER
+    function handleFile(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (evt) => {
+        const data = evt.target.result;
+        const wb = XLSX.read(data, { type: 'binary' });
+        const sheet = wb.Sheets[wb.SheetNames[0]];
+        const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+
+        if (rows.length < 2) {
+          alert('File không có dữ liệu hợp lệ!');
+          return;
+        }
+
+        const headers = rows[0].map(h => String(h).toUpperCase());
+        let codeIdx = headers.findIndex(h => h.includes('CODE') || h.includes('MÃ'));
+        let barcodeIdx = headers.findIndex(h => h.includes('BARCODE') || h.includes('VẠCH'));
+        let nameIdx = headers.findIndex(h => h.includes('NAME') || h.includes('TÊN'));
+        let qtyIdx = headers.findIndex(h => h.includes('LƯỢNG') || h.includes('QTY'));
+
+        if (codeIdx === -1) codeIdx = 0;
+        if (barcodeIdx === -1) barcodeIdx = 1;
+        if (nameIdx === -1) nameIdx = 2;
+        if (qtyIdx === -1) qtyIdx = 3;
+
+        currentOrderItems = [];
+        for (let i = 1; i < rows.length; i++) {
+          const r = rows[i];
+          if (!r || r.length === 0) continue;
+          const qty = Number(r[qtyIdx]) || 0;
+          if (qty > 0) {
+            currentOrderItems.push({
+              productCode: r[codeIdx] ? String(r[codeIdx]).trim() : '',
+              barcode: r[barcodeIdx] ? String(r[barcodeIdx]).trim() : '',
+              name: r[nameIdx] ? String(r[nameIdx]).trim() : '',
+              qty: qty
+            });
+          }
+        }
+        recalculateOrder();
+      };
+      reader.readAsBinaryString(file);
+    }
+
+    // CALCULATION LOGIC
+    function recalculateOrder() {
+      if (currentOrderItems.length === 0) return;
+
+      const custId = document.getElementById('select-customer').value;
+      const cust = customers.find(c => c.id === custId) || customers[0];
+      const region = document.getElementById('select-promo').value;
+
+      let rankDiscount = 0;
+      if (cust.rank === 'Diamond') rankDiscount = 0.03;
+      else if (cust.rank === 'Gold') rankDiscount = 0.015;
+
+      let subTotal = 0;
+      const calculatedItems = currentOrderItems.map(item => {
+        const prod = products.find(p => 
+          (item.productCode && p.productCode.toLowerCase() === item.productCode.toLowerCase()) ||
+          (item.barcode && p.barcode === item.barcode)
+        );
+
+        const name = prod ? prod.name : item.name;
+        const code = prod ? prod.productCode : item.productCode;
+        const barcode = prod ? prod.barcode : item.barcode;
+        const priceWholesale = prod ? prod.priceWholesale : 103200;
+        const priceAfterRank = Math.round(priceWholesale * (1 - rankDiscount));
+        const lineTotal = item.qty * priceAfterRank;
+        subTotal += lineTotal;
+
+        // CTKM Rule
+        let promoText = 'Không đủ ĐK quà';
+        if (code.startsWith('2C01A414')) {
+          let mask = Math.floor(item.qty / 57) * 3;
+          let same = Math.floor(item.qty / 19) * 1;
+          let parts = [];
+          if (same > 0) parts.push(`Tặng ${same} cây cùng loại (19+1)`);
+          if (mask > 0) parts.push(`Tặng ${mask} hộp Mask B5 (57+3)`);
+          if (parts.length) promoText = parts.join(' & ');
+        } else if (code.startsWith('2C06B009')) {
+          let same = Math.floor(item.qty / 22) * 2;
+          let mini = Math.floor(item.qty / 110) * 24;
+          promoText = `Tặng ${item.qty} bông TT` + (same > 0 ? ` + ${same} chai cùng loại` : '') + (mini > 0 ? ` + ${mini} mini` : '');
+        } else if (code.startsWith('2C06A010')) {
+          let same = Math.floor(item.qty / 7) * 1;
+          if (same > 0) promoText = `Tặng ${same} tuýp cùng loại (7+1)`;
+        }
+
+        return { code, barcode, name, qty: item.qty, priceWholesale, priceAfterRank, lineTotal, promoText };
+      });
+
+      const vat = Math.round(subTotal * 0.1);
+      const grandTotal = subTotal + vat;
+
+      currentCalculation = { cust, region, rankDiscount, items: calculatedItems, subTotal, vat, grandTotal };
+      renderOrderResults();
+    }
+
+    function renderOrderResults() {
+      document.getElementById('empty-state').classList.add('hidden');
+      document.getElementById('results-box').classList.remove('hidden');
+
+      const r = currentCalculation;
+      document.getElementById('badge-item-count').innerText = `${r.items.length} mặt hàng`;
+      document.getElementById('summary-rank-discount').innerText = `${r.rankDiscount * 100}% (${r.cust.rank})`;
+      document.getElementById('summary-subtotal').innerText = `${r.subTotal.toLocaleString()} đ`;
+      document.getElementById('summary-vat').innerText = `${r.vat.toLocaleString()} đ`;
+      document.getElementById('summary-grandtotal').innerText = `${r.grandTotal.toLocaleString()} đ`;
+
+      const tbody = document.getElementById('order-table-body');
+      tbody.innerHTML = r.items.map(it => `
+        <tr class="hover:bg-slate-50 transition">
+          <td class="p-3.5 font-mono text-xs text-slate-500">
+            <span class="font-semibold text-slate-700">${it.code}</span><br>
+            <span class="text-slate-400">${it.barcode}</span>
+          </td>
+          <td class="p-3.5 font-medium text-slate-800">${it.name}</td>
+          <td class="p-3.5 text-right font-bold text-slate-900">${it.qty}</td>
+          <td class="p-3.5 text-right text-slate-500">${it.priceWholesale.toLocaleString()} đ</td>
+          <td class="p-3.5 text-right font-medium text-slate-700">${it.priceAfterRank.toLocaleString()} đ</td>
+          <td class="p-3.5 text-right font-bold text-blue-600">${it.lineTotal.toLocaleString()} đ</td>
+          <td class="p-3.5 text-xs text-amber-800 font-medium bg-amber-50/60 rounded">${it.promoText}</td>
+        </tr>
+      `).join('');
+      lucide.createIcons();
+    }
+
+    // EXPORT
+    function exportToExcel() {
+      if (!currentCalculation) return;
+      const r = currentCalculation;
+      const ws = XLSX.utils.json_to_sheet(r.items.map(it => ({
+        'Mã Sản Phẩm': it.code,
+        'Mã Vạch': it.barcode,
+        'Tên Hàng': it.name,
+        'Số Lượng': it.qty,
+        'Giá Sỉ': it.priceAfterRank,
+        'Thành Tiền': it.lineTotal,
+        'Khuyến Mãi Đạt Được': it.promoText
+      })));
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Don_Hang");
+      XLSX.writeFile(wb, `Don_Hang_${r.cust.code}.xlsx`);
+    }
+
+    function exportToPDF() {
+      if (!currentCalculation) return;
+      const { jsPDF } = window.jspdf;
+      const doc = new jsPDF('landscape');
+      const r = currentCalculation;
+
+      doc.setFontSize(15);
+      doc.text('DON HANG & KHUYEN MAI Q3', 14, 15);
+      doc.setFontSize(10);
+      doc.text(`Khach: ${r.cust.name} (${r.cust.rank}) - MST: ${r.cust.taxId} | Khu vuc: ${r.region}`, 14, 22);
+
+      const body = r.items.map(i => [i.code, i.name, i.qty, i.priceAfterRank.toLocaleString() + ' d', i.lineTotal.toLocaleString() + ' d', i.promoText]);
+      doc.autoTable({
+        startY: 28,
+        head: [['Ma SP', 'Ten San Pham', 'SL', 'Don Gia', 'Thanh Tien', 'Qua Tang CTKM']],
+        body: body,
+        theme: 'grid'
+      });
+      doc.save(`Don_Hang_${r.cust.code}.pdf`);
+    }
+
+    function downloadSampleExcel() {
+      const data = [
+        ['PRODUCT CODE', 'BARCODE', 'PACKAGE NAME', 'SỐ LƯỢNG ĐẶT'],
+        ['2C01A414AO308-01', '6977304934659', 'COLORKEY soft matte water tint #O308', 60],
+        ['2C01A414AR300-01', '6977304934604', 'COLORKEY soft matte water tint #R300', 20],
+        ['2C06B009AAAAA-01', '8936231780089', 'Nước Tẩy Trang Colorkey 500ml', 115],
+        ['2C06A010AAA01-01', '6937467658205', 'COLORKEY LOTUS CLAY CLEANSER 100g', 15]
+      ];
+      const ws = XLSX.utils.aoa_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, "Mau_Don_Hang");
+      XLSX.writeFile(wb, "Mau_Don_Hang_Q3.xlsx");
+    }
+
+    window.onload = init;
+  </script>
+</body>
+</html>
