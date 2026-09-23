@@ -2130,14 +2130,16 @@
 
     // CHUYỂN TAB ĐỒNG BỘ THEO OPS PORTAL
 
+
     function switchTab(tabId) {
-      console.log("Switching to tab:", tabId);
+      console.log("Switching tab to:", tabId);
       const tabs = ['dashboard', 'order-processing', 'crm', 'products', 'promotions', 'warehouse', 'analytics', 'setting'];
       
       tabs.forEach(t => {
         const el = document.getElementById('view-' + t);
         const btn = document.getElementById('btn-tab-' + t);
         if (el) {
+          el.style.display = 'none';
           el.classList.add('hidden');
         }
         if (btn) {
@@ -2150,6 +2152,7 @@
       const activeBtn = document.getElementById('btn-tab-' + tabId);
       
       if (activeEl) {
+        activeEl.style.display = 'block';
         activeEl.classList.remove('hidden');
       }
       if (activeBtn) {
@@ -2158,11 +2161,11 @@
       }
 
       if (tabId === 'crm') {
-        filterCrmTable();
+        if (typeof filterCrmTable === 'function') filterCrmTable();
       } else if (tabId === 'products') {
-        filterProdManagementTable();
+        if (typeof filterProdManagementTable === 'function') filterProdManagementTable();
       } else if (tabId === 'promotions') {
-        renderPromotions();
+        if (typeof renderPromotions === 'function') renderPromotions();
       }
 
       if (typeof lucide !== 'undefined') {
@@ -2171,6 +2174,25 @@
     }
 
     window.switchTab = switchTab;
+
+    // Đảm bảo ẩn tất cả view trừ dashboard khi trang vừa tải xong
+    document.addEventListener("DOMContentLoaded", () => {
+      const tabs = ['dashboard', 'order-processing', 'crm', 'products', 'promotions', 'warehouse', 'analytics', 'setting'];
+      tabs.forEach(t => {
+        const el = document.getElementById('view-' + t);
+        if (el) {
+          if (t === 'dashboard') {
+            el.style.display = 'block';
+            el.classList.remove('hidden');
+          } else {
+            el.style.display = 'none';
+            el.classList.add('hidden');
+          }
+        }
+      });
+      if (typeof init === 'function') init();
+    });
+
 
 
     // GLOBAL SEARCH
