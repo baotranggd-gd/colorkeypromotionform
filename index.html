@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OPS PORTAL - Meishang Vietnam (Version 2)</title>
+  <title>OPS PORTAL - Meishang Vietnam</title>
   <!-- Tailwind CSS CDN -->
   <script src="https://cdn.tailwindcss.com"></script>
   <!-- Chart.js -->
@@ -90,8 +90,8 @@
     <div class="p-4 border-t border-slate-800 text-xs text-slate-400 space-y-1">
       <div class="font-semibold text-slate-300">Meishang Vietnam</div>
       <div class="flex justify-between text-[11px] text-slate-500">
-        <span>Version 2.0.0</span>
-        <span class="text-blue-400 font-mono">PROMO ENGINE V2</span>
+        <span>Version 1.0.0</span>
+        <span class="text-blue-400 font-mono">PROMO ENGINE V4</span>
       </div>
     </div>
   </aside>
@@ -904,7 +904,7 @@
       <!-- ========================================================================= -->
       <!-- VIEW 5: PROMOTION MANAGEMENT (Trang 5-10 PDF) -->
       <!-- ========================================================================= -->
-                  <section id="view-promotions" class="hidden h-full overflow-y-auto p-8 space-y-6">
+      <section       <section id="view-promotions" class="hidden h-full overflow-y-auto p-8 space-y-6">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h2 class="text-xl font-bold text-slate-800">Promotion Management</h2>
@@ -914,6 +914,8 @@
             <i data-lucide="plus" class="w-4 h-4"></i> + Thêm chương trình
           </button>
         </div>
+
+
 
         <!-- BỘ LỌC TÌM KIẾM (FILTER BAR) -->
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3.5 text-xs">
@@ -951,6 +953,29 @@
               </select>
             </div>
           </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-1">
+            <div>
+              <select id="promo-filter-status" onchange="filterPromotionsTable()" class="w-full py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-700">
+                <option value="ALL">Tất cả Trạng thái</option>
+                <option value="Đang chạy">Đang chạy</option>
+                <option value="Sắp chạy">Sắp chạy</option>
+                <option value="Đã kết thúc">Đã kết thúc</option>
+                <option value="Tạm dừng">Tạm dừng</option>
+              </select>
+            </div>
+            <div class="relative">
+              <input type="date" id="promo-filter-from" onchange="filterPromotionsTable()" class="w-full py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-slate-600" />
+            </div>
+            <div class="relative">
+              <input type="date" id="promo-filter-to" onchange="filterPromotionsTable()" class="w-full py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-slate-600" />
+            </div>
+            <div class="flex items-center justify-end lg:col-span-2">
+              <button onclick="resetPromoFilters()" class="text-xs text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-1 cursor-pointer">
+                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Xóa bộ lọc
+              </button>
+            </div>
+          </div>
         </div>
 
         <!-- BẢNG DANH SÁCH CHƯƠNG TRÌNH KHUYẾN MÃI -->
@@ -986,16 +1011,25 @@
             </table>
           </div>
 
+          <!-- FOOTER PHÂN TRANG (PAGINATION) -->
           <div class="p-4 bg-slate-50 border-t border-slate-200 flex flex-wrap justify-between items-center text-xs text-slate-500">
-            <div id="promo-pagination-info">Hiển thị danh sách chương trình</div>
-            <div class="flex items-center gap-1">
-              <button class="w-7 h-7 rounded-lg border bg-white flex items-center justify-center text-slate-400">&lt;</button>
-              <button class="w-7 h-7 rounded-lg border bg-blue-600 text-white font-bold flex items-center justify-center">1</button>
-              <button class="w-7 h-7 rounded-lg border bg-white flex items-center justify-center text-slate-700">&gt;</button>
+            <div>Hiển thị 1 - 8 / 12 chương trình</div>
+            <div class="flex items-center gap-3">
+              <div class="flex items-center gap-1">
+                <button class="w-7 h-7 rounded-lg border bg-white flex items-center justify-center text-slate-400 hover:bg-slate-100">&lt;</button>
+                <button class="w-7 h-7 rounded-lg border bg-blue-600 text-white font-bold flex items-center justify-center shadow-sm">1</button>
+                <button class="w-7 h-7 rounded-lg border bg-white flex items-center justify-center text-slate-700 hover:bg-slate-100 font-medium">2</button>
+                <button class="w-7 h-7 rounded-lg border bg-white flex items-center justify-center text-slate-700 hover:bg-slate-100">&gt;</button>
+              </div>
+              <select class="border rounded-lg px-2.5 py-1.5 bg-white text-xs outline-none">
+                <option value="10">10 / trang</option>
+                <option value="20">20 / trang</option>
+              </select>
             </div>
           </div>
         </div>
       </section>
+
 
       <!-- ========================================================================= -->
       <!-- VIEW 6: WAREHOUSE (Trang 11 PDF - Inventory, Báo Cáo Tồn Kho) -->
@@ -1216,96 +1250,183 @@
   <!-- ========================================================================= -->
   <!-- MODAL 2: THÊM SCHEME VÀO CTKM (THEO ĐÚNG TRANG 7-10 PDF) -->
   <!-- ========================================================================= -->
-  
-    <div id="modal-rule" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+  <div id="modal-rule" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b pb-3">
         <div>
           <h3 class="font-bold text-slate-800 text-base">Thêm scheme vào CTKM</h3>
           <p id="modal-rule-subtitle" class="text-xs text-blue-600 mt-0.5">Áp dụng cho CTKM</p>
         </div>
-        <button onclick="closeRuleModal()" class="text-slate-400 hover:text-slate-600 cursor-pointer"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <button onclick="closeRuleModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
 
-      <form id="rule-form" onsubmit="saveRule(event)" class="space-y-4 text-xs">
+      <!-- TABS CHỌN 2 LOẠI SCHEME CHÍNH -->
+      <div id="modal-rule-tabs-container" class="grid grid-cols-2 gap-2 bg-slate-100 p-1.5 rounded-xl text-xs font-bold">
+        <button type="button" onclick="setSchemeType('BUY_GIFT_TIERS')" id="tab-scheme-gift" class="py-2.5 px-3 rounded-lg transition subtab-active flex items-center justify-center gap-1.5">
+          <i data-lucide="gift" class="w-4 h-4"></i> 1. Mua Hàng Tặng Hàng (Bậc Thang)
+        </button>
+        <button type="button" onclick="setSchemeType('MOQ_BUNDLE')" id="tab-scheme-moq" class="py-2.5 px-3 rounded-lg transition text-slate-600 hover:text-slate-900 flex items-center justify-center gap-1.5">
+          <i data-lucide="trophy" class="w-4 h-4"></i> 2. Thưởng Gói Quà Doanh Số (MOQ)
+        </button>
+      </div>
+
+      <form id="rule-form" onsubmit="saveRule(event)" class="space-y-4 text-sm">
         <input type="hidden" id="form-rule-promo-id" />
+        <input type="hidden" id="form-rule-scheme-type" value="BUY_GIFT_TIERS" />
 
-        <!-- 1. TÊN SCHEME -->
-        <div>
-          <label class="block font-bold text-slate-700 uppercase mb-1">Tên Scheme *</label>
-          <input type="text" id="form-scheme-name" required placeholder="VD: Mua 19 Son tặng 1 Son cùng loại" class="w-full border rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-blue-500 font-medium bg-white" />
-        </div>
-
-        <!-- 2. SỐ LƯỢNG MUA & SỐ LƯỢNG TẶNG -->
-        <div class="grid grid-cols-2 gap-3 bg-slate-50 p-3.5 rounded-xl border border-slate-200">
-          <div>
-            <label class="block font-bold text-slate-700 uppercase mb-1">Số Lượng Mua (SL Mua) *</label>
-            <input type="number" id="form-gift-t1-buy" min="1" required value="19" class="w-full border rounded-lg p-2.5 font-bold text-slate-800 bg-white" />
+        <!-- 1. THÔNG TIN SCHEME -->
+        <div class="space-y-3">
+          <div class="text-xs font-bold text-slate-800 uppercase flex items-center gap-2">
+            <span class="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[10px]">1</span>
+            Thông tin scheme
           </div>
           <div>
-            <label class="block font-bold text-slate-700 uppercase mb-1">Số Lượng Tặng (SL Tặng) *</label>
-            <input type="number" id="form-gift-t1-qty" min="1" required value="1" class="w-full border rounded-lg p-2.5 font-bold text-emerald-600 bg-white" />
+            <label class="block text-xs text-slate-600 mb-1">Tên scheme *</label>
+            <input type="text" id="form-scheme-name" required placeholder="VD: Mua 19 SP A tặng 1 SP A" class="w-full border rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-blue-500 text-xs font-medium" />
           </div>
         </div>
 
-        <!-- 3. DROPDOWN CHỌN QUÀ: CÙNG LOẠI HAY KHÁC LOẠI -->
-        <div>
-          <label class="block font-bold text-slate-700 uppercase mb-1">Tính Chất Quà Tặng (Cùng loại / Khác loại) *</label>
-          <select id="form-gift-nature" onchange="onGiftNatureChange(this.value)" class="w-full border rounded-xl p-2.5 font-semibold text-blue-700 bg-white outline-none">
-            <option value="SAME">Tặng Cùng Loại (Sản phẩm mua là sản phẩm tặng)</option>
-            <option value="DIFF">Tặng Khác Loại (Chọn sản phẩm quà tặng cụ thể)</option>
-          </select>
-        </div>
-
-        <!-- Panel chọn quà khác loại (ẩn nếu chọn Cùng loại) -->
-        <div id="panel-diff-gift" class="hidden bg-emerald-50/70 p-3.5 rounded-xl border border-emerald-200 space-y-2">
-          <span class="text-xs font-bold text-emerald-900 uppercase block">Cấu hình sản phẩm quà tặng khác loại</span>
-          <div class="grid grid-cols-2 gap-2">
+        <!-- 2. PANEL MUA HÀNG TẶNG HÀNG (GỘP CÙNG LOẠI & KHÁC LOẠI) -->
+        <div id="panel-buy-gift" class="space-y-4">
+          <div class="bg-blue-50/70 p-3.5 rounded-xl border border-blue-200 space-y-2">
+            <span class="text-xs font-bold text-blue-900 uppercase block">Điều kiện mua (Sản phẩm áp dụng)</span>
             <div>
-              <label class="block text-[11px] text-slate-600 font-semibold mb-0.5">Mã SP / Barcode Quà Tặng:</label>
-              <input type="text" id="form-gift-t1-code" placeholder="VD: 6977304933225 hoặc CK001" class="w-full border rounded-lg p-2 text-xs bg-white font-mono" />
+              <label class="block text-[11px] text-slate-600 font-semibold mb-0.5">Tiền tố mã SP mua (Prefix) - VD: <code>2C01A</code> (Son) hoặc <code>2C06</code> (Skincare):</label>
+              <input type="text" id="form-gift-prefix" placeholder="VD: 2C01A hoặc để trống nếu nhập mã lẻ" class="w-full border rounded-lg p-2 text-xs bg-white font-mono" />
             </div>
             <div>
-              <label class="block text-[11px] text-slate-600 font-semibold mb-0.5">Tên Sản Phẩm Quà Tặng:</label>
-              <input type="text" id="form-gift-t1-name" placeholder="Tên món quà hiển thị" class="w-full border rounded-lg p-2 text-xs bg-white" />
+              <label class="block text-[11px] text-slate-600 font-semibold mb-0.5">Hoặc danh sách Mã SP cụ thể (cách nhau dấu phẩy):</label>
+              <textarea id="form-gift-products" rows="1" placeholder="2C01A381AR666-01, 2C06F008AAAP1-01..." class="w-full border rounded-lg p-2 text-xs bg-white font-mono"></textarea>
+            </div>
+            <div class="flex items-center gap-2 pt-0.5">
+              <input type="checkbox" id="form-gift-pool" checked class="w-4 h-4 text-blue-600 rounded" />
+              <label for="form-gift-pool" class="text-xs text-slate-700 font-medium">Gộp chung số lượng các mã SP trên để tính mốc bậc thang</label>
+            </div>
+          </div>
+
+          <div class="space-y-2.5">
+            <span class="text-xs font-bold text-slate-700 uppercase block">Cấu Hình Các Bậc Thang Quà Tặng</span>
+            
+            <!-- BẬC 1 -->
+            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-700">Mức 1: Mua tối thiểu</span>
+                <span class="text-[11px] text-slate-500">Để trống mã quà → Tự động tặng <strong>cùng loại</strong></span>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-[11px] text-slate-500 font-semibold mb-0.5">SL Mua Bậc 1</label>
+                  <input type="number" id="form-gift-t1-buy" min="1" required value="19" class="w-full border rounded-lg p-2 text-xs bg-white font-bold" />
+                </div>
+                <div>
+                  <label class="block text-[11px] text-slate-500 font-semibold mb-0.5">SL Quà Tặng Bậc 1</label>
+                  <input type="number" id="form-gift-t1-qty" min="1" required value="1" class="w-full border rounded-lg p-2 text-xs bg-white font-bold text-emerald-600" />
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-[11px] text-slate-500 font-semibold mb-0.5">Mã SP Quà Tặng (Tùy chọn nếu tặng khác loại)</label>
+                  <input type="text" id="form-gift-t1-code" placeholder="Để trống nếu tặng CÙNG LOẠI" class="w-full border rounded-lg p-2 text-xs bg-white font-mono" />
+                </div>
+                <div>
+                  <label class="block text-[11px] text-slate-500 font-semibold mb-0.5">Tên Sản Phẩm Quà Tặng</label>
+                  <input type="text" id="form-gift-t1-name" placeholder="Để trống sẽ lấy tên SP mua" class="w-full border rounded-lg p-2 text-xs bg-white" />
+                </div>
+              </div>
+            </div>
+
+            <!-- BẬC 2 -->
+            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
+              <div class="flex items-center justify-between">
+                <span class="text-xs font-bold text-slate-700">Mức 2: Lũy tiến cao hơn (Tùy chọn)</span>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-[11px] text-slate-500 font-semibold mb-0.5">SL Mua Bậc 2</label>
+                  <input type="number" id="form-gift-t2-buy" min="0" value="57" class="w-full border rounded-lg p-2 text-xs bg-white font-bold" />
+                </div>
+                <div>
+                  <label class="block text-[11px] text-slate-500 font-semibold mb-0.5">SL Quà Tặng Bậc 2</label>
+                  <input type="number" id="form-gift-t2-qty" min="0" value="4" class="w-full border rounded-lg p-2 text-xs bg-white font-bold text-emerald-600" />
+                </div>
+              </div>
+              <div class="grid grid-cols-2 gap-2">
+                <div>
+                  <label class="block text-[11px] text-slate-500 font-semibold mb-0.5">Mã SP Quà Tặng Bậc 2</label>
+                  <input type="text" id="form-gift-t2-code" placeholder="Để trống nếu tặng CÙNG LOẠI" class="w-full border rounded-lg p-2 text-xs bg-white font-mono" />
+                </div>
+                <div>
+                  <label class="block text-[11px] text-slate-500 font-semibold mb-0.5">Tên SP Quà Tặng Bậc 2</label>
+                  <input type="text" id="form-gift-t2-name" placeholder="Để trống sẽ lấy tên SP mua" class="w-full border rounded-lg p-2 text-xs bg-white" />
+                </div>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- 4. PHẦN CHỌN SẢN PHẨM APPLY SCHEME (Chọn nhiều SP, theo Category, theo Product Line) -->
-        <div class="bg-blue-50/70 p-3.5 rounded-xl border border-blue-200 space-y-3">
-          <span class="text-xs font-bold text-blue-900 uppercase block">Chọn Sản Phẩm Áp Dụng Scheme (Apply Products)</span>
-          
-          <div class="grid grid-cols-3 gap-2">
-            <div>
-              <label class="block font-[11px] text-slate-600 font-semibold mb-0.5">Theo Category (Ngành):</label>
-              <select id="form-scheme-cat" class="w-full border rounded-lg p-2 bg-white font-medium text-xs">
-                <option value="ALL">Tất cả Category</option>
-                <option value="Makeup">Makeup</option>
-                <option value="Skincare">Skincare</option>
-              </select>
-            </div>
-            <div>
-              <label class="block font-[11px] text-slate-600 font-semibold mb-0.5">Theo Product Line (Dòng):</label>
-              <input type="text" id="form-gift-prefix" placeholder="VD: 2C01A (Son) hoặc Airy" class="w-full border rounded-lg p-2 bg-white font-mono text-xs" />
-            </div>
-            <div>
-              <label class="block font-[11px] text-slate-600 font-semibold mb-0.5">Mã SP cụ thể (phẩy):</label>
-              <input type="text" id="form-gift-products" placeholder="2C01A381AR666-01..." class="w-full border rounded-lg p-2 bg-white font-mono text-xs" />
+        <!-- 3. PANEL THƯỞNG GÓI QUÀ DOANH SỐ (MOQ BUNDLE) -->
+        <div id="panel-moq-bundle" class="hidden space-y-4">
+          <div class="bg-amber-50/70 p-3.5 rounded-xl border border-amber-200 space-y-2">
+            <span class="text-xs font-bold text-amber-900 uppercase block">Phạm vi doanh số xét thưởng</span>
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[11px] text-slate-600 font-semibold mb-0.5">Phạm vi tính tiền:</label>
+                <select id="form-moq-scope" class="w-full border rounded-lg p-2 text-xs bg-white">
+                  <option value="ORDER">Toàn bộ đơn hàng</option>
+                  <option value="CATEGORY">Chỉ nhóm sản phẩm chỉ định</option>
+                </select>
+              </div>
+              <div>
+                <label class="block text-[11px] text-slate-600 font-semibold mb-0.5">Tiền tố nhóm SP (nếu chọn nhóm):</label>
+                <input type="text" id="form-moq-prefix" placeholder="VD: 2C06 (Dưỡng da)" class="w-full border rounded-lg p-2 text-xs bg-white font-mono" />
+              </div>
             </div>
           </div>
-          <div class="text-[11px] text-slate-500 italic">
-            * Bạn có thể kết hợp lọc theo Category, nhập Tiền tố (Product Line) hoặc nhập danh sách mã sản phẩm cụ thể.
+
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[11px] text-slate-500 font-semibold mb-0.5">Mốc Doanh Số Tối Thiểu (VNĐ)</label>
+                <input type="number" id="form-moq-m1-amt" value="10000000" class="w-full border rounded-lg p-2 text-xs bg-white font-bold text-blue-600" />
+              </div>
+              <div>
+                <label class="block text-[11px] text-slate-500 font-semibold mb-0.5">Tiêu đề gói quà</label>
+                <input type="text" id="form-moq-m1-desc" value="Gói Quà Tiêu Chuẩn" class="w-full border rounded-lg p-2 text-xs bg-white" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-[11px] text-slate-600 font-semibold mb-0.5">Danh sách quà tặng (Gồm các sản phẩm cụ thể):</label>
+              <textarea id="form-moq-m1-items" rows="2" class="w-full border rounded-lg p-2 text-xs bg-white">2 Son Kem Lì R666, 3 Hộp Mask B5 Tím</textarea>
+            </div>
+          </div>
+
+          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
+            <div class="grid grid-cols-2 gap-2">
+              <div>
+                <label class="block text-[11px] text-slate-500 font-semibold mb-0.5">Mốc Doanh Số Bậc 2 (Tùy chọn)</label>
+                <input type="number" id="form-moq-m2-amt" value="20000000" class="w-full border rounded-lg p-2 text-xs bg-white font-bold text-blue-600" />
+              </div>
+              <div>
+                <label class="block text-[11px] text-slate-500 font-semibold mb-0.5">Tiêu đề gói quà Bậc 2</label>
+                <input type="text" id="form-moq-m2-desc" value="Gói Quà VIP Cao Cấp" class="w-full border rounded-lg p-2 text-xs bg-white" />
+              </div>
+            </div>
+            <div>
+              <label class="block text-[11px] text-slate-600 font-semibold mb-0.5">Danh sách quà tặng Bậc 2:</label>
+              <textarea id="form-moq-m2-items" rows="2" class="w-full border rounded-lg p-2 text-xs bg-white">5 Son Kem Lì R666, 8 Hộp Mask B5 Tím, 2 Túi Tote Canvas</textarea>
+            </div>
           </div>
         </div>
 
-        <div class="flex justify-end gap-2.5 pt-3 border-t">
-          <button type="button" onclick="closeRuleModal()" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold cursor-pointer">Hủy</button>
-          <button type="submit" class="px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold shadow-md cursor-pointer transition">Lưu Scheme Khuyến Mãi</button>
+        <div class="flex justify-end gap-2 pt-3 border-t">
+          <button type="button" onclick="closeRuleModal()" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold">Hủy</button>
+          <button type="submit" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow">Lưu Scheme Khuyến Mãi</button>
         </div>
       </form>
     </div>
   </div>
+
+
 
   <!-- ========================================================================= -->
   <!-- MODAL 4: XEM CHI TIẾT & CHỈNH SỬA / THÊM SẢN PHẨM (PRODUCT MANAGEMENT) -->
@@ -2129,18 +2250,37 @@
     }
 
     // CHUYỂN TAB ĐỒNG BỘ THEO OPS PORTAL
-
-
- else {
-            el.style.display = 'none';
-            el.classList.add('hidden');
-          }
+    function switchTab(tabId) {
+      const tabs = ['dashboard', 'order-processing', 'crm', 'products', 'promotions', 'warehouse', 'analytics', 'setting'];
+      tabs.forEach(t => {
+        const el = document.getElementById(`view-${t}`);
+        const btn = document.getElementById(`btn-tab-${t}`);
+        if (el) el.classList.add('hidden');
+        if (btn) {
+          btn.classList.remove('sidebar-active');
+          btn.classList.add('text-slate-400');
         }
       });
-      if (typeof init === 'function') init();
-    });
 
+      const activeEl = document.getElementById(`view-${tabId}`);
+      const activeBtn = document.getElementById(`btn-tab-${tabId}`);
+      if (activeEl) activeEl.classList.remove('hidden');
+      if (activeBtn) {
+        activeBtn.classList.add('sidebar-active');
+        activeBtn.classList.remove('text-slate-400');
+      }
 
+      // Kích hoạt render lại dữ liệu tương ứng cho từng tab
+      if (tabId === 'crm') {
+        filterCrmTable();
+      } else if (tabId === 'products') {
+        filterProdManagementTable();
+      } else if (tabId === 'promotions') {
+        renderPromotions();
+      }
+
+      lucide.createIcons();
+    }
 
     // GLOBAL SEARCH
     function handleGlobalSearch(q) {
@@ -2351,12 +2491,6 @@
     // ADMIN PROMOTION & SCHEMES RENDER
     // =========================================================================
 
-
-    let activeSelectedPromoId = 'KM001';
-
-
-    let activeSelectedPromoId = 'KM001';
-
     function renderPromotions() {
       const tbody = document.getElementById('promotions-grid');
       if (!tbody) return;
@@ -2370,7 +2504,7 @@
       const filtered = promotions.filter(p => {
         const matchQ = !searchQ || p.name.toLowerCase().includes(searchQ) || p.code.toLowerCase().includes(searchQ);
         const matchReg = regionF === 'ALL' || (p.regions && p.regions.includes(regionF)) || regionF === 'Toàn quốc';
-        const matchChan = channelF === 'ALL' || (p.channel || 'Tất cả') === channelF || p.channel === 'Tất cả';
+        const matchChan = channelF === 'ALL' || (p.channel || 'Online') === channelF || p.channel === 'Tất cả';
         const matchRank = rankF === 'ALL' || (p.rank || 'Tất cả') === rankF || p.rank === 'Tất cả';
         const matchSt = statusF === 'ALL' || p.status === statusF;
         return matchQ && matchReg && matchChan && matchRank && matchSt;
@@ -2385,24 +2519,24 @@
         else if (p.status === 'Đã kết thúc') statusBadge = 'bg-slate-100 text-slate-600';
         else if (p.status === 'Tạm dừng') statusBadge = 'bg-rose-100 text-rose-800';
 
-        const typeLabel = p.type === 'BUY_GIFT_TIERS' ? 'Mua hàng tặng hàng' : (p.type === 'MOQ_BUNDLE' ? 'Quà tặng kèm / Thưởng MOQ' : 'Giảm giá / Discount');
+        const typeLabel = p.type === 'BUY_GIFT_TIERS' ? 'Mua hàng tặng hàng' : (p.type === 'MOQ_BUNDLE' ? 'Quà tặng kèm' : 'Giảm giá');
         const regionStr = (p.regions || ['Toàn quốc']).join(', ');
-        const prodCount = `${(p.rules || []).length * 3} sản phẩm`;
+        const prodCount = (p.rules || []).length > 0 ? `${(p.rules || []).length * 3} sản phẩm` : '5 sản phẩm';
 
         return `
           <tr class="hover:bg-slate-50 transition border-b border-slate-100">
             <td class="p-3 text-center"><input type="checkbox" class="promo-item-checkbox rounded text-blue-600 cursor-pointer" value="${p.id}" onchange="updateBatchDeleteBtn()" /></td>
             <td class="p-3 font-mono font-bold text-blue-600">${p.code}</td>
             <td class="p-3 font-bold text-slate-900">
-              <div onclick="editPromo('${p.id}')" class="hover:text-blue-600 cursor-pointer">${p.name}</div>
+              <div onclick="editPromo('${p.id}')" class="hover:text-blue-600 cursor-pointer">${p.name.replace(/^KM[0-9]+\s*-\s*/, '')}</div>
               <div class="text-[10px] text-slate-400 font-normal truncate max-w-xs">${p.desc || ''}</div>
             </td>
             <td class="p-3 font-medium text-slate-700">${typeLabel}</td>
             <td class="p-3 text-slate-600">${regionStr}</td>
-            <td class="p-3 font-medium text-slate-700">${p.channel || 'Tất cả'}</td>
+            <td class="p-3 font-medium text-slate-700">${p.channel || 'Online'}</td>
             <td class="p-3 text-slate-600">${p.rank || 'Tất cả'}</td>
             <td class="p-3 text-blue-600 font-medium cursor-pointer hover:underline" onclick="openRuleModal('${p.id}')">${prodCount}</td>
-            <td class="p-3 font-mono text-slate-600 text-[11px]">${p.time || '22/09/2026 - 31/12/2026'}</td>
+            <td class="p-3 font-mono text-slate-600 text-[11px]">${p.time || '01/08/2026 - 31/08/2026'}</td>
             <td class="p-3 text-center">
               <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${statusBadge} inline-flex items-center gap-1">
                 <span class="w-1.5 h-1.5 rounded-full bg-current"></span> ${p.status || 'Đang chạy'}
@@ -2413,8 +2547,8 @@
                 <button onclick="editPromo('${p.id}')" class="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-slate-100 transition cursor-pointer" title="Chỉnh sửa chương trình">
                   <i data-lucide="edit-3" class="w-4 h-4"></i>
                 </button>
-                <button onclick="openRuleModal('${p.id}')" class="p-1.5 text-slate-400 hover:text-emerald-600 rounded-lg hover:bg-slate-100 transition cursor-pointer" title="Thêm / Quản lý Scheme">
-                  <i data-lucide="plus-circle" class="w-4 h-4"></i>
+                <button onclick="openRuleModal('${p.id}')" class="p-1.5 text-slate-400 hover:text-emerald-600 rounded-lg hover:bg-slate-100 transition cursor-pointer" title="Quản lý Scheme / Chi tiết">
+                  <i data-lucide="more-horizontal" class="w-4 h-4"></i>
                 </button>
                 <button onclick="deletePromo('${p.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-slate-100 transition cursor-pointer" title="Xóa chương trình">
                   <i data-lucide="trash-2" class="w-4 h-4"></i>
@@ -2426,13 +2560,6 @@
       }).join('');
       lucide.createIcons();
     }
-
-
-    function selectPromoDetail(id) {
-      activeSelectedPromoId = id;
-      renderPromotions();
-    }
-
 
     function filterPromotionsTable() {
       renderPromotions();
@@ -2585,20 +2712,16 @@
       if (!p) return;
       document.getElementById('modal-rule').classList.remove('hidden');
       document.getElementById('form-rule-promo-id').value = promoId;
-      
-      const typeLabel = p.type === 'MOQ_BUNDLE' ? 'Thưởng MOQ (Gói quà)' : (p.type === 'DISCOUNT' ? 'Giảm giá' : 'Mua hàng tặng hàng');
-      document.getElementById('modal-rule-subtitle').innerText = `Áp dụng cho CTKM: [${p.quarter || 'Q3'}] ${p.name} (${typeLabel})`;
+      document.getElementById('modal-rule-subtitle').innerText = `Áp dụng cho CTKM: [${p.quarter || 'Q3'}] ${p.name} (${p.type === 'MOQ_BUNDLE' ? 'Thưởng MOQ' : 'Mua hàng tặng hàng'})`;
 
       const tabsContainer = document.getElementById('modal-rule-tabs-container');
-      if (tabsContainer) {
-        // Ẩn luôn thanh tab switch trên modal khi chương trình đã chọn cố định phân loại từ trước
-        tabsContainer.classList.add('hidden');
-      }
 
       if (p.type === 'MOQ_BUNDLE') {
         setSchemeType('MOQ_BUNDLE');
+        if (tabsContainer) tabsContainer.classList.add('hidden');
       } else {
         setSchemeType('BUY_GIFT_TIERS');
+        if (tabsContainer) tabsContainer.classList.add('hidden'); // Hoặc ẩn/hiện tùy ý, user yêu cầu "nếu lúc tạo ct đã chọn phân loại hàng tặng quà, thì lúc add scheme chỉ popup ra giao diện scheme mua quà tặng quà thôi"
       }
 
       document.getElementById('form-scheme-name').value = '';
@@ -4087,91 +4210,7 @@
       alert('Đã xóa thành công các chương trình đã chọn!');
     }
 
-    
-    function onGiftNatureChange(val) {
-      const panelDiff = document.getElementById('panel-diff-gift');
-      if (!panelDiff) return;
-      if (val === 'DIFF') {
-        panelDiff.classList.remove('hidden');
-      } else {
-        panelDiff.classList.add('hidden');
-        document.getElementById('form-gift-t1-code').value = '';
-        document.getElementById('form-gift-t1-name').value = '';
-      }
-    }
-
-    document.addEventListener("DOMContentLoaded", init);
-  
-    // Cơ chế chuyển tab dùng addEventListener trực tiếp qua JS thuần để 100% không bị xung đột
-    function switchTab(tabId) {
-      console.log("Switching tab to:", tabId);
-      const tabs = ['dashboard', 'order-processing', 'crm', 'products', 'promotions', 'warehouse', 'analytics', 'setting'];
-      
-      tabs.forEach(t => {
-        const el = document.getElementById('view-' + t);
-        const btn = document.getElementById('btn-tab-' + t);
-        if (el) {
-          el.style.display = (t === tabId) ? 'block' : 'none';
-          if (t === tabId) {
-            el.classList.remove('hidden');
-          } else {
-            el.classList.add('hidden');
-          }
-        }
-        if (btn) {
-          if (t === tabId) {
-            btn.classList.add('sidebar-active');
-            btn.classList.remove('text-slate-400');
-          } else {
-            btn.classList.remove('sidebar-active');
-            btn.classList.add('text-slate-400');
-          }
-        }
-      });
-
-      if (tabId === 'crm') {
-        if (typeof filterCrmTable === 'function') filterCrmTable();
-      } else if (tabId === 'products') {
-        if (typeof filterProdManagementTable === 'function') filterProdManagementTable();
-      } else if (tabId === 'promotions') {
-        if (typeof renderPromotions === 'function') renderPromotions();
-      }
-
-      if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
-      }
-    }
-
-    window.switchTab = switchTab;
-
-    document.addEventListener("DOMContentLoaded", () => {
-      // Bind sự kiện click cho toàn bộ nút sidebar tự động bằng code JS
-      const tabMap = {
-        'btn-tab-dashboard': 'dashboard',
-        'btn-tab-order-processing': 'order-processing',
-        'btn-tab-crm': 'crm',
-        'btn-tab-products': 'products',
-        'btn-tab-promotions': 'promotions',
-        'btn-tab-warehouse': 'warehouse',
-        'btn-tab-analytics': 'analytics',
-        'btn-tab-setting': 'setting'
-      };
-
-      Object.keys(tabMap).forEach(btnId => {
-        const btn = document.getElementById(btnId);
-        if (btn) {
-          btn.addEventListener('click', (e) => {
-            e.preventDefault();
-            switchTab(tabMap[btnId]);
-          });
-        }
-      });
-
-      // Khởi chạy trạng thái mặc định ban đầu
-      switchTab('dashboard');
-      if (typeof init === 'function') init();
-    });
-
-</script>
+    window.onload = init;
+  </script>
 </body>
 </html>
