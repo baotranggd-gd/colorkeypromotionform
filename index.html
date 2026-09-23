@@ -981,7 +981,12 @@
         <!-- BẢNG DANH SÁCH CHƯƠNG TRÌNH KHUYẾN MÃI -->
         <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden space-y-0">
           <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50/60">
-            <h3 class="font-bold text-slate-800 text-xs uppercase tracking-wider" id="promo-table-heading">Danh sách chương trình (12)</h3>
+            <div class="flex items-center gap-3">
+              <h3 class="font-bold text-slate-800 text-xs uppercase tracking-wider" id="promo-table-heading">Danh sách chương trình (12)</h3>
+              <button onclick="deleteSelectedPromos()" id="btn-delete-selected" class="hidden text-xs bg-rose-50 text-rose-600 hover:bg-rose-100 px-2.5 py-1 rounded-lg font-bold transition flex items-center gap-1 cursor-pointer">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Xóa các mục đã chọn
+              </button>
+            </div>
             <span class="text-xs text-slate-400">Cập nhật theo thời gian thực</span>
           </div>
 
@@ -989,7 +994,7 @@
             <table class="w-full text-left border-collapse text-xs">
               <thead>
                 <tr class="bg-slate-100 text-slate-600 uppercase font-bold border-b text-[11px]">
-                  <th class="p-3 text-center w-10"><input type="checkbox" class="rounded text-blue-600" /></th>
+                  <th class="p-3 text-center w-10"><input type="checkbox" id="chk-all-promos" onchange="toggleAllPromos(this)" class="rounded text-blue-600 cursor-pointer" /></th>
                   <th class="p-3">Mã CTKM</th>
                   <th class="p-3">Tên chương trình</th>
                   <th class="p-3">Loại CTKM</th>
@@ -1256,7 +1261,7 @@
       </div>
 
       <!-- TABS CHỌN 2 LOẠI SCHEME CHÍNH -->
-      <div class="grid grid-cols-2 gap-2 bg-slate-100 p-1.5 rounded-xl text-xs font-bold">
+      <div id="modal-rule-tabs-container" class="grid grid-cols-2 gap-2 bg-slate-100 p-1.5 rounded-xl text-xs font-bold">
         <button type="button" onclick="setSchemeType('BUY_GIFT_TIERS')" id="tab-scheme-gift" class="py-2.5 px-3 rounded-lg transition subtab-active flex items-center justify-center gap-1.5">
           <i data-lucide="gift" class="w-4 h-4"></i> 1. Mua Hàng Tặng Hàng (Bậc Thang)
         </button>
@@ -2520,7 +2525,7 @@
 
         return `
           <tr class="hover:bg-slate-50 transition border-b border-slate-100">
-            <td class="p-3 text-center"><input type="checkbox" class="rounded text-blue-600" /></td>
+            <td class="p-3 text-center"><input type="checkbox" class="promo-item-checkbox rounded text-blue-600 cursor-pointer" value="${p.id}" onchange="updateBatchDeleteBtn()" /></td>
             <td class="p-3 font-mono font-bold text-blue-600">${p.code}</td>
             <td class="p-3 font-bold text-slate-900">
               <div onclick="editPromo('${p.id}')" class="hover:text-blue-600 cursor-pointer">${p.name.replace(/^KM[0-9]+\s*-\s*/, '')}</div>
@@ -2707,9 +2712,18 @@
       if (!p) return;
       document.getElementById('modal-rule').classList.remove('hidden');
       document.getElementById('form-rule-promo-id').value = promoId;
-      document.getElementById('modal-rule-subtitle').innerText = `Áp dụng cho CTKM: [${p.quarter || 'Q3'}] ${p.name}`;
+      document.getElementById('modal-rule-subtitle').innerText = `Áp dụng cho CTKM: [${p.quarter || 'Q3'}] ${p.name} (${p.type === 'MOQ_BUNDLE' ? 'Thưởng MOQ' : 'Mua hàng tặng hàng'})`;
 
-      setSchemeType('BUY_GIFT_TIERS');
+      const tabsContainer = document.getElementById('modal-rule-tabs-container');
+
+      if (p.type === 'MOQ_BUNDLE') {
+        setSchemeType('MOQ_BUNDLE');
+        if (tabsContainer) tabsContainer.classList.add('hidden');
+      } else {
+        setSchemeType('BUY_GIFT_TIERS');
+        if (tabsContainer) tabsContainer.classList.add('hidden'); // Hoặc ẩn/hiện tùy ý, user yêu cầu "nếu lúc tạo ct đã chọn phân loại hàng tặng quà, thì lúc add scheme chỉ popup ra giao diện scheme mua quà tặng quà thôi"
+      }
+
       document.getElementById('form-scheme-name').value = '';
       document.getElementById('form-gift-prefix').value = '2C01A';
       document.getElementById('form-gift-products').value = '';
@@ -4164,7 +4178,39 @@
       alert(`Đã chuyển thành công ${validItems.length} SKU từ PO sang Công cụ Tính Khuyến Mãi Tự Động!`);
     }
 
-      window.onload = init;
+      
+    function toggleAllPromos(master) {
+      const checkboxes = document.querySelectorAll('.promo-item-checkbox');
+      checkboxes.forEach(cb => cb.checked = master.checked);
+      updateBatchDeleteBtn();
+    }
+
+    function updateBatchDeleteBtn() {
+      const checked = document.querySelectorAll('.promo-item-checkbox:checked');
+      const btn = document.getElementById('btn-delete-selected');
+      if (!btn) return;
+      if (checked.length > 0) {
+        btn.classList.remove('hidden');
+        btn.innerText = `🗑 Xóa đã chọn (${checked.length})`;
+      } else {
+        btn.classList.add('hidden');
+      }
+      lucide.createIcons();
+    }
+
+    function deleteSelectedPromos() {
+      const checked = document.querySelectorAll('.promo-item-checkbox:checked');
+      if (checked.length === 0) return;
+      if (!confirm(`Bạn có chắc chắn muốn xóa ${checked.length} chương trình khuyến mãi đã chọn?`)) return;
+
+      const idsToDelete = Array.from(checked).map(cb => cb.value);
+      const updated = promotions.filter(p => !idsToDelete.includes(p.id));
+      persistPromotions(updated);
+      updateBatchDeleteBtn();
+      alert('Đã xóa thành công các chương trình đã chọn!');
+    }
+
+    window.onload = init;
   </script>
 </body>
 </html>
