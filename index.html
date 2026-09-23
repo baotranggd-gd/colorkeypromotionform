@@ -23,6 +23,21 @@
     ::-webkit-scrollbar { width: 5px; height: 5px; }
     ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
   </style>
+  <!-- PDF.js for client-side PDF parsing (Transform Order) -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+  <script>
+    if (window.pdfjsLib) {
+      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+    }
+  </script>
+  <style>
+    .badge-matched { background-color: #DEF7EC; color: #03543F; }
+    .badge-potential { background-color: #FEF08A; color: #854D0E; }
+    .badge-notfound { background-color: #FEE2E2; color: #991B1B; }
+    .badge-inactive { background-color: #FEE2E2; color: #991B1B; border: 1px solid #FCA5A5; }
+    .badge-duplicate { background-color: #EDE9FE; color: #5B21B6; }
+    .workflow-btn-active { border-color: #2563eb !important; background-color: #eff6ff !important; color: #1e40af !important; font-weight: 700 !important; }
+  </style>
 </head>
 <body class="bg-slate-50 text-slate-800 flex h-screen overflow-hidden">
 
@@ -325,8 +340,8 @@
         </div>
       </section>
 
-      <!-- ========================================================================= -->
-      <!-- VIEW 2: ORDER PROCESSING (Trang 2 PDF - 3 Workflows & Order Calculator) -->
+            <!-- ========================================================================= -->
+      <!-- VIEW 2: ORDER PROCESSING (Trang 2 PDF - 3 Workflows & Order Calculator & Transform Order) -->
       <!-- ========================================================================= -->
       <section id="view-order-processing" class="hidden h-full overflow-y-auto p-8 space-y-6">
         <div>
@@ -336,6 +351,7 @@
 
         <!-- 3 MAIN WORKFLOW CARDS (Theo trang 2 PDF) -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-5">
+          <!-- CARD 1: CHECK STOCK -->
           <div class="bg-gradient-to-b from-blue-50/70 to-white p-5 rounded-2xl border border-blue-200 shadow-sm flex flex-col justify-between">
             <div>
               <div class="flex items-center gap-3 mb-2.5">
@@ -345,14 +361,14 @@
               <p class="text-xs text-slate-500 mb-4">Check product availability before processing orders.</p>
             </div>
             <div class="space-y-2">
-              <button onclick="switchTab('warehouse')" class="w-full p-3 bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-300 rounded-xl text-xs font-semibold flex items-center justify-between text-left transition group">
+              <button onclick="switchTab('warehouse')" class="w-full p-3 bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-300 rounded-xl text-xs font-semibold flex items-center justify-between text-left transition group cursor-pointer">
                 <div>
                   <div class="text-slate-800 group-hover:text-blue-600 font-bold">QUICK CHECK</div>
                   <div class="text-[11px] text-slate-400">Tìm nhanh tồn kho (Barcode, Keyword, Tên)</div>
                 </div>
                 <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400 group-hover:text-blue-600"></i>
               </button>
-              <button onclick="switchTab('warehouse')" class="w-full p-3 bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-300 rounded-xl text-xs font-semibold flex items-center justify-between text-left transition group">
+              <button onclick="switchTab('warehouse')" class="w-full p-3 bg-white hover:bg-blue-50 border border-slate-200 hover:border-blue-300 rounded-xl text-xs font-semibold flex items-center justify-between text-left transition group cursor-pointer">
                 <div>
                   <div class="text-slate-800 group-hover:text-blue-600 font-bold">UPLOAD FILE TO CHECK</div>
                   <div class="text-[11px] text-slate-400">Upload file để kiểm tra tồn kho (Barcode, Số lượng, Kho)</div>
@@ -362,7 +378,8 @@
             </div>
           </div>
 
-          <div class="bg-gradient-to-b from-purple-50/70 to-white p-5 rounded-2xl border border-purple-200 shadow-sm flex flex-col justify-between">
+          <!-- CARD 2: CREATE ORDER -->
+          <div id="card-workflow-create" class="bg-gradient-to-b from-purple-50/70 to-white p-5 rounded-2xl border border-purple-200 shadow-sm flex flex-col justify-between">
             <div>
               <div class="flex items-center gap-3 mb-2.5">
                 <span class="w-7 h-7 rounded-full bg-purple-600 text-white font-bold text-xs flex items-center justify-center shadow">2</span>
@@ -371,14 +388,14 @@
               <p class="text-xs text-slate-500 mb-4">Create orders via manual input or file upload with auto promotions.</p>
             </div>
             <div class="space-y-2">
-              <button onclick="document.getElementById('order-file-input').click()" class="w-full p-3 bg-white hover:bg-purple-50 border border-slate-200 hover:border-purple-300 rounded-xl text-xs font-semibold flex items-center justify-between text-left transition group">
+              <button onclick="switchWorkflowMode('create')" class="w-full p-3 bg-white hover:bg-purple-50 border border-slate-200 hover:border-purple-300 rounded-xl text-xs font-semibold flex items-center justify-between text-left transition group cursor-pointer">
                 <div>
-                  <div class="text-slate-800 group-hover:text-purple-600 font-bold">UPLOAD ORDER</div>
-                  <div class="text-[11px] text-slate-400">Upload file đơn hàng (.xlsx, .xls)</div>
+                  <div class="text-slate-800 group-hover:text-purple-600 font-bold">TÍNH KHUYẾN MÃI TỰ ĐỘNG</div>
+                  <div class="text-[11px] text-slate-400">Áp dụng đa CTKM, xuất 1 dòng mua 1 dòng quà</div>
                 </div>
                 <i data-lucide="chevron-right" class="w-4 h-4 text-slate-400 group-hover:text-purple-600"></i>
               </button>
-              <button onclick="downloadSampleExcel()" class="w-full p-3 bg-white hover:bg-purple-50 border border-slate-200 hover:border-purple-300 rounded-xl text-xs font-semibold flex items-center justify-between text-left transition group">
+              <button onclick="downloadSampleExcel()" class="w-full p-3 bg-white hover:bg-purple-50 border border-slate-200 hover:border-purple-300 rounded-xl text-xs font-semibold flex items-center justify-between text-left transition group cursor-pointer">
                 <div>
                   <div class="text-slate-800 group-hover:text-purple-600 font-bold">TẢI FILE MẪU ĐƠN HÀNG</div>
                   <div class="text-[11px] text-slate-400">File mẫu .XLSX kiểm tra 133 cây son và mốc 10tr</div>
@@ -388,7 +405,8 @@
             </div>
           </div>
 
-          <div class="bg-gradient-to-b from-emerald-50/70 to-white p-5 rounded-2xl border border-emerald-200 shadow-sm flex flex-col justify-between">
+          <!-- CARD 3: TRANSFORM ORDER (HIGHLIGHTED) -->
+          <div id="card-workflow-transform" class="bg-gradient-to-b from-emerald-50/70 to-white p-5 rounded-2xl border-2 border-emerald-500 shadow-sm flex flex-col justify-between">
             <div>
               <div class="flex items-center gap-3 mb-2.5">
                 <span class="w-7 h-7 rounded-full bg-emerald-600 text-white font-bold text-xs flex items-center justify-center shadow">3</span>
@@ -397,138 +415,322 @@
               <p class="text-xs text-slate-500 mb-4">Transform orders from PO files to structured data.</p>
             </div>
             <div class="space-y-2">
-              <div class="p-3 bg-white border border-emerald-200 rounded-xl text-xs text-slate-600 space-y-1">
-                <div class="font-bold text-emerald-800">SELECT CUSTOMER + UPLOAD PO PDF</div>
-                <div class="text-[11px] text-slate-500">• Chọn khách hàng • Tải file PO • Xuất file Excel</div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- ENGINE TÍNH TOÁN ĐƠN HÀNG & CHỌN MULTI-CTKM -->
-        <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div>
-            <div class="flex justify-between items-center mb-2">
-              <label class="block text-xs font-bold text-slate-700 uppercase">1. Chọn CTKM Áp Dụng (Đa CTKM)</label>
-              <button type="button" onclick="autoSelectPromotionsByCustomerRegion()" class="text-[11px] text-blue-600 hover:underline font-semibold">Khớp KV Khách</button>
-            </div>
-            <div id="promo-multiselect-box" class="border border-slate-200 rounded-xl p-2 bg-slate-50 max-h-36 overflow-y-auto space-y-1 text-xs"></div>
-            <div id="promo-selected-summary" class="text-[11px] text-emerald-600 font-medium mt-1.5 truncate">
-              Đang áp dụng: 0 CTKM
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-xs font-bold text-slate-700 uppercase mb-2">2. Chọn Khách Hàng</label>
-            <input 
-              type="text" 
-              id="customer-input" 
-              list="customer-datalist" 
-              placeholder="Gõ mã hoặc tên khách hàng..." 
-              onchange="onCustomerSelect(this.value)"
-              class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
-            />
-            <datalist id="customer-datalist"></datalist>
-            <div id="selected-customer-info" class="text-xs text-blue-600 font-medium mt-1.5 truncate">
-              Chưa chọn khách hàng
-            </div>
-          </div>
-
-          <div>
-            <label class="block text-xs font-bold text-slate-700 uppercase mb-2">3. Upload File Đơn Hàng (.xlsx, .xls)</label>
-            <input type="file" id="order-file-input" accept=".xlsx, .xls" onchange="handleFile(event)" class="w-full text-xs text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer border border-slate-200 rounded-xl bg-slate-50" />
-            <div class="text-[11px] text-slate-400 mt-1.5">Tải file có cột Mã SP (Barcode) và Số Lượng Đặt.</div>
-          </div>
-        </div>
-
-        <!-- BẢNG KẾT QUẢ: 1 DÒNG MUA TIẾP THEO LÀ DÒNG QUÀ TẶNG CỦA MÃ ĐÓ -->
-        <div id="results-box" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden space-y-0">
-          <div class="p-5 border-b border-slate-200 flex flex-wrap items-center justify-between gap-4 bg-slate-50">
-            <div>
-              <span class="font-bold text-slate-800 text-sm">Bảng Chi Tiết Đơn Hàng (Dòng Mua & Dòng Hàng Tặng Kèm 0đ)</span>
-              <span id="badge-item-count" class="ml-2 text-xs bg-emerald-100 text-emerald-800 font-semibold px-2.5 py-0.5 rounded-full">0 dòng</span>
-            </div>
-            <div class="flex gap-3">
-              <button onclick="exportToExcel()" class="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-4 py-2 rounded-xl font-medium shadow transition">
-                <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Xuất File Excel
-              </button>
-              <button onclick="exportToPDF()" class="flex items-center gap-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs px-4 py-2 rounded-xl font-medium shadow transition">
-                <i data-lucide="file-text" class="w-4 h-4"></i> Xuất File PDF
+              <button onclick="switchWorkflowMode('transform')" class="w-full p-3 bg-white hover:bg-emerald-50 border border-emerald-300 rounded-xl text-xs font-semibold flex items-center justify-between text-left transition group cursor-pointer">
+                <div>
+                  <div class="text-emerald-800 font-bold">SELECT CUSTOMER + UPLOAD PO PDF</div>
+                  <div class="text-[11px] text-slate-500">• Chọn khách hàng • Tải file PO • Xuất file Excel</div>
+                </div>
+                <i data-lucide="chevron-right" class="w-4 h-4 text-emerald-600"></i>
               </button>
             </div>
           </div>
-
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr class="bg-slate-100 text-slate-600 uppercase font-semibold border-b">
-                  <th class="p-3 text-center">Loại</th>
-                  <th class="p-3">Mã Sản Phẩm</th>
-                  <th class="p-3">Barcode</th>
-                  <th class="p-3">Tên Sản Phẩm / Tên Quà Tặng</th>
-                  <th class="p-3 text-right">SL</th>
-                  <th class="p-3 text-right">Giá Niêm Yết</th>
-                  <th class="p-3 text-right">Đơn Giá Sau CK</th>
-                  <th class="p-3 text-right">Thành Tiền (VAT)</th>
-                  <th class="p-3 text-left">Chương Trình Khuyến Mãi</th>
-                </tr>
-              </thead>
-              <tbody id="order-table-body" class="divide-y divide-slate-200"></tbody>
-            </table>
-          </div>
-
-          <!-- GÓI QUÀ MOQ BUNDLE -->
-          <div id="moq-bundle-container" class="hidden p-5 bg-gradient-to-r from-amber-50 to-orange-50 border-t border-amber-200">
-            <div class="flex items-center gap-2 mb-2.5">
-              <div class="p-1.5 bg-amber-500 text-white rounded-md"><i data-lucide="gift" class="w-4 h-4"></i></div>
-              <div>
-                <h4 class="font-bold text-amber-900 text-sm uppercase tracking-wide">Quà Tặng Thưởng Theo Mốc Doanh Số (MOQ Bundle)</h4>
-                <p class="text-[11px] text-amber-700">Đạt điều kiện doanh số toàn đơn hoặc nhóm sản phẩm chỉ định</p>
-              </div>
-            </div>
-            <div id="moq-bundle-list" class="space-y-2"></div>
-          </div>
-
-          <!-- FOOTER TỔNG KẾT TIỀN -->
-          <div class="p-6 bg-slate-50 border-t border-slate-200 flex flex-col md:flex-row justify-between items-end gap-4">
-            <div class="text-xs text-slate-500 space-y-1">
-              <div>* Giá sản phẩm được tự động tính theo Rank: <strong>Distributor (CK 57%)</strong>, <strong>Retailer 2 (CK 54%)</strong>, <strong>Retailer 1 (CK 52%)</strong>, <strong>KA = 1 (100% Niêm yết)</strong>.</div>
-              <div>* Hạng khách hàng: <strong id="summary-rank-badge">-</strong> | Tỷ lệ chiết khấu: <strong id="summary-rank-discount" class="text-blue-600 font-bold">0%</strong></div>
-              <div>* Thứ tự ưu tiên CTKM: <strong id="summary-promo-priority" class="text-slate-700">-</strong></div>
-              <div class="text-emerald-700 font-medium">* Tất cả đơn giá và tổng thanh toán <strong>ĐÃ BAO GỒM 10% THUẾ VAT</strong>.</div>
-            </div>
-            <div class="w-full md:w-96 space-y-2 text-xs bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
-              <div class="flex justify-between text-slate-600">
-                <span>Tổng số lượng đặt mua:</span>
-                <span id="summary-total-qty" class="font-bold text-slate-800">0</span>
-              </div>
-              <div class="flex justify-between text-slate-600">
-                <span>Tổng sản phẩm quà tặng (0đ):</span>
-                <span id="summary-product-gifts" class="font-semibold text-emerald-600">0 món</span>
-              </div>
-              <div class="flex justify-between text-slate-600">
-                <span>Tổng quà tặng mốc MOQ / Bundle:</span>
-                <span id="summary-moq-gifts" class="font-semibold text-amber-600">0 món</span>
-              </div>
-              <div class="flex justify-between text-sm font-bold text-slate-900 pt-2 border-t border-slate-200">
-                <span>TỔNG CỘNG THANH TOÁN (ĐÃ GỒM VAT):</span>
-                <span id="summary-grandtotal" class="text-blue-600 font-bold text-base">0 đ</span>
-              </div>
-            </div>
-          </div>
         </div>
 
-        <div id="empty-state" class="bg-white border-2 border-dashed border-slate-300 rounded-2xl p-12 text-center">
-          <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
-            <i data-lucide="upload" class="w-8 h-8"></i>
-          </div>
-          <h3 class="font-bold text-slate-700 text-base">Chưa có dữ liệu đơn hàng</h3>
-          <p class="text-slate-500 text-xs max-w-md mx-auto mt-1 mb-5">
-            Tải lên file Excel đơn hàng của bạn hoặc bấm "Tải File Mẫu Đơn Hàng" để kiểm tra tính toán quà tặng tự động.
-          </p>
-          <button onclick="downloadSampleExcel()" class="inline-flex items-center gap-2 bg-[#0A192F] hover:bg-black text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition">
-            <i data-lucide="download" class="w-4 h-4"></i> Tải file mẫu .XLSX thử nghiệm
+        <!-- WORKFLOW MODE TOGGLE BUTTONS -->
+        <div class="flex items-center gap-3 bg-slate-200/70 p-1.5 rounded-2xl max-w-xl text-xs font-bold">
+          <button id="btn-wf-create" onclick="switchWorkflowMode('create')" class="flex-1 py-2.5 px-4 rounded-xl transition text-center cursor-pointer workflow-btn-active">
+            <i data-lucide="calculator" class="w-4 h-4 inline-block mr-1.5 -mt-0.5"></i> 1. Tính Khuyến Mãi Tự Động (Create Order)
           </button>
+          <button id="btn-wf-transform" onclick="switchWorkflowMode('transform')" class="flex-1 py-2.5 px-4 rounded-xl transition text-center text-slate-600 hover:text-slate-900 cursor-pointer">
+            <i data-lucide="file-text" class="w-4 h-4 inline-block mr-1.5 -mt-0.5"></i> 2. Bóc Tách PO PDF (Transform Order)
+          </button>
+        </div>
+
+        <!-- ================================================================= -->
+        <!-- SUB-PANEL A: CREATE ORDER & PROMOTION ENGINE (ĐA CTKM, 1 MUA 1 QUÀ) -->
+        <!-- ================================================================= -->
+        <div id="panel-workflow-create" class="space-y-6">
+          <div class="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div>
+              <div class="flex justify-between items-center mb-2">
+                <label class="block text-xs font-bold text-slate-700 uppercase">1. Chọn CTKM Áp Dụng (Đa CTKM)</label>
+                <button type="button" onclick="autoSelectPromotionsByCustomerRegion()" class="text-[11px] text-blue-600 hover:underline font-semibold cursor-pointer">Khớp KV Khách</button>
+              </div>
+              <div id="promo-multiselect-box" class="border border-slate-200 rounded-xl p-2 bg-slate-50 max-h-36 overflow-y-auto space-y-1 text-xs"></div>
+              <div id="promo-selected-summary" class="text-[11px] text-emerald-600 font-medium mt-1.5 truncate">
+                Đang áp dụng: 0 CTKM
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-2">2. Chọn Khách Hàng</label>
+              <input 
+                type="text" 
+                id="customer-input" 
+                list="customer-datalist" 
+                placeholder="Gõ mã hoặc tên khách hàng..." 
+                onchange="onCustomerSelect(this.value)"
+                class="w-full bg-slate-50 border border-slate-200 rounded-xl p-2.5 text-xs outline-none focus:ring-2 focus:ring-blue-500 focus:bg-white"
+              />
+              <datalist id="customer-datalist"></datalist>
+              <div id="selected-customer-info" class="text-xs text-blue-600 font-medium mt-1.5 truncate">
+                Chưa chọn khách hàng
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold text-slate-700 uppercase mb-2">3. Upload File Đơn Hàng (.xlsx, .xls)</label>
+              <input type="file" id="order-file-input" accept=".xlsx, .xls" onchange="handleFile(event)" class="w-full text-xs text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer border border-slate-200 rounded-xl bg-slate-50" />
+              <div class="text-[11px] text-slate-400 mt-1.5">Tải file có cột Mã SP (Barcode) và Số Lượng Đặt.</div>
+            </div>
+          </div>
+
+          <!-- BẢNG KẾT QUẢ ĐƠN HÀNG: 1 DÒNG MUA LIỀN KỀ 1 DÒNG QUÀ 0Đ -->
+          <div id="results-box" class="hidden bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden space-y-0">
+            <div class="p-5 border-b border-slate-200 flex flex-wrap items-center justify-between gap-4 bg-slate-50">
+              <div>
+                <span class="font-bold text-slate-800 text-sm">Bảng Chi Tiết Đơn Hàng (Dòng Mua & Dòng Hàng Tặng Kèm 0đ)</span>
+                <span id="badge-item-count" class="ml-2 text-xs bg-emerald-100 text-emerald-800 font-semibold px-2.5 py-0.5 rounded-full">0 dòng</span>
+              </div>
+              <div class="flex gap-3">
+                <button onclick="exportToExcel()" class="flex items-center gap-1.5 bg-emerald-600 hover:bg-emerald-700 text-white text-xs px-4 py-2 rounded-xl font-medium shadow transition cursor-pointer">
+                  <i data-lucide="file-spreadsheet" class="w-4 h-4"></i> Xuất File Excel
+                </button>
+                <button onclick="exportToPDF()" class="flex items-center gap-1.5 bg-rose-600 hover:bg-rose-700 text-white text-xs px-4 py-2 rounded-xl font-medium shadow transition cursor-pointer">
+                  <i data-lucide="file-text" class="w-4 h-4"></i> Xuất File PDF
+                </button>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left border-collapse text-xs">
+                <thead>
+                  <tr class="bg-slate-100 text-slate-600 uppercase font-semibold border-b">
+                    <th class="p-3 text-center">Loại</th>
+                    <th class="p-3">Mã Sản Phẩm</th>
+                    <th class="p-3">Barcode</th>
+                    <th class="p-3">Tên Sản Phẩm / Tên Quà Tặng</th>
+                    <th class="p-3 text-right">SL</th>
+                    <th class="p-3 text-right">Giá Niêm Yết</th>
+                    <th class="p-3 text-right">Đơn Giá Sau CK</th>
+                    <th class="p-3 text-right">Thành Tiền (VAT)</th>
+                    <th class="p-3 text-left">Chương Trình Khuyến Mãi</th>
+                  </tr>
+                </thead>
+                <tbody id="order-table-body" class="divide-y divide-slate-200"></tbody>
+              </table>
+            </div>
+
+            <!-- GÓI QUÀ MOQ BUNDLE -->
+            <div id="moq-bundle-container" class="hidden p-5 bg-gradient-to-r from-amber-50 to-orange-50 border-t border-amber-200">
+              <div class="flex items-center gap-2 mb-2.5">
+                <div class="p-1.5 bg-amber-500 text-white rounded-md"><i data-lucide="gift" class="w-4 h-4"></i></div>
+                <div>
+                  <h4 class="font-bold text-amber-900 text-sm uppercase tracking-wide">Quà Tặng Thưởng Theo Mốc Doanh Số (MOQ Bundle)</h4>
+                  <p class="text-[11px] text-amber-700">Đạt điều kiện doanh số toàn đơn hoặc nhóm sản phẩm chỉ định</p>
+                </div>
+              </div>
+              <div id="moq-bundle-list" class="space-y-2"></div>
+            </div>
+
+            <!-- FOOTER TỔNG KẾT TIỀN -->
+            <div class="p-6 bg-slate-50 border-t border-slate-200 flex flex-col md:flex-row justify-between items-end gap-4">
+              <div class="text-xs text-slate-500 space-y-1">
+                <div>* Giá sản phẩm được tự động tính theo Rank: <strong>Distributor (CK 57%)</strong>, <strong>Retailer 2 (CK 54%)</strong>, <strong>Retailer 1 (CK 52%)</strong>, <strong>KA = 1 (100% Niêm yết)</strong>.</div>
+                <div>* Hạng khách hàng: <strong id="summary-rank-badge">-</strong> | Tỷ lệ chiết khấu: <strong id="summary-rank-discount" class="text-blue-600 font-bold">0%</strong></div>
+                <div>* Thứ tự ưu tiên CTKM: <strong id="summary-promo-priority" class="text-slate-700">-</strong></div>
+                <div class="text-emerald-700 font-medium">* Tất cả đơn giá và tổng thanh toán <strong>ĐÃ BAO GỒM 10% THUẾ VAT</strong>.</div>
+              </div>
+              <div class="w-full md:w-96 space-y-2 text-xs bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+                <div class="flex justify-between text-slate-600">
+                  <span>Tổng số lượng đặt mua:</span>
+                  <span id="summary-total-qty" class="font-bold text-slate-800">0</span>
+                </div>
+                <div class="flex justify-between text-slate-600">
+                  <span>Tổng sản phẩm quà tặng (0đ):</span>
+                  <span id="summary-product-gifts" class="font-semibold text-emerald-600">0 món</span>
+                </div>
+                <div class="flex justify-between text-slate-600">
+                  <span>Tổng quà tặng mốc MOQ / Bundle:</span>
+                  <span id="summary-moq-gifts" class="font-semibold text-amber-600">0 món</span>
+                </div>
+                <div class="flex justify-between text-sm font-bold text-slate-900 pt-2 border-t border-slate-200">
+                  <span>TỔNG CỘNG THANH TOÁN (ĐÃ GỒM VAT):</span>
+                  <span id="summary-grandtotal" class="text-blue-600 font-bold text-base">0 đ</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div id="empty-state" class="bg-white border-2 border-dashed border-slate-300 rounded-2xl p-12 text-center">
+            <div class="w-16 h-16 bg-blue-50 text-blue-600 rounded-full flex items-center justify-center mx-auto mb-4">
+              <i data-lucide="upload" class="w-8 h-8"></i>
+            </div>
+            <h3 class="font-bold text-slate-700 text-base">Chưa có dữ liệu đơn hàng</h3>
+            <p class="text-slate-500 text-xs max-w-md mx-auto mt-1 mb-5">
+              Tải lên file Excel đơn hàng của bạn hoặc bấm "Tải File Mẫu Đơn Hàng" để kiểm tra tính toán quà tặng tự động.
+            </p>
+            <button onclick="downloadSampleExcel()" class="inline-flex items-center gap-2 bg-[#0A192F] hover:bg-black text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition cursor-pointer">
+              <i data-lucide="download" class="w-4 h-4"></i> Tải file mẫu .XLSX thử nghiệm
+            </button>
+          </div>
+        </div>
+
+        <!-- ================================================================= -->
+        <!-- SUB-PANEL B: TRANSFORM ORDER (BÓC TÁCH PO PDF SANG ORDER FORM CHUẨN) -->
+        <!-- ================================================================= -->
+        <div id="panel-workflow-transform" class="space-y-6 hidden">
+          <!-- KPI Stats Cards for Transform Order -->
+          <div class="grid grid-cols-2 sm:grid-cols-4 gap-3.5">
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+              <div class="text-xs font-medium text-slate-500">Mục tiêu Auto-match</div>
+              <div class="text-2xl font-bold text-blue-600 mt-1">90%+</div>
+              <div class="text-[11px] text-emerald-600 mt-0.5 flex items-center gap-1 font-medium">
+                <i data-lucide="check-circle" class="w-3.5 h-3.5"></i> Chuẩn hóa quy trình Ops
+              </div>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+              <div class="text-xs font-medium text-slate-500">Tổng mã trích xuất</div>
+              <div class="text-2xl font-bold text-slate-900 mt-1" id="statExtracted">0</div>
+              <div class="text-[11px] text-slate-400 mt-0.5">Từ các file PDF vừa đọc</div>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+              <div class="text-xs font-medium text-slate-500">Đã Auto-Match (ON)</div>
+              <div class="text-2xl font-bold text-emerald-600 mt-1" id="statMatched">0</div>
+              <div class="text-[11px] text-slate-400 mt-0.5">Khớp Master & Đang kinh doanh</div>
+            </div>
+            <div class="bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
+              <div class="text-xs font-medium text-slate-500">Cần Ops Kiểm tra</div>
+              <div class="text-2xl font-bold text-amber-500 mt-1" id="statNeedReview">0</div>
+              <div class="text-[11px] text-slate-400 mt-0.5">Ngừng KD (OFF) / Lỗi OCR / Chưa có mã</div>
+            </div>
+          </div>
+
+          <!-- Select Customer & Upload Zone for PDF -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-6 shadow-sm space-y-4">
+            <div class="flex flex-wrap items-center justify-between gap-3 border-b border-slate-100 pb-4">
+              <div>
+                <h3 class="text-sm font-bold text-slate-900">1. Chọn Khách Hàng / Đối Tác Nhận Đơn PO</h3>
+                <p class="text-xs text-slate-500">Vui lòng chọn khách hàng trước khi tải lên file Purchase Order (PDF) để hệ thống áp dụng đúng mẫu bóc tách.</p>
+              </div>
+              <div class="w-80">
+                <select id="selectCustomerDropdown" class="w-full text-xs border border-blue-300 rounded-xl px-3.5 py-2.5 bg-blue-50/60 font-semibold text-blue-900 focus:ring-2 focus:ring-blue-500">
+                  <option value="">-- Chọn Khách Hàng / Chuỗi --</option>
+                  <option value="CUST_TGSF">THẾ GIỚI SKIN FOOD (BLUE OCEAN)</option>
+                  <option value="CUST_GUARDIAN">GUARDIAN VIỆT NAM</option>
+                  <option value="CUST_WATSONS">CÔNG TY TNHH WATSONS (VIỆT NAM)</option>
+                  <option value="CUST_HASAKI">HASAKI BEAUTY & CLINIC</option>
+                  <option value="CUST1184" selected>[CUST1184] CÔNG TY CỔ PHẦN THƯƠNG MẠI PMARK</option>
+                </select>
+              </div>
+            </div>
+
+            <div id="dropZonePdf" class="border-2 border-dashed border-slate-300 hover:border-emerald-500 rounded-2xl p-8 text-center cursor-pointer transition bg-slate-50 hover:bg-emerald-50/20">
+              <input type="file" id="fileInputPdf" class="hidden" accept=".pdf" multiple />
+              <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-sm">
+                <i data-lucide="upload-cloud" class="w-6 h-6"></i>
+              </div>
+              <p class="text-sm font-bold text-slate-800">Nhấp để chọn file hoặc kéo thả file Purchase Order (.pdf) vào đây</p>
+              <p class="text-xs text-slate-400 mt-1">Hệ thống tự động bóc tách Barcode, Product Code, Package Name, Số lượng và mapping với Master Product (382 SKU)</p>
+            </div>
+
+            <div id="fileListContainerPdf" class="mt-3 hidden">
+              <div id="fileListPdf" class="space-y-1.5"></div>
+            </div>
+          </div>
+
+          <!-- PO Header Metadata -->
+          <div id="poHeaderSection" class="bg-blue-50/50 rounded-2xl border border-blue-200 p-5 shadow-sm hidden">
+            <h4 class="text-xs font-bold uppercase tracking-wider text-blue-900 mb-3 flex items-center gap-2">
+              <i data-lucide="file-check" class="w-4 h-4 text-blue-600"></i>
+              <span>Thông tin đơn hàng trích xuất (PO Header Metadata)</span>
+            </h4>
+            <div class="grid grid-cols-1 sm:grid-cols-3 gap-4 text-xs">
+              <div>
+                <label class="block font-medium text-slate-500 mb-1">Mã PO (PO Number):</label>
+                <input type="text" id="poNumberInput" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 font-mono font-bold text-slate-800 focus:ring-2 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block font-medium text-slate-500 mb-1">Ngày giao hàng (Expired Date / Delivery Date):</label>
+                <input type="text" id="poExpiredDateInput" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 font-mono text-slate-800 focus:ring-2 focus:ring-blue-500">
+              </div>
+              <div>
+                <label class="block font-medium text-slate-500 mb-1">Địa chỉ giao hàng (Delivery Address):</label>
+                <input type="text" id="poAddressInput" class="w-full bg-white border border-slate-300 rounded-xl px-3 py-2 text-slate-800 focus:ring-2 focus:ring-blue-500">
+              </div>
+            </div>
+          </div>
+
+          <!-- Bảng Kết Quả Bóc Tách & Mapping Order Form -->
+          <div id="stepValidationSection" class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden hidden">
+            <div class="p-5 border-b border-slate-200 flex flex-wrap items-center justify-between gap-4 bg-white">
+              <div>
+                <h3 class="text-sm font-bold text-slate-900">2. Kết Quả Bóc Tách & Mapping Order Form</h3>
+                <p class="text-xs text-slate-500">Kiểm tra thông tin Barcode, Product Code, Package Name và số lượng trước khi xuất file.</p>
+              </div>
+              <div class="flex items-center gap-3">
+                <select id="filterStatus" class="text-xs border border-slate-300 rounded-xl px-3 py-2 bg-white text-slate-700 font-medium">
+                  <option value="ALL">Tất cả trạng thái</option>
+                  <option value="Matched (ON)">Kinh doanh (ON)</option>
+                  <option value="Ngừng KD (OFF)">Ngừng kinh doanh (OFF)</option>
+                  <option value="Potential Match">Cần duyệt OCR (Potential Match)</option>
+                  <option value="Not Found">Chưa có mã (Not Found)</option>
+                </select>
+                <button id="btnExportOrderForm" class="px-4 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-2 transition cursor-pointer">
+                  <i data-lucide="download" class="w-4 h-4"></i>
+                  <span>Xuất File Excel Chuẩn (.xlsx)</span>
+                </button>
+                <button onclick="pushExtractedToPromotionEngine()" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold shadow-sm flex items-center gap-2 transition cursor-pointer" title="Đưa sản phẩm đã bóc tách vào công cụ tính quà tặng & chiết khấu">
+                  <i data-lucide="sparkles" class="w-4 h-4"></i>
+                  <span>Đẩy Sang Tính Khuyến Mãi</span>
+                </button>
+              </div>
+            </div>
+
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs text-slate-600">
+                <thead class="bg-slate-50 text-[11px] uppercase font-bold text-slate-500 border-b border-slate-200">
+                  <tr>
+                    <th class="px-3.5 py-3">STT</th>
+                    <th class="px-3.5 py-3">Bar code</th>
+                    <th class="px-3.5 py-3">Product Code</th>
+                    <th class="px-3.5 py-3">Package Name (Tên Master)</th>
+                    <th class="px-3.5 py-3 text-center">Quantity (下单数量)</th>
+                    <th class="px-3.5 py-3 text-right">Amount (VND)</th>
+                    <th class="px-3.5 py-3 text-center">Trạng thái</th>
+                    <th class="px-3.5 py-3 text-center">Thao tác</th>
+                  </tr>
+                </thead>
+                <tbody id="validationTableBody" class="divide-y divide-slate-100"></tbody>
+              </table>
+            </div>
+
+            <div class="bg-slate-50 px-5 py-3.5 border-t border-slate-200 flex flex-wrap items-center justify-between text-xs text-slate-500 gap-2">
+              <div class="flex items-center gap-2">
+                <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-500"></i>
+                <span>Quy tắc xuất đơn: Các mã trạng thái <strong>Ngừng KD (OFF)</strong> sẽ được cảnh báo để Ops kiểm tra trước khi tạo Order Form.</span>
+              </div>
+              <button id="btnApproveAllPotential" class="text-blue-600 hover:text-blue-800 font-bold cursor-pointer">Duyệt nhanh tất cả gợi ý OCR</button>
+            </div>
+          </div>
+
+          <!-- Audit History Log -->
+          <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm">
+            <h3 class="text-sm font-bold text-slate-900 mb-3 flex items-center gap-2">
+              <i data-lucide="history" class="w-4 h-4 text-slate-500"></i>
+              <span>Lịch Sử Xuất Đơn PO (Audit Log)</span>
+            </h3>
+            <div class="overflow-x-auto">
+              <table class="w-full text-left text-xs text-slate-600">
+                <thead class="bg-slate-50 uppercase font-bold text-slate-500 border-b border-slate-200 text-[11px]">
+                  <tr>
+                    <th class="px-3 py-2.5">Thời gian</th>
+                    <th class="px-3 py-2.5">Khách hàng</th>
+                    <th class="px-3 py-2.5">PO Number</th>
+                    <th class="px-3 py-2.5">File Nguồn</th>
+                    <th class="px-3 py-2.5 text-center">Tổng mã</th>
+                    <th class="px-3 py-2.5 text-center">Tỷ lệ Match</th>
+                    <th class="px-3 py-2.5">File Xuất</th>
+                  </tr>
+                </thead>
+                <tbody id="historyTableBody" class="divide-y divide-slate-100">
+                  <tr>
+                    <td class="px-3 py-2.5 text-slate-400" colspan="7">Chưa có lịch sử xuất file.</td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
         </div>
       </section>
 
@@ -2414,7 +2616,673 @@
       XLSX.writeFile(wb, "Mau_Don_Hang_Q3.xlsx");
     }
 
-    window.onload = init;
+    
+    // =========================================================================
+    // TRANSFORM ORDER (PDF TO EXCEL & MASTER MAPPING) INTEGRATION
+    // =========================================================================
+    let extractedData = [];
+    let currentPOHeader = { poNumber: "", expiredDate: "", address: "" };
+    let processingHistory = [];
+
+    // Chuyển đổi giữa 2 chế độ: Create Order (Tính KM) & Transform Order (PDF PO)
+    function switchWorkflowMode(mode) {
+      const panelCreate = document.getElementById('panel-workflow-create');
+      const panelTransform = document.getElementById('panel-workflow-transform');
+      const btnCreate = document.getElementById('btn-wf-create');
+      const btnTransform = document.getElementById('btn-wf-transform');
+      const cardCreate = document.getElementById('card-workflow-create');
+      const cardTransform = document.getElementById('card-workflow-transform');
+
+      if (mode === 'create') {
+        if (panelCreate) panelCreate.classList.remove('hidden');
+        if (panelTransform) panelTransform.classList.add('hidden');
+        if (btnCreate) {
+          btnCreate.classList.add('workflow-btn-active');
+          btnCreate.classList.remove('text-slate-600');
+        }
+        if (btnTransform) {
+          btnTransform.classList.remove('workflow-btn-active');
+          btnTransform.classList.add('text-slate-600');
+        }
+        if (cardCreate) {
+          cardCreate.classList.add('border-2', 'border-purple-500');
+        }
+        if (cardTransform) {
+          cardTransform.classList.remove('border-2', 'border-emerald-500');
+        }
+      } else {
+        if (panelTransform) panelTransform.classList.remove('hidden');
+        if (panelCreate) panelCreate.classList.add('hidden');
+        if (btnTransform) {
+          btnTransform.classList.add('workflow-btn-active');
+          btnTransform.classList.remove('text-slate-600');
+        }
+        if (btnCreate) {
+          btnCreate.classList.remove('workflow-btn-active');
+          btnCreate.classList.add('text-slate-600');
+        }
+        if (cardTransform) {
+          cardTransform.classList.add('border-2', 'border-emerald-500');
+        }
+        if (cardCreate) {
+          cardCreate.classList.remove('border-2', 'border-purple-500');
+        }
+      }
+      lucide.createIcons();
+    }
+
+    function parseCleanNumber(val) {
+      if (!val) return 0;
+      const clean = String(val).replace(/[,.\s]/g, '').trim();
+      return parseFloat(clean) || 0;
+    }
+
+    // Thuật toán so khớp Levenshtein hỗ trợ sửa lỗi ký tự OCR nhầm lẫn
+    function getSimilarity(s1, s2) {
+      s1 = (s1 || "").toUpperCase().replace(/[\s-_]/g, '');
+      s2 = (s2 || "").toUpperCase().replace(/[\s-_]/g, '');
+      if (s1 === s2) return 1.0;
+      const longer = s1.length > s2.length ? s1 : s2;
+      const shorter = s1.length > s2.length ? s2 : s1;
+      if (longer.length === 0) return 1.0;
+
+      const costs = [];
+      for (let i = 0; i <= longer.length; i++) {
+        let lastValue = i;
+        for (let j = 0; j <= shorter.length; j++) {
+          if (i === 0) costs[j] = j;
+          else {
+            if (j > 0) {
+              let newValue = costs[j - 1];
+              if (longer.charAt(i - 1) !== shorter.charAt(j - 1)) {
+                const c1 = longer.charAt(i - 1);
+                const c2 = shorter.charAt(j - 1);
+                const isOcrSimilar = (c1 === 'I' && c2 === '1') || (c1 === '1' && c2 === 'I') || 
+                                     (c1 === 'O' && c2 === '0') || (c1 === '0' && c2 === 'O') ||
+                                     (c1 === 'S' && c2 === '5') || (c1 === '5' && c2 === 'S');
+                newValue = Math.min(Math.min(newValue, lastValue), costs[j]) + (isOcrSimilar ? 0.3 : 1);
+              }
+              costs[j - 1] = lastValue;
+              lastValue = newValue;
+            }
+          }
+        }
+        if (i > 0) costs[shorter.length] = lastValue;
+      }
+      return (longer.length - costs[shorter.length]) / parseFloat(longer.length);
+    }
+
+    // Mapping mã trích xuất từ PDF với 382 sản phẩm Master
+    function mapMasterBarcode(rawCode) {
+      if (!rawCode) return { status: "Not Found", suggested: null };
+      const cleaned = String(rawCode).trim().toUpperCase();
+
+      // 1. So khớp chính xác
+      const exact = products.find(p => String(p.barcode).toUpperCase() === cleaned || (p.productCode && p.productCode.toUpperCase() === cleaned));
+      if (exact) {
+        const isOff = (exact.status || '').toUpperCase() === 'OFF';
+        if (isOff) {
+          return { status: "Ngừng KD (OFF)", item: exact, suggested: exact.barcode };
+        }
+        return { status: "Matched (ON)", item: exact, suggested: exact.barcode };
+      }
+
+      // 2. So khớp mờ Fuzzy match
+      let bestMatch = null;
+      let highestScore = 0;
+      products.forEach(p => {
+        const score = Math.max(getSimilarity(cleaned, p.barcode), getSimilarity(cleaned, p.productCode));
+        if (score > highestScore && score >= 0.70) {
+          highestScore = score;
+          bestMatch = p;
+        }
+      });
+
+      if (bestMatch) {
+        return { status: "Potential Match", item: bestMatch, suggested: bestMatch.barcode, score: highestScore };
+      }
+      return { status: "Not Found", item: null, suggested: null };
+    }
+
+    // Render bảng kết quả bóc tách PDF
+    function renderValidationTable() {
+      const filterEl = document.getElementById("filterStatus");
+      const filter = filterEl ? filterEl.value : "ALL";
+      const tbody = document.getElementById("validationTableBody");
+      if (!tbody) return;
+      tbody.innerHTML = "";
+
+      let matchedCount = 0;
+      let reviewCount = 0;
+
+      const counts = {};
+      extractedData.forEach(item => { counts[item.barcode] = (counts[item.barcode] || 0) + 1; });
+
+      extractedData.forEach((item, index) => {
+        if (counts[item.barcode] > 1 && item.status === "Matched (ON)") item.isDuplicate = true;
+        if (item.status === "Matched (ON)") matchedCount++;
+        else reviewCount++;
+
+        if (filter !== "ALL" && item.status !== filter) return;
+
+        let badgeClass = "badge-notfound";
+        if (item.status === "Matched (ON)") badgeClass = "badge-matched";
+        else if (item.status === "Potential Match") badgeClass = "badge-potential";
+        else if (item.status === "Ngừng KD (OFF)") badgeClass = "badge-inactive";
+
+        const tr = document.createElement("tr");
+        tr.className = "hover:bg-slate-50 transition border-b border-slate-100";
+        tr.innerHTML = `
+          <td class="px-3.5 py-3 font-mono font-semibold text-slate-500">${index + 1}</td>
+          <td class="px-3.5 py-3 font-mono font-bold text-slate-900">
+            <input type="text" value="${item.barcode}" 
+              class="border border-slate-200 rounded px-2 py-1 text-xs font-mono w-32 bg-white focus:ring-1 focus:ring-blue-500"
+              onchange="handleBarcodeChange(${index}, this.value)">
+          </td>
+          <td class="px-3.5 py-3 font-mono font-bold text-blue-600">
+            ${item.productCode || '-'}
+          </td>
+          <td class="px-3.5 py-3 font-medium text-slate-800">
+            ${item.packageName || '<span class="text-rose-500 italic">Chưa map được tên trong Master DB</span>'}
+          </td>
+          <td class="px-3.5 py-3 text-center">
+            <input type="number" min="0" value="${item.quantity}" 
+              class="w-16 border border-slate-200 rounded px-2 py-1 text-xs text-center font-bold text-slate-800 focus:ring-1 focus:ring-blue-500"
+              onchange="extractedData[${index}].quantity = parseCleanNumber(this.value)" />
+          </td>
+          <td class="px-3.5 py-3 text-right font-mono font-medium text-slate-800">
+            ${(item.amount || 0).toLocaleString()} đ
+          </td>
+          <td class="px-3.5 py-3 text-center">
+            <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${badgeClass}">
+              ${item.status} ${item.isDuplicate ? '(Trùng)' : ''}
+            </span>
+          </td>
+          <td class="px-3.5 py-3 text-center">
+            ${item.status === "Potential Match" ? `
+              <button onclick="acceptSuggestion(${index})" class="px-2 py-0.5 bg-amber-500 hover:bg-amber-600 text-white rounded text-[10px] font-bold mr-1 cursor-pointer">
+                Duyệt
+              </button>
+            ` : ''}
+            <button onclick="removeExtractedRow(${index})" class="p-1 text-slate-400 hover:text-rose-600 rounded transition cursor-pointer" title="Xóa dòng">
+              <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+            </button>
+          </td>
+        `;
+        tbody.appendChild(tr);
+      });
+
+      const statExtEl = document.getElementById("statExtracted");
+      const statMatchEl = document.getElementById("statMatched");
+      const statRevEl = document.getElementById("statNeedReview");
+      if (statExtEl) statExtEl.innerText = extractedData.length;
+      if (statMatchEl) statMatchEl.innerText = matchedCount;
+      if (statRevEl) statRevEl.innerText = reviewCount;
+      lucide.createIcons();
+    }
+
+    function handleBarcodeChange(index, newCode) {
+      extractedData[index].barcode = String(newCode).trim();
+      const mapped = mapMasterBarcode(newCode);
+      extractedData[index].status = mapped.status;
+      extractedData[index].packageName = mapped.item ? mapped.item.name : "";
+      extractedData[index].productCode = mapped.item ? (mapped.item.productCode || "") : "";
+      renderValidationTable();
+    }
+
+    function acceptSuggestion(index) {
+      if (extractedData[index].suggested) handleBarcodeChange(index, extractedData[index].suggested);
+    }
+
+    function removeExtractedRow(index) {
+      extractedData.splice(index, 1);
+      renderValidationTable();
+    }
+
+    // Nút duyệt tất cả gợi ý OCR
+    function initTransformOrderButtons() {
+      const btnApproveAll = document.getElementById("btnApproveAllPotential");
+      if (btnApproveAll) {
+        btnApproveAll.onclick = () => {
+          extractedData.forEach((item, idx) => {
+            if (item.status === "Potential Match" && item.suggested) handleBarcodeChange(idx, item.suggested);
+          });
+        };
+      }
+
+      const filterStatusEl = document.getElementById("filterStatus");
+      if (filterStatusEl) {
+        filterStatusEl.onchange = renderValidationTable;
+      }
+
+      const btnExportOrderForm = document.getElementById("btnExportOrderForm");
+      if (btnExportOrderForm) {
+        btnExportOrderForm.onclick = exportTransformedOrderFormExcel;
+      }
+    }
+
+    // Bóc tách nội dung PDF (TGSF, Guardian, Watsons, Hasaki, v.v.)
+    function parsePdfContent(fullText, fileName) {
+      const selectCustEl = document.getElementById("selectCustomerDropdown");
+      const selectedCustomerCode = selectCustEl ? selectCustEl.value : "";
+      const custObj = customers.find(c => c.code === selectedCustomerCode) || selectedCustomer;
+      const customerName = custObj ? custObj.name : "Khách Hàng";
+
+      const isTGSF = /THEGIOISKIN/i.test(fullText) || /BLUE\s*OCEAN/i.test(fullText) || /TGSF/i.test(fullText) || selectedCustomerCode === 'CUST_TGSF';
+      const isGuardian = !isTGSF && (/Mã Đơn Hàng/i.test(fullText) || /Ngày Phân Phối/i.test(fullText) || /guardian/i.test(fullText) || /LIÊN Á CHÂU/i.test(fullText) || selectedCustomerCode === 'CUST_GUARDIAN');
+
+      extractedData = [];
+
+      if (isTGSF) {
+        const poIndices = [];
+        const poHeaderRegex = /\(PO\s*No\.\):?[\s\r\n]*([^\r\n]+)/gi;
+        let match;
+        while ((match = poHeaderRegex.exec(fullText)) !== null) {
+          poIndices.push({ poNo: match[1].trim(), index: match.index });
+        }
+
+        if (poIndices.length === 0) {
+          poIndices.push({ poNo: "PO_MEISHANG_17082026", index: 0 });
+        }
+
+        poIndices.forEach((pItem, pIdx) => {
+          const blockStart = pItem.index;
+          const blockEnd = (pIdx < poIndices.length - 1) ? poIndices[pIdx + 1].index : fullText.length;
+          const blockText = fullText.substring(blockStart, blockEnd);
+
+          const poNo = pItem.poNo;
+          const expMatch = blockText.match(/\(Last\s*Delivery\s*Date\)[\s\r\n.:]*([0-9]{2}[-/.][0-9]{2}[-/.][0-9]{2,4})/i);
+          const addrMatch = blockText.match(/\(Delivery\s*To\)[\s\r\n.:]*([\s\S]*?)(?=Tel\/Fax:|NCC|\(Vendor\)|$)/i);
+
+          let expDate = expMatch ? expMatch[1].trim() : "25/08/2026";
+          let address = "SR 365 LVS Số 363 - 365 Đường Lê Văn Sỹ Phường Nhiêu Lộc, TP. HCM";
+          if (addrMatch) {
+            let raw = addrMatch[1].replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
+            address = raw.replace(/^[:\s]+/, '');
+          }
+
+          const barcodeRegex = /\b(69\d{11}|\d{13})\b/g;
+          const rawMatches = [];
+          let m;
+          while ((m = barcodeRegex.exec(blockText)) !== null) {
+            rawMatches.push({ barcode: m[1], index: m.index });
+          }
+
+          const blockBarcodes = [];
+          let i = 0;
+          while (i < rawMatches.length) {
+            if (i < rawMatches.length - 1 && (rawMatches[i+1].index - rawMatches[i].index < 40)) {
+              blockBarcodes.push({ barcode: rawMatches[i+1].barcode, index: rawMatches[i+1].index, productCode: rawMatches[i].barcode });
+              i += 2;
+            } else {
+              blockBarcodes.push({ barcode: rawMatches[i].barcode, index: rawMatches[i].index, productCode: "" });
+              i += 1;
+            }
+          }
+
+          blockBarcodes.forEach((bItem, bIdx) => {
+            const sIdx = bItem.index;
+            const eIdx = (bIdx < blockBarcodes.length - 1) ? blockBarcodes[bIdx + 1].index : blockText.length;
+            let chunk = blockText.substring(sIdx, eIdx);
+            chunk = chunk.split("TỔNG CỘNG KHO NHẬN")[0];
+
+            let qty = 1;
+            let amount = 0;
+
+            const qMatch = chunk.match(/([0-9]{1,3}(?:[,.\s][0-9]{3})+|[0-9]+(?:[,.][0-9]+)?)\s*[\r\n]+\s*[0-9]{2}\/[0-9]{2}\/[0-9]{4}/);
+            if (qMatch) {
+              let qStr = qMatch[1].trim();
+              if (/[,.]00$/.test(qStr)) qStr = qStr.replace(/[,.]00$/, '');
+              qty = parseCleanNumber(qStr);
+            }
+
+            const vatMatch = chunk.match(/[0-9]+(?:\.[0-9]+)?%/);
+            if (vatMatch) {
+              const afterVat = chunk.substring(vatMatch.index + vatMatch[0].length);
+              const amtMatches = afterVat.match(/([0-9]{1,3}(?:[.,][0-9]{3})+|[0-9]+)/g);
+              if (amtMatches && amtMatches.length > 0) {
+                amount = parseCleanNumber(amtMatches[0]);
+              }
+            }
+
+            const mapped = mapMasterBarcode(bItem.barcode);
+            const dataItem = {
+              fileName: fileName,
+              customerCode: selectedCustomerCode,
+              customerName: customerName,
+              poNo: poNo,
+              expiredDate: expDate,
+              address: address,
+              barcode: bItem.barcode,
+              productCode: (bItem.productCode && bItem.productCode !== bItem.barcode) ? bItem.productCode : (mapped.item ? (mapped.item.productCode || "") : ""),
+              packageName: mapped.item ? mapped.item.name : "",
+              quantity: qty,
+              amount: amount,
+              status: mapped.status,
+              suggested: mapped.suggested,
+              isDuplicate: false
+            };
+            extractedData.push(dataItem);
+          });
+        });
+
+        if (extractedData.length > 0) {
+          currentPOHeader.poNumber = extractedData[0].poNo;
+          currentPOHeader.expiredDate = extractedData[0].expiredDate;
+          currentPOHeader.address = extractedData[0].address;
+        }
+      } else {
+        // Định dạng Guardian / Watsons / Chuẩn
+        let poNumDefault = "PO-2026";
+        let addressDefault = "Việt Nam";
+        let expDefault = "22/09/2026";
+
+        if (isGuardian) {
+          const poMatch = fullText.match(/Mã Đơn Hàng\s*(?:\(PO No\.\))?[\s.:]*([A-Za-z0-9]+)/i);
+          const expMatch = fullText.match(/Ngày Phân Phối\s*(?:\(Last Delivery Date\))?[\s.:]*([0-9]{2}[-/.][0-9]{2}[-/.][0-9]{2,4})/i);
+          const addrMatch = fullText.match(/Phân Phối Đến\s*(?:\(Delivery To\))?[\s.:]*([\s\S]*?)(?=NCC|Địa Chỉ|\(Address\)|Tel\/Fax:|$)/i);
+
+          if (poMatch) poNumDefault = poMatch[1].trim();
+          if (expMatch) expDefault = expMatch[1].trim();
+          if (addrMatch) addressDefault = addrMatch[1].replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
+        } else {
+          const poNoMatch = fullText.match(/PO\s*(?:No|Number|#)[\s.:]*([0-9]{8,15})/i);
+          const expiredMatch = fullText.match(/Expired\s*Date[\s.:]*([0-9]{2,4}[-/.][0-9]{2}[-/.][0-9]{2,4})/i) || 
+                               fullText.match(/Delivery\s*Date[\s.:]*([0-9]{2,4}[-/.][0-9]{2}[-/.][0-9]{2,4})/i);
+          const deliveryToMatch = fullText.match(/Delivery\s*To[\s.:]*([\s\S]*?)(?=Tel:|$)/i);
+
+          if (poNoMatch) poNumDefault = poNoMatch[1].trim();
+          if (expiredMatch) expDefault = expiredMatch[1].trim();
+          if (deliveryToMatch) addressDefault = deliveryToMatch[1].replace(/[\r\n]+/g, ' ').replace(/\s+/g, ' ').trim();
+        }
+
+        const barcodeRegex = /\b(69\d{11}|\d{13})\b/g;
+        const barcodeMatches = [];
+        let m;
+        while ((m = barcodeRegex.exec(fullText)) !== null) {
+          barcodeMatches.push({ barcode: m[1], index: m.index });
+        }
+
+        if (barcodeMatches.length > 0) {
+          barcodeMatches.forEach((item, i) => {
+            const startIdx = item.index;
+            const endIdx = (i < barcodeMatches.length - 1) ? barcodeMatches[i + 1].index : fullText.length;
+            let chunk = fullText.substring(startIdx, endIdx);
+
+            let qty = 1;
+            let amount = 0;
+
+            if (isGuardian) {
+              chunk = chunk.split(/TỔNG CỘNG\s*\(GRAND TOTAL\)/i)[0].split(/TỔNG CÔNG/i)[0];
+              const qMatch1 = chunk.match(/([0-9]{1,3}(?:[,.\s][0-9]{3})+|[0-9]+)\s+(?:[0-9]{2}\/[0-9]{2}\/[0-9]{4})/);
+              const qMatch2 = chunk.match(/(?:[0-9]{2}\/[0-9]{2}\/[0-9]{4})\s*[\r\n]+\s*([0-9]{1,3}(?:[,.\s][0-9]{3})+|[0-9]+)\s*[\r\n]+\s*(?:[0-9]{2}\/[0-9]{2}\/[0-9]{4})/);
+              
+              let afterPos = 0;
+              if (qMatch1) {
+                qty = parseCleanNumber(qMatch1[1]);
+                afterPos = qMatch1.index + qMatch1[0].length;
+              } else if (qMatch2) {
+                qty = parseCleanNumber(qMatch2[1]);
+                afterPos = qMatch2.index + qMatch2[0].length;
+              }
+
+              if (afterPos > 0) {
+                const afterQ = chunk.substring(afterPos);
+                const afterLines = afterQ.split(/[\r\n]+/).map(l => l.trim()).filter(l => l.length > 0);
+                for (let lIdx = 0; lIdx < afterLines.length; lIdx++) {
+                  if (afterLines[lIdx].includes('%') && lIdx + 1 < afterLines.length) {
+                    const valStr = afterLines[lIdx + 1];
+                    if (/[0-9]/.test(valStr)) {
+                      amount = parseCleanNumber(valStr);
+                      break;
+                    }
+                  }
+                }
+              }
+            } else {
+              chunk = chunk.split(/Total\s+VND/i)[0];
+              const pcsMatch = chunk.match(/\bPCS\b[\s\r\n]*([0-9]{1,3}(?:[,.\s][0-9]{3})+|[0-9]+)/i) || 
+                               chunk.match(/([0-9]{1,3}(?:[,.\s][0-9]{3})+|[0-9]+)[\s\r\n]*\bPCS\b/i);
+              if (pcsMatch) qty = parseCleanNumber(pcsMatch[1]);
+
+              const currencyMatches = chunk.match(/\b[0-9]{1,3}(?:[,.][0-9]{3})+\b|\b0\b/g);
+              if (currencyMatches && currencyMatches.length > 0) {
+                amount = parseCleanNumber(currencyMatches[currencyMatches.length - 1]);
+              }
+            }
+
+            const mapped = mapMasterBarcode(item.barcode);
+            const dataItem = {
+              fileName: fileName,
+              customerCode: selectedCustomerCode,
+              customerName: customerName,
+              poNo: poNumDefault,
+              expiredDate: expDefault,
+              address: addressDefault,
+              barcode: item.barcode,
+              productCode: mapped.item ? (mapped.item.productCode || "") : "",
+              packageName: mapped.item ? mapped.item.name : "",
+              quantity: qty,
+              amount: amount,
+              status: mapped.status,
+              suggested: mapped.suggested,
+              isDuplicate: false
+            };
+            extractedData.push(dataItem);
+          });
+        }
+      }
+
+      currentPOHeader.poNumber = extractedData.length > 0 ? extractedData[0].poNo : "PO-2026";
+      currentPOHeader.expiredDate = extractedData.length > 0 ? extractedData[0].expiredDate : "22/09/2026";
+      currentPOHeader.address = extractedData.length > 0 ? extractedData[0].address : "Việt Nam";
+
+      const poNumInp = document.getElementById("poNumberInput");
+      const poExpInp = document.getElementById("poExpiredDateInput");
+      const poAddrInp = document.getElementById("poAddressInput");
+      if (poNumInp) poNumInp.value = currentPOHeader.poNumber || "";
+      if (poExpInp) poExpInp.value = currentPOHeader.expiredDate || "";
+      if (poAddrInp) poAddrInp.value = currentPOHeader.address || "";
+
+      const poHeadSec = document.getElementById("poHeaderSection");
+      const stepValSec = document.getElementById("stepValidationSection");
+      if (poHeadSec) poHeadSec.classList.remove("hidden");
+      if (stepValSec) stepValSec.classList.remove("hidden");
+      renderValidationTable();
+    }
+
+    // Đọc file PDF qua PDF.js
+    async function readPdfFile(file) {
+      const fileReader = new FileReader();
+      fileReader.onload = async function() {
+        const typedarray = new Uint8Array(this.result);
+        try {
+          const pdf = await pdfjsLib.getDocument(typedarray).promise;
+          let fullText = "";
+          for (let i = 1; i <= pdf.numPages; i++) {
+            const page = await pdf.getPage(i);
+            const textContent = await page.getTextContent();
+            const pageText = textContent.items.map(item => item.str).join("\n");
+            fullText += pageText + "\n";
+          }
+          parsePdfContent(fullText, file.name);
+        } catch (e) {
+          alert("Lỗi khi đọc file PDF: " + file.name);
+        }
+      };
+      fileReader.readAsArrayBuffer(file);
+    }
+
+    // Xử lý kéo thả / chọn file PDF
+    function initPdfDropHandlers() {
+      const dropZonePdf = document.getElementById("dropZonePdf");
+      const fileInputPdf = document.getElementById("fileInputPdf");
+      if (!dropZonePdf || !fileInputPdf) return;
+
+      dropZonePdf.onclick = () => fileInputPdf.click();
+      dropZonePdf.ondragover = (e) => { e.preventDefault(); dropZonePdf.classList.add("border-emerald-500"); };
+      dropZonePdf.ondragleave = () => dropZonePdf.classList.remove("border-emerald-500");
+      dropZonePdf.ondrop = (e) => {
+        e.preventDefault();
+        dropZonePdf.classList.remove("border-emerald-500");
+        handlePdfFiles(e.dataTransfer.files);
+      };
+
+      fileInputPdf.onchange = (e) => handlePdfFiles(e.target.files);
+    }
+
+    function handlePdfFiles(files) {
+      const fileListPdf = document.getElementById("fileListPdf");
+      const fileListContainerPdf = document.getElementById("fileListContainerPdf");
+      if (fileListContainerPdf) fileListContainerPdf.classList.remove("hidden");
+      if (fileListPdf) fileListPdf.innerHTML = "";
+
+      Array.from(files).forEach(file => {
+        if (file.type === "application/pdf" || file.name.endsWith(".pdf")) {
+          const div = document.createElement("div");
+          div.className = "flex items-center justify-between p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-xs";
+          div.innerHTML = `
+            <div class="flex items-center gap-2">
+              <i data-lucide="file" class="w-4 h-4 text-emerald-600"></i>
+              <span class="font-bold text-slate-800">${file.name}</span>
+              <span class="text-slate-400">(${(file.size / 1024).toFixed(1)} KB)</span>
+            </div>
+            <span class="text-emerald-600 font-bold">Đang xử lý</span>
+          `;
+          if (fileListPdf) fileListPdf.appendChild(div);
+          readPdfFile(file);
+        }
+      });
+      lucide.createIcons();
+    }
+
+    // Xuất file Order Form chuẩn (.xlsx)
+    function exportTransformedOrderFormExcel() {
+      const validItems = extractedData.filter(d => d.status === "Matched (ON)" || d.status === "Potential Match" || d.status === "Ngừng KD (OFF)");
+      if (validItems.length === 0) {
+        alert("Không có sản phẩm nào để xuất Order Form!");
+        return;
+      }
+
+      const workbook = XLSX.utils.book_new();
+
+      const poGroups = {};
+      validItems.forEach(d => {
+        const poKey = d.poNo || document.getElementById("poNumberInput")?.value || currentPOHeader.poNumber || "ORDER";
+        if (!poGroups[poKey]) poGroups[poKey] = [];
+        poGroups[poKey].push(d);
+      });
+
+      let exportedFileCount = 0;
+      Object.keys(poGroups).forEach((poKey, groupIdx) => {
+        const itemsInPo = poGroups[poKey];
+        const address = currentPOHeader.address || document.getElementById("poAddressInput")?.value || "Việt Nam";
+        const expiredDate = currentPOHeader.expiredDate || document.getElementById("poExpiredDateInput")?.value || "";
+
+        const rows = [
+          ["PO Number", poKey, null, null, null, null],
+          ["Address", address, null, null, null, null],
+          ["Expired Date:", expiredDate, null, null, null, null],
+          ["STT", "Bar code", "Product Code", "Package Name", "Quantity\n下单数量", "Amount\n($ / VND)"]
+        ];
+
+        itemsInPo.forEach((d, idx) => {
+          rows.push([idx + 1, d.barcode, d.productCode || "", d.packageName || "", d.quantity, d.amount || 0]);
+        });
+
+        const worksheet = XLSX.utils.aoa_to_sheet(rows);
+        worksheet['!cols'] = [{ wch: 8 }, { wch: 18 }, { wch: 22 }, { wch: 65 }, { wch: 16 }, { wch: 16 }];
+
+        let sheetName = poKey.replace(/[:\\/?*\[\]]/g, '_').substring(0, 31);
+        if (workbook.SheetNames.includes(sheetName)) {
+          sheetName = `${sheetName.substring(0, 27)}_${groupIdx}`;
+        }
+
+        XLSX.utils.book_append_sheet(workbook, worksheet, sheetName);
+        exportedFileCount++;
+      });
+
+      const masterPoNo = Object.keys(poGroups)[0] || "Multi_PO_Export";
+      const fileName = `Order_Form_${masterPoNo.replace(/[:\\/?*\[\]]/g, '_')}.xlsx`;
+      XLSX.writeFile(workbook, fileName);
+
+      // Cập nhật audit log
+      const selectCustEl = document.getElementById("selectCustomerDropdown");
+      const custCodeSel = selectCustEl ? selectCustEl.value : "";
+      const custObj = customers.find(c => c.code === custCodeSel) || selectedCustomer;
+      const custLabel = custObj ? custObj.name : "Khách hàng";
+
+      const histTable = document.getElementById("historyTableBody");
+      if (processingHistory.length === 0 && histTable) histTable.innerHTML = "";
+      processingHistory.push({
+        time: new Date().toLocaleTimeString('vi-VN') + ' ' + new Date().toLocaleDateString('vi-VN'),
+        customer: custLabel,
+        po: Object.keys(poGroups).join(', '),
+        file: validItems[0].fileName || "PO.pdf",
+        total: extractedData.length,
+        matchRate: "100%",
+        outFile: fileName
+      });
+
+      if (histTable) {
+        histTable.innerHTML = processingHistory.map(h => `
+          <tr class="hover:bg-slate-50 transition">
+            <td class="px-3 py-2 text-slate-500">${h.time}</td>
+            <td class="px-3 py-2 font-semibold text-blue-700">${h.customer}</td>
+            <td class="px-3 py-2 font-mono font-semibold text-slate-800">${h.po}</td>
+            <td class="px-3 py-2 text-slate-500">${h.file}</td>
+            <td class="px-3 py-2 text-center">${h.total} SKU</td>
+            <td class="px-3 py-2 text-center text-emerald-600 font-bold">${h.matchRate}</td>
+            <td class="px-3 py-2 text-blue-600 font-medium">${h.outFile}</td>
+          </tr>
+        `).join('');
+      }
+
+      alert(`Đã xuất thành công file Excel Order Form gồm ${exportedFileCount} Sheet tương ứng với các PO!`);
+    }
+
+    // Đẩy danh sách sản phẩm đã bóc tách từ PO trực tiếp sang Engine tính Khuyến Mãi
+    function pushExtractedToPromotionEngine() {
+      const validItems = extractedData.filter(d => d.status === "Matched (ON)" || d.status === "Potential Match");
+      if (validItems.length === 0) {
+        alert("Chưa có sản phẩm hợp lệ nào được bóc tách từ file PO!");
+        return;
+      }
+
+      // 1. Chuyển đổi sang format đơn hàng
+      currentOrderItems = validItems.map(d => ({
+        productCode: d.productCode || "",
+        barcode: d.barcode || "",
+        name: d.packageName || "",
+        qty: d.quantity || 1
+      }));
+
+      // 2. Đồng bộ khách hàng nếu có
+      const selectCustEl = document.getElementById("selectCustomerDropdown");
+      const selCustCode = selectCustEl ? selectCustEl.value : "";
+      const matchedCust = customers.find(c => c.code === selCustCode);
+      if (matchedCust) {
+        selectedCustomer = matchedCust;
+        const custInp = document.getElementById('customer-input');
+        if (custInp) custInp.value = `${selectedCustomer.code} | ${selectedCustomer.name} (${selectedCustomer.rank})`;
+        updateCustomerInfoDisplay();
+        autoSelectPromotionsByCustomerRegion();
+      }
+
+      // 3. Tính toán lại toàn bộ đơn hàng (1 dòng mua 1 dòng quà 0đ)
+      recalculateOrder();
+
+      // 4. Chuyển giao diện sang tab Create Order
+      switchWorkflowMode('create');
+
+      // Scroll xuống kết quả
+      const resBox = document.getElementById('results-box');
+      if (resBox) resBox.scrollIntoView({ behavior: 'smooth' });
+
+      alert(`Đã chuyển thành công ${validItems.length} SKU từ PO sang Công cụ Tính Khuyến Mãi Tự Động!`);
+    }
+
+      window.onload = init;
   </script>
 </body>
 </html>
