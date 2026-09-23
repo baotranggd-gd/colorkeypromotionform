@@ -918,9 +918,9 @@
         <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap gap-3 text-xs">
           <div class="relative flex-1 min-w-[220px]">
             <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
-            <input type="text" id="promo-search" placeholder="Tìm kiếm mã CTKM, tên chương trình..." oninput="renderPromotions()" class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 font-medium" />
+            <input type="text" id="search" placeholder="Tìm kiếm mã CTKM, tên chương trình..." oninput="renderPromotions()" class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 font-medium" />
           </div>
-          <select id="promo-filter-type" onchange="renderPromotions()" class="py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-700 outline-none">
+          <select id="type" onchange="renderPromotions()" class="py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-700 outline-none">
             <option value="">Tất cả loại CTKM</option>
             <option value="Buy Get">Buy Get</option>
             <option value="Discount">Discount</option>
@@ -4120,6 +4120,164 @@
     }
 
     window.onload = init;
-  </script>
+  
+    // --- COMBINED OPS PORTAL CTKM LOGIC ---
+    let promotions = [
+      {code:"KM001",name:"Mua hàng tặng hàng",type:"Buy Get",status:"Đang chạy",region:"Toàn quốc",channel:"Tất cả",rank:"Tất cả",priority:1,
+       schemes:[
+        {name:"Mua 19 SP A tặng 1 SP A",type:"buyget",buy:[["CK001","Colorkey Hydrating Mask",19]],gift:[["CK001","Colorkey Hydrating Mask",1]],giftType:"Cùng loại"},
+        {name:"Mua 10 SP A tặng 1 SP B",type:"buyget",buy:[["CK002","Colorkey Cushion",10]],gift:[["CK004","Colorkey Toner",1]],giftType:"Khác loại"}
+      ]},
+      {code:"KM002",name:"Giảm 10% đơn từ 500K",type:"Discount",status:"Đang chạy",region:"HCM",channel:"Online",rank:"A,B",priority:2,
+       schemes:[{name:"Mua 5 SP giảm 10%",type:"discount",buy:[["CK001","Colorkey Hydrating Mask",5]],discount:"10%"}]},
+      {code:"KM003",name:"GWP theo doanh số",type:"GWP",status:"Đang chạy",region:"Toàn quốc",channel:"GT",rank:"Tất cả",priority:3,
+       schemes:[
+        {name:"Doanh số 50 triệu tặng Gift 1",type:"gwp",threshold:"50,000,000",gift:[["CK005","Colorkey Gift Set 1",1]],giftQty:1},
+        {name:"Doanh số 100 triệu tặng Gift 2",type:"gwp",threshold:"100,000,000",gift:[["CK006","Colorkey Gift Set 2",2]],giftQty:2}
+      ]}
+    ];
+    let selected = 0;
+
+    function badge(s){return `<span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${s==="Đang chạy"?"bg-emerald-100 text-emerald-700":s==="Tạm dừng"?"bg-amber-100 text-amber-700":"bg-slate-100 text-slate-600"}">${s}</span>`}
+    
+    function renderPromotions(){
+     const q = (document.getElementById("search")?.value || "").toLowerCase().trim();
+     const t = document.getElementById("type")?.value || "";
+     const list = promotions.filter(p => (p.code + p.name).toLowerCase().includes(q) && (!t || p.type === t));
+     const listEl = document.getElementById("promotionList");
+     if(!listEl) return;
+     
+     listEl.innerHTML = list.map((p,i)=>`
+      <div class="p-3.5 rounded-xl border transition cursor-pointer ${promotions.indexOf(p)===selected?'promo-card-selected border-blue-500 shadow-xs':'border-slate-200 hover:border-slate-300 bg-white'}" onclick="selectPromotion(${promotions.indexOf(p)})">
+       <b class="text-xs font-bold text-slate-800">${p.code} - ${p.name}</b>
+       <div class="text-[11px] text-slate-500 mt-1">${p.region} · ${p.channel} · ${p.rank}</div>
+       <div style="margin-top:8px;display:flex;justify-content:space-between">${badge(p.status)}<small class="text-[11px] text-blue-600 font-bold">${p.schemes.length} scheme</small></div>
+      </div>`).join("") || `<div class="p-8 text-center text-xs text-slate-400">Không tìm thấy CTKM</div>`;
+     renderDetail();
+    }
+    
+    function selectPromotion(i){selected=i;renderPromotions()}
+    
+    function renderDetail(){
+     const p=promotions[selected];
+     const detailEl=document.getElementById("detail");
+     if(!p || !detailEl) return;
+     detailEl.innerHTML=`
+     <div class="flex justify-between items-start border-b pb-4"><div><h2 style="margin:0" class="text-base font-bold">${p.code} - ${p.name}</h2><div style="margin-top:6px">${badge(p.status)}</div></div>
+     <div class="flex gap-2"><button class="px-3 py-1.5 bg-slate-100 rounded-xl text-xs font-bold cursor-pointer" onclick="editPromotion()">Chỉnh sửa CTKM</button> <button class="px-3 py-1.5 bg-rose-50 text-rose-600 rounded-xl text-xs font-bold cursor-pointer" onclick="deletePromotion()">Xóa</button></div></div>
+     <div class="grid grid-cols-4 gap-2 my-4 text-xs">
+      <div class="bg-slate-50 border p-2.5 rounded-xl"><small class="text-slate-400 block">Loại CTKM</small><b>${p.type}</b></div>
+      <div class="bg-slate-50 border p-2.5 rounded-xl"><small class="text-slate-400 block">Khu vực</small><b>${p.region}</b></div>
+      <div class="bg-slate-50 border p-2.5 rounded-xl"><small class="text-slate-400 block">Channel</small><b>${p.channel}</b></div>
+      <div class="bg-slate-50 border p-2.5 rounded-xl"><small class="text-slate-400 block">Ưu tiên</small><b>#${p.priority || 1}</b></div>
+     </div>
+     <div style="display:flex;justify-content:space-between;align-items:center;margin-top:16px"><h3 class="text-sm font-bold">Danh sách scheme (${p.schemes.length})</h3><button class="px-3 py-1.5 bg-blue-600 text-white rounded-xl text-xs font-bold cursor-pointer" onclick="openScheme()">＋ Thêm scheme</button></div>
+     <div class="space-y-4 mt-3">${p.schemes.map((s,i)=>schemeCard(s,i)).join("")}</div>`;
+     lucide.createIcons();
+    }
+    
+    function schemeCard(s,i){
+     let content="";
+     if(s.type==="buyget") content=`<div class="grid grid-cols-3 gap-2 my-2 text-xs"><div class="bg-blue-50 p-2 rounded border">SL mua: <b>${s.buyQty||1}</b></div><div class="bg-emerald-50 p-2 rounded border">SL tặng: <b class="text-emerald-700">+${s.giftQty||1}</b></div><div class="bg-slate-50 p-2 rounded border">Tính chất: <b>${s.giftType||"Cùng loại"}</b></div></div><div class="grid grid-cols-2 gap-2 text-xs"><div class="border rounded-xl overflow-hidden"><div class="bg-slate-100 p-2 font-bold text-[11px]">Sản phẩm mua</div>${productTable(s.buy,"Sản phẩm")}</div>${s.giftType==="Khác loại"?`<div class="border border-emerald-200 rounded-xl overflow-hidden"><div class="bg-emerald-50 p-2 font-bold text-[11px] text-emerald-800">Sản phẩm tặng</div>${productTable(s.gift,"Sản phẩm")}</div>`:""}</div>`;
+     if(s.type==="discount") content=`<div class="grid grid-cols-2 gap-2 text-xs"><div class="border rounded-xl overflow-hidden"><div class="bg-slate-100 p-2 font-bold text-[11px]">Sản phẩm áp dụng</div>${productTable(s.buy,"SL tối thiểu")}</div><div class="border bg-purple-50 rounded-xl p-3 flex flex-col justify-center"><span class="text-[11px] text-purple-700 font-bold">Giảm giá</span><div class="text-xl font-black text-purple-800">${s.discount}</div></div></div>`;
+     if(s.type==="gwp") content=`<div class="grid grid-cols-2 gap-2 text-xs"><div class="border bg-amber-50 rounded-xl p-3 flex flex-col justify-center"><span class="text-[11px] text-amber-700 font-bold">Doanh số tối thiểu</span><div class="text-lg font-black text-amber-800">${s.threshold} VNĐ</div></div><div class="border rounded-xl overflow-hidden"><div class="bg-slate-100 p-2 font-bold text-[11px]">Quà tặng</div>${productTable(s.gift,"Sản phẩm")}</div></div><div class="mt-2 p-2 bg-amber-50 border border-amber-200 rounded-lg text-amber-800 text-[11px]">Chỉ áp dụng 1 mốc GWP cao nhất đạt được.</div>`;
+     return `<div class="border rounded-2xl p-4 bg-white shadow-xs mt-3"><div class="flex justify-between items-center border-b pb-2"><div class="flex items-center gap-2"><span class="px-2 py-0.5 rounded bg-blue-100 text-blue-700 text-[10px] font-bold">Scheme #${i+1}</span><b class="text-xs">${s.name}</b></div><div class="flex gap-2"><button onclick="editScheme(${i})" class="text-blue-600 text-xs font-bold cursor-pointer">Sửa</button> <button onclick="removeScheme(${i})" class="text-rose-600 text-xs font-bold cursor-pointer">Xóa</button></div></div>${content}</div>`;
+    }
+    
+    function productTable(arr,qty){
+     if(!arr||!arr.length)return `<div class="p-3 text-center text-slate-400 text-xs">Chưa có sản phẩm</div>`;
+     return `<table class="w-full text-left text-[11px]"><thead><tr class="bg-slate-50 border-b text-slate-500"><th class="p-2">Code</th><th class="p-2">Name</th><th class="p-2 text-right">${qty}</th></tr></thead><tbody class="divide-y">${arr.map(x=>`<tr><td class="p-2 font-mono font-bold text-blue-600">${x[0]}</td><td class="p-2">${x[1]}</td><td class="p-2 text-right font-bold">${x[2]}</td></tr>`).join("")}</tbody></table>`;
+    }
+    
+    function renderSchemeForm(){
+     const type=document.getElementById("schemeType").value;
+     let h="";
+     if(type==="buyget") h=`
+       <div><label class="text-xs font-bold block mb-1">Tính chất</label>
+         <div class="flex gap-4"><label><input type="radio" name="giftType" value="Cùng loại" checked onchange="toggleGiftType()"> Cùng loại</label><label><input type="radio" name="giftType" value="Khác loại" onchange="toggleGiftType()"> Khác loại</label></div>
+       </div>
+       <div class="grid grid-cols-2 gap-3 mt-3">
+         <div><label class="text-xs font-bold block mb-1">SL mua *</label><input id="buyQty" type="number" min="1" value="10" class="w-full border rounded-xl p-2 text-xs"/></div>
+         <div><label class="text-xs font-bold block mb-1">SL tặng *</label><input id="giftQty" type="number" min="1" value="1" class="w-full border rounded-xl p-2 text-xs text-emerald-600 font-bold"/></div>
+       </div>
+       <div class="mt-3"><label class="text-xs font-bold block mb-1">Sản phẩm mua</label><div id="buyRows">${row("CK001","Colorkey Hydrating Mask",10)}</div></div>
+       <div class="mt-3" id="giftProductSection" style="display:none"><label class="text-xs font-bold block mb-1">Sản phẩm tặng</label><div id="giftRows">${row("CK002","Colorkey Cushion",1)}</div></div>`;
+     if(type==="discount") h=`
+       <div class="grid grid-cols-2 gap-3 mt-3"><div><label class="text-xs font-bold block mb-1">SL tối thiểu</label><input id="discMin" type="number" value="5" class="w-full border rounded-xl p-2 text-xs"/></div><div><label class="text-xs font-bold block mb-1">Mức giảm</label><input id="discVal" value="10%" class="w-full border rounded-xl p-2 text-xs text-purple-700 font-bold"/></div></div>
+       <div class="mt-3"><label class="text-xs font-bold block mb-1">Sản phẩm áp dụng</label><div id="buyRows">${row("CK001","Colorkey Hydrating Mask",5)}</div></div>`;
+     if(type==="gwp") h=`
+       <div class="mt-3"><label class="text-xs font-bold block mb-1">Doanh số tối thiểu (VNĐ)</label><input id="gwpThreshold" value="50,000,000" class="w-full border rounded-xl p-2 text-xs text-amber-700 font-bold"/></div>
+       <div class="mt-3"><label class="text-xs font-bold block mb-1">SL Quà tặng</label><input id="gwpGiftQty" type="number" value="1" class="w-full border rounded-xl p-2 text-xs font-bold"/></div>`;
+     document.getElementById("schemeForm").innerHTML=h;
+     if(type==="buyget") toggleGiftType();
+     lucide.createIcons();
+    }
+    
+    function toggleGiftType(){
+     const type=document.querySelector('input[name="giftType"]:checked')?.value || "Cùng loại";
+     document.getElementById("giftProductSection")?.style.setProperty("display", type==="Khác loại"?"block":"none");
+    }
+    function row(code,name,qty){return `<div class="flex gap-2 mb-2"><input value="${code} - ${name} (${qty})" class="flex-1 border rounded-xl p-2 text-xs font-mono"/><button onclick="this.parentElement.remove()" class="text-rose-600 font-bold px-2">×</button></div>`}
+    
+    function openScheme(){document.getElementById("drawerTitle").textContent="Thêm scheme vào "+promotions[selected].code;document.getElementById("overlay").style.display="block";document.getElementById("schemeName").value="";renderSchemeForm()}
+    function editScheme(i){openScheme();let s=promotions[selected].schemes[i];document.getElementById("schemeName").value=s.name;document.getElementById("schemeType").value=s.type;renderSchemeForm();}
+    function closeDrawer(){document.getElementById("overlay").style.display="none"}
+    function saveScheme(){
+     let p=promotions[selected], type=document.getElementById("schemeType").value;
+     let s={name:document.getElementById("schemeName").value||"Scheme mới",type};
+     if(type==="buyget"){
+       s.buyQty=+(document.getElementById("buyQty")?.value||10);
+       s.giftQty=+(document.getElementById("giftQty")?.value||1);
+       s.giftType=document.querySelector('input[name="giftType"]:checked')?.value||"Cùng loại";
+       s.buy=[["CK001","Sản phẩm mua",s.buyQty]];
+       if(s.giftType==="Khác loại") s.gift=[["CK002","Sản phẩm tặng",s.giftQty]];
+     }
+     if(type==="discount"){
+       s.buyQty=+(document.getElementById("discMin")?.value||5);
+       s.discount=document.getElementById("discVal")?.value||"10%";
+       s.buy=[["CK001","Sản phẩm áp dụng",s.buyQty]];
+     }
+     if(type==="gwp"){
+       s.threshold=document.getElementById("gwpThreshold")?.value||"50,000,000";
+       s.giftQty=+(document.getElementById("gwpGiftQty")?.value||1);
+       s.gift=[["CK005","Gift Set",s.giftQty]];
+     }
+     p.schemes.push(s); closeDrawer(); renderPromotions();
+    }
+    function removeScheme(i){if(confirm("Xóa scheme này?")){promotions[selected].schemes.splice(i,1);renderPromotions()}}
+    function openPromotion(){openPromotionModal(false)}
+    function editPromotion(){openPromotionModal(true)}
+    function deletePromotion(){if(confirm("Xóa CTKM này?")){promotions.splice(selected,1);selected=0;renderPromotions()}}
+    
+    // Đảm bảo tab promotions gọi renderPromotions() khi chuyển tab
+    const originalSwitchTab = window.switchTab;
+    window.switchTab = function(tabId) {
+      if(typeof originalSwitchTab === 'function') originalSwitchTab(tabId);
+      if(tabId === 'promotions') renderPromotions();
+    }
+    // ---------------------------------------------
+</script>
+
+<div class="overlay" id="overlay" style="display:none; position:fixed; inset:0; background:rgba(10,15,40,.38); z-index:50;">
+  <div class="drawer" style="position:absolute; right:0; top:0; height:100%; width:520px; background:#fff; padding:22px; overflow:auto;">
+    <div style="display:flex;justify-content:space-between"><h2 id="drawerTitle" class="font-bold text-base">Thêm scheme</h2><button onclick="closeDrawer()" class="cursor-pointer font-bold">✕</button></div>
+    <div class="field mt-3"><label class="text-xs font-bold block mb-1">Tên scheme *</label><input id="schemeName" placeholder="VD: Mua 10 SP tặng 1 SP" class="w-full border rounded-xl p-2.5 text-xs"/></div>
+    <div class="field mt-3"><label class="text-xs font-bold block mb-1">Mô tả</label><textarea id="schemeDesc" rows="2" placeholder="Mô tả logic scheme..." class="w-full border rounded-xl p-2.5 text-xs"></textarea></div>
+
+    <div class="section border-t pt-3 mt-3">
+      <h3 class="text-xs font-bold uppercase text-slate-700 mb-1">1. Loại scheme</h3>
+      <select id="schemeType" onchange="renderSchemeForm()" class="w-full border rounded-xl p-2.5 text-xs bg-white font-semibold text-blue-700">
+        <option value="buyget">Mua hàng tặng hàng (Buy Get)</option>
+        <option value="discount">Discount</option>
+        <option value="gwp">GWP - Quà tặng theo doanh số</option>
+      </select>
+    </div>
+    <div id="schemeForm" class="mt-3"></div>
+    <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:22px">
+      <button onclick="closeDrawer()" class="px-4 py-2 rounded-xl bg-slate-100 text-xs font-semibold cursor-pointer">Hủy</button>
+      <button class="primary px-5 py-2 rounded-xl bg-blue-600 text-white text-xs font-bold cursor-pointer" onclick="saveScheme()">Lưu scheme</button>
+    </div>
+  </div>
+</div>
 </body>
 </html>
