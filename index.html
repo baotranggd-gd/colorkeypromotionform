@@ -1263,12 +1263,27 @@
 
     <form id="rule-form" onsubmit="saveRule(event)" class="space-y-4 text-xs">
       <input type="hidden" id="form-rule-promo-id" />
+      <input type="hidden" id="form-rule-edit-id" value="" />
       <input type="hidden" id="form-rule-scheme-type" value="BUY_GIFT_TIERS" />
+
+      <!-- DANH SÁCH SCHEME ĐANG CÓ TRONG CÙNG CTKM -->
+      <div class="bg-white rounded-xl border border-blue-200 p-4 space-y-3">
+        <div class="flex items-center justify-between">
+          <div>
+            <div class="font-bold text-slate-800 uppercase">Các scheme thuộc CTKM</div>
+            <div class="text-[11px] text-slate-400 mt-0.5">Một chương trình có thể có nhiều scheme.</div>
+          </div>
+          <span id="scheme-count-badge" class="px-2.5 py-1 rounded-full bg-blue-50 text-blue-700 text-[11px] font-bold">0 scheme</span>
+        </div>
+        <div id="existing-schemes-list" class="space-y-2 max-h-52 overflow-y-auto">
+          <div class="text-xs text-slate-400 text-center py-4">Chưa có scheme</div>
+        </div>
+      </div>
 
       <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 space-y-3">
         <div class="font-bold text-slate-800 uppercase flex items-center gap-2">
-          <span class="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[10px]">1</span>
-          Thông tin scheme
+          <span class="w-5 h-5 rounded-full bg-blue-100 text-blue-700 flex items-center justify-center text-[10px]">+</span>
+          Thêm scheme mới vào CTKM
         </div>
         <div>
           <label class="block font-bold text-slate-700 mb-1">Tên scheme *</label>
@@ -1334,24 +1349,37 @@
       <div id="panel-moq-bundle" class="hidden space-y-4">
         <div class="bg-amber-50/70 p-4 rounded-xl border border-amber-200 space-y-3">
           <div class="font-bold text-amber-900 uppercase">2. Điều kiện doanh số</div>
-          <div class="grid grid-cols-2 gap-3">
-            <div><label class="block font-semibold text-slate-600 mb-1">Phạm vi</label><select id="form-moq-scope" class="w-full border rounded-xl p-2.5"><option value="ORDER">Toàn bộ đơn hàng</option><option value="CATEGORY">Nhóm sản phẩm chỉ định</option></select></div>
-            <div><label class="block font-semibold text-slate-600 mb-1">Prefix nhóm SP</label><input id="form-moq-prefix" placeholder="VD: 2C06" class="w-full border rounded-xl p-2.5 font-mono"></div>
+          <div class="space-y-3">
+            <div>
+              <label class="block font-semibold text-slate-600 mb-1">Phạm vi áp dụng *</label>
+              <select id="form-moq-scope" onchange="toggleMoqScope()" class="w-full border rounded-xl p-2.5">
+                <option value="ORDER">Toàn bộ đơn hàng</option>
+                <option value="CATEGORY">Theo Category</option>
+                <option value="PRODUCTS">Theo sản phẩm nhất định</option>
+              </select>
+            </div>
+            <div id="moq-category-panel" class="hidden">
+              <label class="block font-semibold text-slate-600 mb-1">Chọn Category *</label>
+              <select id="form-moq-category" class="w-full border rounded-xl p-2.5">
+                <option value="">-- Chọn Category --</option>
+              </select>
+            </div>
+            <div id="moq-products-panel" class="hidden">
+              <label class="block font-semibold text-slate-600 mb-1">Chọn danh sách sản phẩm *</label>
+              <select id="form-moq-products" multiple size="6" class="w-full border rounded-xl p-2.5 font-mono bg-white"></select>
+              <div class="text-[10px] text-slate-400 mt-1">Giữ Ctrl/Cmd để chọn nhiều sản phẩm.</div>
+            </div>
+            <div id="moq-prefix-panel" class="hidden">
+              <label class="block font-semibold text-slate-600 mb-1">Prefix nhóm SP (tuỳ chọn)</label>
+              <input id="form-moq-prefix" placeholder="VD: 2C06" class="w-full border rounded-xl p-2.5 font-mono">
+            </div>
           </div>
         </div>
         <div class="bg-white rounded-xl border border-slate-200 p-4 space-y-3">
           <div class="font-bold text-slate-800 uppercase">3. Mốc doanh số & quà tặng</div>
           <div class="text-[11px] text-amber-700 bg-amber-50 rounded-lg p-2.5">Nếu đơn đạt nhiều mốc, hệ thống chỉ áp dụng <b>01 gói quà của mốc cao nhất</b>. Ví dụ đơn 100 triệu chỉ nhận quà mốc 100 triệu, không cộng mốc 50 triệu + 20 triệu.</div>
-          <div class="border rounded-xl p-3 bg-slate-50 space-y-2">
-            <div class="font-bold">Mốc 1</div>
-            <div class="grid grid-cols-2 gap-2"><input id="form-moq-m1-amt" type="number" value="20000000" placeholder="Doanh số tối thiểu"><input id="form-moq-m1-desc" value="Gói quà 20 triệu" placeholder="Tên gói quà"></div>
-            <div class="grid grid-cols-[1fr_1.5fr_90px] gap-2"><input id="form-moq-m1-code" placeholder="Product Code / Barcode"><input id="form-moq-m1-name" placeholder="Tên sản phẩm quà tặng"><input id="form-moq-m1-qty" type="number" min="1" value="1" placeholder="SL"></div>
-          </div>
-          <div class="border rounded-xl p-3 bg-slate-50 space-y-2">
-            <div class="font-bold">Mốc 2 (tùy chọn)</div>
-            <div class="grid grid-cols-2 gap-2"><input id="form-moq-m2-amt" type="number" value="50000000" placeholder="Doanh số tối thiểu"><input id="form-moq-m2-desc" value="Gói quà 50 triệu" placeholder="Tên gói quà"></div>
-            <div class="grid grid-cols-[1fr_1.5fr_90px] gap-2"><input id="form-moq-m2-code" placeholder="Product Code / Barcode"><input id="form-moq-m2-name" placeholder="Tên sản phẩm quà tặng"><input id="form-moq-m2-qty" type="number" min="1" value="1" placeholder="SL"></div>
-          </div>
+          <div id="moq-tiers-list" class="space-y-3"></div>
+          <button type="button" onclick="addMoqTier()" class="w-full py-2.5 rounded-xl border-2 border-dashed border-amber-300 text-amber-700 hover:bg-amber-50 font-bold">+ Thêm mốc doanh số</button>
         </div>
       </div>
 
@@ -2456,7 +2484,7 @@
 
         const typeLabel = p.type === 'BUY_GIFT_TIERS' ? 'Mua hàng tặng hàng' : (p.type === 'MOQ_BUNDLE' ? 'Quà tặng kèm' : 'Giảm giá');
         const regionStr = (p.regions || ['Toàn quốc']).join(', ');
-        const prodCount = (p.rules || []).length > 0 ? `${(p.rules || []).length * 3} sản phẩm` : '5 sản phẩm';
+        const schemeCount = (p.rules || []).length;
 
         return `
           <tr class="hover:bg-slate-50 transition border-b border-slate-100">
@@ -2471,7 +2499,9 @@
             <td class="p-3 font-medium text-slate-700">${p.channel || 'Online'}</td>
             <td class="p-3 text-slate-600">${p.rank || 'Tất cả'}</td>
             <td class="p-3 text-center"><span class="px-2 py-1 rounded-lg bg-blue-50 text-blue-700 font-bold">#${p.priority || 1}</span></td>
-            <td class="p-3 text-blue-600 font-medium cursor-pointer hover:underline" onclick="openRuleModal('${p.id}')">${prodCount}</td>
+            <td class="p-3 text-blue-600 font-medium cursor-pointer hover:underline" onclick="openRuleModal('${p.id}')">
+              <span class="px-2.5 py-1 rounded-lg bg-blue-50 text-blue-700 font-bold">${schemeCount} scheme</span>
+            </td>
             <td class="p-3 font-mono text-slate-600 text-[11px]">${p.time || '01/08/2026 - 31/08/2026'}</td>
             <td class="p-3 text-center">
               <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${statusBadge} inline-flex items-center gap-1">
@@ -2630,21 +2660,154 @@
         : 'Cùng loại: sản phẩm tặng chính là sản phẩm mua, không cần chọn lại sản phẩm tặng.';
     }
 
+    function renderMoqProductOptions(selected = []) {
+      const select = document.getElementById('form-moq-products');
+      if (!select) return;
+      const selectedSet = new Set(selected || []);
+      const list = [...products].sort((a,b) => (a.name || '').localeCompare(b.name || ''));
+      select.innerHTML = list.map(p => {
+        const value = p.productCode || p.barcode || '';
+        const label = `${p.productCode || p.barcode || ''} — ${p.name || ''}`;
+        return `<option value="${String(value).replace(/"/g, '&quot;')}" ${selectedSet.has(value) ? 'selected' : ''}>${label}</option>`;
+      }).join('');
+    }
+
+    function toggleMoqScope() {
+      const scope = document.getElementById('form-moq-scope')?.value || 'ORDER';
+      document.getElementById('moq-category-panel')?.classList.toggle('hidden', scope !== 'CATEGORY');
+      document.getElementById('moq-products-panel')?.classList.toggle('hidden', scope !== 'PRODUCTS');
+      document.getElementById('moq-prefix-panel')?.classList.toggle('hidden', scope !== 'CATEGORY');
+    }
+
+    function renderMoqCategoryOptions(selected = '') {
+      const select = document.getElementById('form-moq-category');
+      if (!select) return;
+      const cats = [...new Set(products.map(p => p.category).filter(Boolean))].sort();
+      select.innerHTML = `<option value="">-- Chọn Category --</option>` + cats.map(c => `<option value="${String(c).replace(/"/g, '&quot;')}" ${c === selected ? 'selected' : ''}>${c}</option>`).join('');
+    }
+
+    function renderMoqTiers(tiers = []) {
+      const box = document.getElementById('moq-tiers-list');
+      if (!box) return;
+      const data = tiers.length ? tiers : [{ minAmount: 0, bundleDesc: '', bundleItems: [], giftQty: 1 }];
+      box.innerHTML = data.map((t, i) => {
+        const item = t.bundleItems?.[0] || {};
+        return `<div class="moq-tier border rounded-xl p-3 bg-slate-50 space-y-2" data-tier-index="${i}">
+          <div class="flex items-center justify-between">
+            <div class="font-bold">Mốc ${i + 1}</div>
+            <button type="button" onclick="removeMoqTier(this)" class="text-rose-500 hover:bg-rose-50 rounded-lg px-2 py-1 text-[11px] font-bold">Xóa mốc</button>
+          </div>
+          <div class="grid grid-cols-2 gap-2"><input data-field="amount" type="number" min="0" value="${t.minAmount || ''}" placeholder="Doanh số tối thiểu"><input data-field="desc" value="${String(t.bundleDesc || '').replace(/"/g, '&quot;')}" placeholder="Tên gói quà"></div>
+          <div class="grid grid-cols-[1fr_1.5fr_90px] gap-2"><input data-field="code" value="${String(item.code || '').replace(/"/g, '&quot;')}" placeholder="Product Code / Barcode"><input data-field="name" value="${String(item.name || '').replace(/"/g, '&quot;')}" placeholder="Tên sản phẩm quà tặng"><input data-field="qty" type="number" min="1" value="${item.qty || t.giftQty || 1}" placeholder="SL"></div>
+        </div>`;
+      }).join('');
+    }
+
+    function addMoqTier(tier = null) {
+      const box = document.getElementById('moq-tiers-list');
+      if (!box) return;
+      const tiers = Array.from(box.querySelectorAll('.moq-tier')).map(card => ({
+        minAmount: Number(card.querySelector('[data-field="amount"]').value) || 0,
+        bundleDesc: card.querySelector('[data-field="desc"]').value,
+        bundleItems: [{ code: card.querySelector('[data-field="code"]').value, name: card.querySelector('[data-field="name"]').value, qty: Number(card.querySelector('[data-field="qty"]').value) || 1 }]
+      }));
+      tiers.push(tier || { minAmount: 0, bundleDesc: '', bundleItems: [], giftQty: 1 });
+      renderMoqTiers(tiers);
+    }
+
+    function removeMoqTier(btn) {
+      const box = document.getElementById('moq-tiers-list');
+      if (!box) return;
+      const cards = box.querySelectorAll('.moq-tier');
+      if (cards.length <= 1) { alert('Scheme phải có ít nhất 1 mốc doanh số.'); return; }
+      btn.closest('.moq-tier')?.remove();
+      [...box.querySelectorAll('.moq-tier')].forEach((card, i) => { const h = card.querySelector('.font-bold'); if (h) h.innerText = `Mốc ${i + 1}`; });
+    }
+
     function openRuleModalWithSchemeType(type) {
       if (promotions.length === 0) { alert('Vui lòng tạo CTKM trước!'); return; }
       openRuleModal(promotions[0].id);
       setSchemeType(type);
     }
 
-    function openRuleModal(promoId) {
+    function renderExistingSchemes(promoId) {
       const p = promotions.find(item => item.id === promoId);
-      if (!p) return;
-      document.getElementById('modal-rule').classList.remove('hidden');
-      document.getElementById('form-rule-promo-id').value = promoId;
-      document.getElementById('modal-rule-subtitle').innerText = `Áp dụng cho CTKM: [${p.code}] ${p.name} • Priority #${p.priority || 1}`;
+      const list = document.getElementById('existing-schemes-list');
+      const badge = document.getElementById('scheme-count-badge');
+      if (!p || !list) return;
 
-      const type = p.type === 'MOQ_BUNDLE' ? 'MOQ_BUNDLE' : (p.type === 'DISCOUNT' ? 'DISCOUNT' : 'BUY_GIFT_TIERS');
-      setSchemeType(type);
+      const rules = p.rules || [];
+      if (badge) badge.innerText = `${rules.length} scheme`;
+
+      if (rules.length === 0) {
+        list.innerHTML = `
+          <div class="text-xs text-slate-400 text-center py-4 border border-dashed rounded-lg">
+            Chưa có scheme. Hãy tạo scheme đầu tiên bên dưới.
+          </div>`;
+        return;
+      }
+
+      list.innerHTML = rules.map((r, i) => {
+        const typeLabel = r.type === 'BUY_GIFT_TIERS'
+          ? 'Mua hàng tặng hàng'
+          : (r.type === 'DISCOUNT' ? 'Discount' : 'GWP');
+
+        let detail = '';
+        if (r.type === 'BUY_GIFT_TIERS') {
+          const giftLabel = r.giftType === 'DIFFERENT' ? 'Khác loại' : 'Cùng loại';
+          detail = `SL mua ${r.buyQty || 1} → SL tặng ${r.giftQty || 1} · ${giftLabel}`;
+        } else if (r.type === 'DISCOUNT') {
+          detail = r.discountType === 'PERCENT'
+            ? `Giảm ${r.discountValue || 0}%`
+            : `Giảm ${Number(r.discountValue || 0).toLocaleString('vi-VN')}đ`;
+        } else {
+          const tiers = (r.tiers || []).map(t => Number(t.minAmount || 0).toLocaleString('vi-VN') + 'đ').join(' / ');
+          const scopeLabel = r.scope === 'CATEGORY' ? `Category: ${r.targetCategory || 'Chưa chọn'}` : (r.scope === 'PRODUCTS' ? `SP chỉ định: ${(r.targetProducts || []).length}` : 'Toàn bộ đơn hàng');
+          detail = `GWP · ${scopeLabel} · Mốc: ${tiers || 'Chưa cấu hình'} · Không cộng dồn`;
+        }
+
+        return `
+          <div class="flex items-center justify-between gap-3 p-3 rounded-xl border border-slate-200 bg-slate-50 hover:bg-blue-50/50 transition">
+            <div class="min-w-0">
+              <div class="flex items-center gap-2 flex-wrap">
+                <span class="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 text-[10px] font-bold">Scheme ${i + 1}</span>
+                <span class="font-bold text-slate-800 text-xs">${r.schemeName || 'Scheme chưa đặt tên'}</span>
+                <span class="px-2 py-0.5 rounded-full bg-slate-200 text-slate-600 text-[10px] font-semibold">${typeLabel}</span>
+              </div>
+              <div class="text-[10px] text-slate-500 mt-1">${detail}</div>
+            </div>
+            <div class="flex items-center gap-1 flex-shrink-0">
+              <button type="button" data-action="edit-scheme" data-promo-id="${String(promoId)}" data-rule-id="${String(r.id)}" data-rule-index="${i}" class="p-1.5 text-slate-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg" title="Chỉnh sửa scheme">
+                <i data-lucide="pencil" class="w-3.5 h-3.5"></i>
+              </button>
+              <button type="button" data-action="delete-scheme" data-promo-id="${String(promoId)}" data-rule-id="${String(r.id)}" data-rule-index="${i}" class="p-1.5 text-slate-400 hover:text-rose-600 hover:bg-rose-50 rounded-lg" title="Xóa scheme">
+                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i>
+              </button>
+            </div>
+          </div>`;
+      }).join('');
+
+      lucide.createIcons();
+
+      // Delegated event handler: survives every re-render and is not affected by the form.
+      list.onclick = function(ev) {
+        const btn = ev.target.closest('[data-action]');
+        if (!btn || !list.contains(btn)) return;
+        ev.preventDefault();
+        ev.stopPropagation();
+        const promoId = btn.dataset.promoId;
+        const ruleId = btn.dataset.ruleId;
+        const ruleIndex = btn.dataset.ruleIndex;
+        if (btn.dataset.action === 'edit-scheme') editRule(promoId, ruleId, ev);
+        if (btn.dataset.action === 'delete-scheme') deleteRule(promoId, ruleId, ev, ruleIndex);
+      };
+    }
+
+    function resetRuleFormForNewScheme(promoId) {
+      document.getElementById('form-rule-promo-id').value = promoId;
+      document.getElementById('form-rule-edit-id').value = '';
+      const formTitle = document.querySelector('#modal-rule h3');
+      if (formTitle) formTitle.innerText = 'Thêm scheme mới vào CTKM';
       document.getElementById('form-scheme-name').value = '';
       document.getElementById('form-gift-prefix').value = '';
       document.getElementById('form-gift-products').value = '';
@@ -2653,27 +2816,118 @@
       document.getElementById('form-gift-code').value = '';
       document.getElementById('form-gift-name').value = '';
       document.querySelector('input[name="scheme-gift-type"][value="SAME"]')?.click();
-      document.getElementById('form-moq-m1-amt').value = '20000000';
-      document.getElementById('form-moq-m1-desc').value = 'Gói quà 20 triệu';
-      document.getElementById('form-moq-m1-code').value = '';
-      document.getElementById('form-moq-m1-name').value = '';
-      document.getElementById('form-moq-m1-qty').value = '1';
-      document.getElementById('form-moq-m2-amt').value = '50000000';
-      document.getElementById('form-moq-m2-desc').value = 'Gói quà 50 triệu';
-      document.getElementById('form-moq-m2-code').value = '';
-      document.getElementById('form-moq-m2-name').value = '';
-      document.getElementById('form-moq-m2-qty').value = '1';
+
+      document.getElementById('form-discount-buy').value = '5';
+      document.getElementById('form-discount-amount').value = '0';
+      document.getElementById('form-discount-products').value = '';
+      document.getElementById('form-discount-type').value = 'PERCENT';
+      document.getElementById('form-discount-value').value = '10';
+
+      document.getElementById('form-moq-scope').value = 'ORDER';
+      document.getElementById('form-moq-prefix').value = '';
+      document.getElementById('form-moq-category').value = '';
+      document.getElementById('form-moq-products').selectedIndex = -1;
+      renderMoqCategoryOptions();
+      renderMoqProductOptions();
+      renderMoqTiers([{minAmount: 20000000, bundleDesc: 'Gói quà 20 triệu', bundleItems: [], giftQty: 1}, {minAmount: 50000000, bundleDesc: 'Gói quà 50 triệu', bundleItems: [], giftQty: 1}]);
+      toggleMoqScope();
+
+      const p = promotions.find(item => item.id === promoId);
+      const type = p?.type === 'MOQ_BUNDLE' ? 'MOQ_BUNDLE' : (p?.type === 'DISCOUNT' ? 'DISCOUNT' : 'BUY_GIFT_TIERS');
+      setSchemeType(type);
+    }
+
+    function openRuleModalWithSchemeType(type) {
+      if (promotions.length === 0) { alert('Vui lòng tạo CTKM trước!'); return; }
+      openRuleModal(promotions[0].id);
+      setSchemeType(type);
+    }
+
+    function editRule(promoId, ruleId, event) {
+      event?.preventDefault();
+      event?.stopPropagation();
+      const p = promotions.find(item => item.id === promoId);
+      const r = p?.rules?.find(item => item.id === ruleId);
+      if (!p || !r) return;
+
+      document.getElementById('modal-rule').classList.remove('hidden');
+      resetRuleFormForNewScheme(promoId);
+      document.getElementById('form-rule-edit-id').value = ruleId;
+      document.getElementById('modal-rule-subtitle').innerText =
+        `CTKM: [${p.code}] ${p.name} • Priority #${p.priority || 1}`;
+      const formTitle = document.querySelector('#modal-rule h3');
+      if (formTitle) formTitle.innerText = `Chỉnh sửa scheme: ${r.schemeName || ''}`;
+
+      document.getElementById('form-scheme-name').value = r.schemeName || '';
+      setSchemeType(r.type || 'BUY_GIFT_TIERS');
+
+      if (r.type === 'BUY_GIFT_TIERS') {
+        document.getElementById('form-buy-qty').value = r.buyQty || r.tiers?.[0]?.buyQty || 1;
+        document.getElementById('form-gift-qty').value = r.giftQty || r.tiers?.[0]?.giftQty || 1;
+        document.getElementById('form-gift-prefix').value = r.targetPrefix || '';
+        document.getElementById('form-gift-products').value = (r.targetProducts || []).join(', ');
+        document.getElementById('form-gift-pool').checked = r.poolQty !== false;
+        const giftType = r.giftType || 'SAME';
+        document.querySelector(`input[name="scheme-gift-type"][value="${giftType}"]`)?.click();
+        const tier = r.tiers?.[0] || {};
+        document.getElementById('form-gift-code').value = tier.giftCode || '';
+        document.getElementById('form-gift-name').value = tier.giftName || '';
+      } else if (r.type === 'DISCOUNT') {
+        document.getElementById('form-discount-buy').value = r.minQty || 0;
+        document.getElementById('form-discount-amount').value = r.minAmount || 0;
+        document.getElementById('form-discount-products').value = (r.targetProducts || []).join(', ');
+        document.getElementById('form-discount-type').value = r.discountType || 'PERCENT';
+        document.getElementById('form-discount-value').value = r.discountValue || 0;
+      } else {
+        document.getElementById('form-moq-scope').value = r.scope || 'ORDER';
+        document.getElementById('form-moq-prefix').value = r.targetPrefix || '';
+        renderMoqCategoryOptions(r.targetCategory || '');
+        renderMoqProductOptions(r.targetProducts || []);
+        document.getElementById('form-moq-category').value = r.targetCategory || '';
+        renderMoqTiers(r.tiers || []);
+        toggleMoqScope();
+      }
+
+      renderExistingSchemes(promoId);
       lucide.createIcons();
     }
 
-    function closeRuleModal() { document.getElementById('modal-rule').classList.add('hidden'); }
+    function openRuleModal(promoId) {
+      const p = promotions.find(item => item.id === promoId);
+      if (!p) return;
+
+      document.getElementById('modal-rule').classList.remove('hidden');
+      document.getElementById('form-rule-promo-id').value = promoId;
+      document.getElementById('modal-rule-subtitle').innerText =
+        `CTKM: [${p.code}] ${p.name} • Priority #${p.priority || 1}`;
+
+      resetRuleFormForNewScheme(promoId);
+      renderExistingSchemes(promoId);
+      lucide.createIcons();
+    }
+
+    function closeRuleModal() {
+      document.getElementById('modal-rule').classList.add('hidden');
+    }
 
     function saveRule(e) {
       e.preventDefault();
+
       const promoId = document.getElementById('form-rule-promo-id').value;
+      const editRuleId = document.getElementById('form-rule-edit-id').value;
       const schemeType = document.getElementById('form-rule-scheme-type').value;
       const schemeName = document.getElementById('form-scheme-name').value.trim();
-      let newRule = { id:`SCHEME-${Date.now()}`, type:schemeType, schemeName };
+
+      if (!schemeName) {
+        alert('Vui lòng nhập tên scheme.');
+        return;
+      }
+
+      let newRule = {
+        id: `SCHEME-${Date.now()}`,
+        type: schemeType,
+        schemeName
+      };
 
       if (schemeType === 'BUY_GIFT_TIERS') {
         const giftType = document.querySelector('input[name="scheme-gift-type"]:checked')?.value || 'SAME';
@@ -2681,49 +2935,113 @@
         const giftQty = Number(document.getElementById('form-gift-qty').value) || 1;
         const prefix = document.getElementById('form-gift-prefix').value.trim();
         const rawProds = document.getElementById('form-gift-products').value.trim();
-        const targetProducts = rawProds ? rawProds.split(/[,;\n]+/).map(x=>x.trim()).filter(Boolean) : [];
-        const giftCode = giftType === 'DIFFERENT' ? document.getElementById('form-gift-code').value.trim() : '';
-        const giftName = giftType === 'DIFFERENT' ? document.getElementById('form-gift-name').value.trim() : '';
+        const targetProducts = rawProds
+          ? rawProds.split(/[,;\n]+/).map(x => x.trim()).filter(Boolean)
+          : [];
+
+        const giftCode = giftType === 'DIFFERENT'
+          ? document.getElementById('form-gift-code').value.trim()
+          : '';
+        const giftName = giftType === 'DIFFERENT'
+          ? document.getElementById('form-gift-name').value.trim()
+          : '';
+
         newRule.targetPrefix = prefix;
         newRule.targetProducts = targetProducts;
         newRule.poolQty = document.getElementById('form-gift-pool').checked;
         newRule.giftType = giftType;
         newRule.buyQty = buyQty;
         newRule.giftQty = giftQty;
-        newRule.tiers = [{buyQty, giftQty, giftCode, giftName}];
+        newRule.tiers = [{ buyQty, giftQty, giftCode, giftName }];
+
       } else if (schemeType === 'DISCOUNT') {
         newRule.minQty = Number(document.getElementById('form-discount-buy').value) || 0;
         newRule.minAmount = Number(document.getElementById('form-discount-amount').value) || 0;
-        newRule.targetProducts = (document.getElementById('form-discount-products').value || '').split(/[,;\n]+/).map(x=>x.trim()).filter(Boolean);
+        newRule.targetProducts = (document.getElementById('form-discount-products').value || '')
+          .split(/[,;\n]+/).map(x => x.trim()).filter(Boolean);
         newRule.discountType = document.getElementById('form-discount-type').value;
         newRule.discountValue = Number(document.getElementById('form-discount-value').value) || 0;
+
       } else {
         newRule.scope = document.getElementById('form-moq-scope').value;
         newRule.targetPrefix = document.getElementById('form-moq-prefix').value.trim();
+        newRule.targetCategory = document.getElementById('form-moq-category').value;
+        newRule.targetProducts = Array.from(document.getElementById('form-moq-products').selectedOptions).map(o => o.value);
         newRule.gwpExclusive = true;
-        newRule.tiers = [];
-        const t1Amt=Number(document.getElementById('form-moq-m1-amt').value)||0, t1Qty=Number(document.getElementById('form-moq-m1-qty').value)||1;
-        const t1Code=document.getElementById('form-moq-m1-code').value.trim(), t1Name=document.getElementById('form-moq-m1-name').value.trim(), t1Desc=document.getElementById('form-moq-m1-desc').value.trim();
-        if(t1Amt>0) newRule.tiers.push({minAmount:t1Amt,bundleDesc:t1Desc,bundleItems:t1Code||t1Name?[{code:t1Code,name:t1Name,qty:t1Qty}]:[],giftQty:t1Qty});
-        const t2Amt=Number(document.getElementById('form-moq-m2-amt').value)||0, t2Qty=Number(document.getElementById('form-moq-m2-qty').value)||1;
-        const t2Code=document.getElementById('form-moq-m2-code').value.trim(), t2Name=document.getElementById('form-moq-m2-name').value.trim(), t2Desc=document.getElementById('form-moq-m2-desc').value.trim();
-        if(t2Amt>0) newRule.tiers.push({minAmount:t2Amt,bundleDesc:t2Desc,bundleItems:t2Code||t2Name?[{code:t2Code,name:t2Name,qty:t2Qty}]:[],giftQty:t2Qty});
+        newRule.tiers = Array.from(document.querySelectorAll('#moq-tiers-list .moq-tier')).map(card => {
+          const minAmount = Number(card.querySelector('[data-field="amount"]').value) || 0;
+          const bundleDesc = card.querySelector('[data-field="desc"]').value.trim();
+          const code = card.querySelector('[data-field="code"]').value.trim();
+          const name = card.querySelector('[data-field="name"]').value.trim();
+          const qty = Number(card.querySelector('[data-field="qty"]').value) || 1;
+          return {
+            minAmount,
+            bundleDesc,
+            bundleItems: code || name ? [{ code, name, qty }] : [],
+            giftQty: qty
+          };
+        }).filter(t => t.minAmount > 0);
+        newRule.tiers.sort((a, b) => Number(a.minAmount) - Number(b.minAmount));
+        if (newRule.tiers.length === 0) { alert('Vui lòng thêm ít nhất 1 mốc doanh số.'); return; }
+        if (new Set(newRule.tiers.map(t => t.minAmount)).size !== newRule.tiers.length) { alert('Các mốc doanh số không được trùng nhau.'); return; }
       }
 
-      const updated = promotions.map(p => p.id === promoId ? {...p, rules:[...(p.rules||[]),newRule]} : p);
+      if (editRuleId) newRule.id = editRuleId;
+
+      const updated = promotions.map(p => {
+        if (p.id !== promoId) return p;
+        const rules = p.rules || [];
+        return {
+          ...p,
+          rules: editRuleId
+            ? rules.map(r => r.id === editRuleId ? { ...r, ...newRule } : r)
+            : [...rules, newRule]
+        };
+      });
+
       persistPromotions(updated);
-      closeRuleModal();
+      renderExistingSchemes(promoId);
+      renderPromotions();
       recalculateOrder();
+
+      const promo = promotions.find(p => p.id === promoId);
+      document.getElementById('modal-rule-subtitle').innerText =
+        `CTKM: [${promo?.code || ''}] ${promo?.name || ''} • Priority #${promo?.priority || 1}`;
+
+      if (editRuleId) {
+        resetRuleFormForNewScheme(promoId);
+        alert('Đã cập nhật scheme.');
+      } else {
+        resetRuleFormForNewScheme(promoId);
+        alert('Đã thêm scheme vào CTKM. Bạn có thể tiếp tục thêm scheme khác.');
+      }
     }
 
-    function deleteRule(promoId, ruleId) {
-      if (!confirm('Xóa scheme này khỏi CTKM?')) return;
-      persistPromotions(promotions.map(p=>p.id===promoId?{...p,rules:(p.rules||[]).filter(r=>r.id!==ruleId)}:p));
+    function deleteRule(promoId, ruleId, event, ruleIndex) {
+      event?.preventDefault();
+      event?.stopPropagation();
+      const promo = promotions.find(p => String(p.id) === String(promoId));
+      if (!promo) { alert('Không tìm thấy CTKM chứa scheme này.'); return false; }
+      const rules = Array.isArray(promo.rules) ? [...promo.rules] : [];
+      let idx = Number(ruleIndex);
+      if (!Number.isInteger(idx) || idx < 0 || idx >= rules.length) {
+        idx = rules.findIndex(r => String(r.id) === String(ruleId));
+      }
+      if (idx < 0 || idx >= rules.length) { alert('Không tìm thấy scheme cần xóa.'); return false; }
+      const name = rules[idx]?.schemeName || `Scheme ${idx + 1}`;
+      if (!window.confirm(`Bạn có chắc muốn xóa "${name}" khỏi CTKM?`)) return false;
+      rules.splice(idx, 1);
+      const updated = promotions.map(p => String(p.id) === String(promoId) ? { ...p, rules } : p);
+      persistPromotions(updated);
+      renderExistingSchemes(promoId);
+      renderPromotions();
       recalculateOrder();
+      return false;
     }
 
-// =========================================================================
-    // CORE ORDER CALCULATION: 1 DÒNG MUA LIỀN KỀ 1 DÒNG QUÀ TẶNG (0Đ)
+    window.deleteRule = deleteRule;
+    window.editRule = editRule;
+
     // =========================================================================
     function recalculateOrder() {
       if (currentOrderItems.length === 0) return;
@@ -2781,8 +3099,14 @@
         // GWP/MOQ trong cùng một CTKM không cộng dồn: chỉ chọn scheme đạt mốc cao nhất.
         const moqCandidates = rules.filter(r => r.type === 'MOQ_BUNDLE').map(r => {
           let amount = 0;
-          if (r.scope === 'CATEGORY' && r.targetPrefix) {
-            amount = purchasedItems.filter(it => it.code.toLowerCase().startsWith(r.targetPrefix.toLowerCase())).reduce((sum,i)=>sum+i.lineTotal,0);
+          if (r.scope === 'CATEGORY') {
+            amount = purchasedItems.filter(it => {
+              const prod = products.find(p => p.productCode?.toLowerCase() === it.code?.toLowerCase() || p.barcode === it.barcode);
+              return prod && (!r.targetCategory || prod.category === r.targetCategory);
+            }).reduce((sum,i)=>sum+i.lineTotal,0);
+          } else if (r.scope === 'PRODUCTS') {
+            const targetSet = new Set((r.targetProducts || []).map(x => String(x).toLowerCase()));
+            amount = purchasedItems.filter(it => targetSet.has(String(it.code || '').toLowerCase()) || targetSet.has(String(it.barcode || '').toLowerCase())).reduce((sum,i)=>sum+i.lineTotal,0);
           } else amount = subTotal;
           const tier = [...(r.tiers || [])].sort((a,b)=>b.minAmount-a.minAmount).find(t=>amount>=t.minAmount);
           return tier ? {rule:r, amount, tier} : null;
@@ -2848,10 +3172,14 @@
           // 2. THƯỞNG GÓI QUÀ DOANH SỐ (MOQ)
           else if (scheme.type === 'MOQ_BUNDLE') {
             let qualifyingAmount = 0;
-            if (scheme.scope === 'CATEGORY' && scheme.targetPrefix) {
-              qualifyingAmount = purchasedItems.filter(it => 
-                it.code.toLowerCase().startsWith(scheme.targetPrefix.toLowerCase())
-              ).reduce((sum, i) => sum + i.lineTotal, 0);
+            if (scheme.scope === 'CATEGORY') {
+              qualifyingAmount = purchasedItems.filter(it => {
+                const prod = products.find(p => p.productCode?.toLowerCase() === it.code?.toLowerCase() || p.barcode === it.barcode);
+                return prod && (!scheme.targetCategory || prod.category === scheme.targetCategory);
+              }).reduce((sum, i) => sum + i.lineTotal, 0);
+            } else if (scheme.scope === 'PRODUCTS') {
+              const targetSet = new Set((scheme.targetProducts || []).map(x => String(x).toLowerCase()));
+              qualifyingAmount = purchasedItems.filter(it => targetSet.has(String(it.code || '').toLowerCase()) || targetSet.has(String(it.barcode || '').toLowerCase())).reduce((sum, i) => sum + i.lineTotal, 0);
             } else {
               qualifyingAmount = subTotal;
             }
@@ -2864,7 +3192,7 @@
                 promoName: promo.name,
                 priority: promo.priority || 1,
                 schemeName: scheme.schemeName,
-                scope: scheme.scope === 'CATEGORY' ? 'Nhóm SP chỉ định' : 'Toàn bộ đơn hàng',
+                scope: scheme.scope === 'CATEGORY' ? `Category: ${scheme.targetCategory || 'Chưa chọn'}` : (scheme.scope === 'PRODUCTS' ? `Sản phẩm chỉ định: ${(scheme.targetProducts || []).length} SP` : 'Toàn bộ đơn hàng'),
                 qualifyingAmount: qualifyingAmount,
                 minAmount: achievedTier.minAmount,
                 bundleDesc: achievedTier.bundleDesc,
