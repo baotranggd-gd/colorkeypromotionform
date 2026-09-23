@@ -2426,8 +2426,46 @@
     let warehouseInventory = [];
     let warehouseCharts = {};
     function normalizeWarehouseRow(row){ const val=(keys)=>{for(const k of keys)if(row[k]!=null)return row[k];return '';}; const sku=String(val(['SKU','sku','Barcode','barcode'])).trim(); const wh=String(val(['Kho','Warehouse','warehouse'])).trim(); const available=Number(String(val(['Khả dụng','Kha dung','Available','available','On-hand','On Hand'])).replace(/,/g,''))||0; const sd=Number(String(val(['Stockday','Stock Day','stockday','stockDay'])).replace(/,/g,'')); const prod=products.find(p=>String(p.barcode||'').trim()===sku||String(p.productCode||'').trim()===sku); return {warehouse:wh,sku,available,stockDay:Number.isFinite(sd)?sd:null,productName:prod?.name||sku,team:prod?.team||''}; }
-    async function fetchWarehouseInventory(){ const apiUrl=WAREHOUSE_API_URL; const r=await fetch(apiUrl,{cache:'no-store'}); if(!r.ok)throw new Error(`HTTP ${r.status}`); const j=await r.json(); const rows=Array.isArray(j)?j:(j.data||j.rows||[]); if(!Array.isArray(rows))throw new Error('API không trả về mảng data'); return rows.map(normalizeWarehouseRow).filter(x=>x.warehouse&&x.sku); }
-    async function syncWarehouseInventory(showAlert=true){ try{ const btn=document.querySelector('button[onclick="syncWarehouseInventory()"]'); if(btn){btn.disabled=true;btn.classList.add('opacity-60');} warehouseInventory=await fetchWarehouseInventory(); localStorage.setItem('CLK_WAREHOUSE_LAST_SYNC',new Date().toISOString()); renderWarehouseInventory(); updateWarehouseSyncLabel(); if(showAlert) alert(`Đã đồng bộ ${warehouseInventory.length.toLocaleString('vi-VN')} dòng tồn kho từ Google Sheet.`); }catch(e){ console.error('Warehouse API error:',e); const el=document.getElementById('warehouse-last-sync'); if(el)el.textContent='Không thể đồng bộ Warehouse API • Kiểm tra Apps Script Web App / quyền truy cập'; if(showAlert)alert('Không thể lấy dữ liệu tồn kho từ Google Sheet API. Kiểm tra Apps Script đã Deploy dạng Web App và quyền truy cập là Anyone.'); } finally { const btn=document.querySelector('button[onclick="syncWarehouseInventory()"]'); if(btn){btn.disabled=false;btn.classList.remove('opacity-60');} } }
+    function fetchWarehouseInventory(){
+      return new Promise((resolve,reject)=>{
+        const callbackName='clkWarehouseCb_'+Date.now()+'_'+Math.floor(Math.random()*100000);
+        const script=document.createElement('script');
+        const timeout=setTimeout(()=>{
+          cleanup();
+          reject(new Error('JSONP timeout - API không phản hồi'));
+        },15000);
+        function cleanup(){
+          clearTimeout(timeout);
+          try{delete window[callbackName];}catch(e){window[callbackName]=undefined;}
+          if(script.parentNode)script.parentNode.removeChild(script);
+        }
+        window[callbackName]=(response)=>{
+          try{
+            // Apps Script response thực tế: { success:true, updatedAt:'...', data:[...] }
+            if(!response || response.success !== true){
+              throw new Error(response?.error || 'Warehouse API trả về response không hợp lệ');
+            }
+            const rows=response.data;
+            if(!Array.isArray(rows)){
+              throw new Error('Warehouse API: response.data không phải là mảng');
+            }
+            const normalized=rows
+              .map(normalizeWarehouseRow)
+              .filter(x=>x.warehouse && x.sku);
+            resolve(normalized);
+          }catch(e){
+            reject(e);
+          }finally{
+            cleanup();
+          }
+        };
+        script.onerror=()=>{ cleanup(); reject(new Error('Không thể tải Warehouse API')); };
+        script.src=WAREHOUSE_API_URL+(WAREHOUSE_API_URL.includes('?')?'&':'?')+'callback='+encodeURIComponent(callbackName)+'&_='+Date.now();
+        script.async=true;
+        document.head.appendChild(script);
+      });
+    }
+    async function syncWarehouseInventory(showAlert=true){ try{ const btn=document.querySelector('button[onclick="syncWarehouseInventory()"]'); if(btn){btn.disabled=true;btn.classList.add('opacity-60');} warehouseInventory=await fetchWarehouseInventory(); localStorage.setItem('CLK_WAREHOUSE_LAST_SYNC',new Date().toISOString()); renderWarehouseInventory(); updateWarehouseSyncLabel(); if(showAlert) alert(`Đã đồng bộ ${warehouseInventory.length.toLocaleString('vi-VN')} dòng tồn kho từ Google Sheet.`); }catch(e){ console.error('Warehouse API error:',e); const el=document.getElementById('warehouse-last-sync'); if(el)el.textContent='Không thể đồng bộ Warehouse API • Kiểm tra response JSONP'; if(showAlert)alert(`Không thể lấy dữ liệu Warehouse.\n\n${e?.message||e}`); } finally { const btn=document.querySelector('button[onclick="syncWarehouseInventory()"]'); if(btn){btn.disabled=false;btn.classList.remove('opacity-60');} } }
     function updateWarehouseSyncLabel(){const el=document.getElementById('warehouse-last-sync');if(!el)return;const t=localStorage.getItem('CLK_WAREHOUSE_LAST_SYNC');el.textContent=t?`Tồn kho thực tế theo kho • Đồng bộ: ${new Date(t).toLocaleString('vi-VN')}`:'Tồn kho thực tế theo kho • Chưa đồng bộ API';}
     function renderWarehouseInventory(){ const ownerEl=document.getElementById('warehouse-owner-team'); if(ownerEl&&ownerEl.options.length<=1){ownerEl.innerHTML='<option value="">Chọn team phụ trách</option>'+(baseData.teams||[]).map(t=>`<option value="${escHtml(t)}">${escHtml(t)}</option>`).join('');} const owner=ownerEl?.value||''; const whEl=document.getElementById('warehouse-filter'); const current=whEl?.value||'ALL'; const whs=[...new Set(warehouseInventory.map(x=>x.warehouse))].sort(); if(whEl){whEl.innerHTML='<option value="ALL">Tất cả kho</option>'+whs.map(w=>`<option value="${escHtml(w)}">${escHtml(w)}</option>`).join('');whEl.value=whs.includes(current)?current:'ALL';} const wh=whEl?.value||'ALL'; const q=(document.getElementById('warehouse-search')?.value||'').trim().toLowerCase(); const rows=warehouseInventory.filter(x=>(wh==='ALL'||x.warehouse===wh)&&(!q||x.sku.toLowerCase().includes(q)||x.productName.toLowerCase().includes(q))); const total=rows.reduce((a,x)=>a+x.available,0); const low=rows.filter(x=>x.stockDay!=null&&x.stockDay<=WAREHOUSE_STOCKDAY_LOW).length; const other=owner?rows.filter(x=>x.team&&x.team!==owner).length:0; document.getElementById('wh-kpi-total').textContent=total.toLocaleString('vi-VN');document.getElementById('wh-kpi-sku').textContent=new Set(rows.map(x=>x.sku)).size.toLocaleString('vi-VN');document.getElementById('wh-kpi-lowdays').textContent=low.toLocaleString('vi-VN');document.getElementById('wh-kpi-otherteam').textContent=other.toLocaleString('vi-VN'); const warn=document.getElementById('warehouse-other-team-warning');warn?.classList.toggle('hidden',!(owner&&other));if(document.getElementById('warehouse-warning-text'))document.getElementById('warehouse-warning-text').textContent=other?`${other} SKU/dòng tồn kho đang thuộc team khác với ${owner}.` : ''; const tb=document.getElementById('warehouse-inventory-body'); if(tb)tb.innerHTML=rows.map((x,i)=>{const ot=owner&&x.team&&x.team!==owner,ld=x.stockDay!=null&&x.stockDay<=7,st=ot?'TEAM KHÁC':x.available<=0?'OUT OF STOCK':ld?'LOW STOCK':'NORMAL',cl=ot?'bg-rose-100 text-rose-700':x.available<=0?'bg-rose-100 text-rose-700':ld?'bg-amber-100 text-amber-700':'bg-emerald-100 text-emerald-700';return `<tr class="hover:bg-slate-50 ${ot?'bg-rose-50/50':''}"><td class="p-3 font-bold">${i+1}</td><td class="p-3">${escHtml(x.warehouse)}</td><td class="p-3 font-mono font-bold">${escHtml(x.sku)}</td><td class="p-3 font-medium">${escHtml(x.productName)}</td><td class="p-3 text-right font-bold">${x.available.toLocaleString('vi-VN')}</td><td class="p-3 text-right font-bold ${ld?'text-amber-600':''}">${x.stockDay==null?'-':x.stockDay}</td><td class="p-3">${x.team?escHtml(x.team):'<span class="text-slate-400">Chưa assign</span>'}</td><td class="p-3 text-center"><span class="px-2 py-0.5 rounded ${cl} text-[10px] font-bold">${st}</span></td></tr>`}).join('')||'<tr><td colspan="8" class="p-8 text-center text-slate-400">Chưa có dữ liệu tồn kho. Hãy Sync Inventory.</td></tr>'; renderWarehouseCharts(rows);lucide.createIcons(); }
     function renderWarehouseCharts(rows){const by={};rows.forEach(x=>by[x.warehouse]=(by[x.warehouse]||0)+x.available);const b=document.getElementById('chart-warehouse-bar');if(b){if(warehouseCharts.bar)warehouseCharts.bar.destroy();warehouseCharts.bar=new Chart(b,{type:'bar',data:{labels:Object.keys(by),datasets:[{label:'Tồn thực tế',data:Object.values(by),backgroundColor:'#2563EB',borderRadius:8}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});}const buckets={'≤ 7 ngày':0,'8–30 ngày':0,'> 30 ngày':0,'Chưa có data':0};rows.forEach(x=>{if(x.stockDay==null)buckets['Chưa có data']++;else if(x.stockDay<=7)buckets['≤ 7 ngày']++;else if(x.stockDay<=30)buckets['8–30 ngày']++;else buckets['> 30 ngày']++;});const d=document.getElementById('chart-warehouse-stockday');if(d){if(warehouseCharts.stockday)warehouseCharts.stockday.destroy();warehouseCharts.stockday=new Chart(d,{type:'doughnut',data:{labels:Object.keys(buckets),datasets:[{data:Object.values(buckets),backgroundColor:['#F59E0B','#60A5FA','#10B981','#CBD5E1'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%'}});}}
