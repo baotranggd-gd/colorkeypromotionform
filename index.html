@@ -915,47 +915,7 @@
           </button>
         </div>
 
-        <!-- 3 ACTION CARDS (Theo ảnh mẫu) -->
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <div onclick="openRuleModalWithSchemeType('BUY_GIFT_TIERS')" class="p-4 bg-white hover:bg-blue-50/50 border border-slate-200 hover:border-blue-300 rounded-2xl cursor-pointer transition shadow-sm flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <div class="p-2.5 bg-blue-50 text-blue-600 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition">
-                <i data-lucide="shopping-cart" class="w-5 h-5"></i>
-              </div>
-              <div>
-                <div class="font-bold text-slate-800 text-xs group-hover:text-blue-600">Mua hàng tặng hàng</div>
-                <div class="text-[11px] text-slate-400">Tạo chương trình mua X tặng Y</div>
-              </div>
-            </div>
-            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 group-hover:text-blue-600"></i>
-          </div>
 
-          <div onclick="openPromoModal()" class="p-4 bg-white hover:bg-blue-50/50 border border-slate-200 hover:border-blue-300 rounded-2xl cursor-pointer transition shadow-sm flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <div class="p-2.5 bg-blue-50 text-blue-600 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition">
-                <i data-lucide="percent" class="w-5 h-5"></i>
-              </div>
-              <div>
-                <div class="font-bold text-slate-800 text-xs group-hover:text-blue-600">Giảm giá / Discount</div>
-                <div class="text-[11px] text-slate-400">Tạo chương trình giảm giá</div>
-              </div>
-            </div>
-            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 group-hover:text-blue-600"></i>
-          </div>
-
-          <div onclick="openRuleModalWithSchemeType('MOQ_BUNDLE')" class="p-4 bg-white hover:bg-blue-50/50 border border-slate-200 hover:border-blue-300 rounded-2xl cursor-pointer transition shadow-sm flex items-center justify-between group">
-            <div class="flex items-center gap-3">
-              <div class="p-2.5 bg-blue-50 text-blue-600 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition">
-                <i data-lucide="gift" class="w-5 h-5"></i>
-              </div>
-              <div>
-                <div class="font-bold text-slate-800 text-xs group-hover:text-blue-600">Quà tặng kèm</div>
-                <div class="text-[11px] text-slate-400">Tạo chương trình quà tặng khi mua</div>
-              </div>
-            </div>
-            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 group-hover:text-blue-600"></i>
-          </div>
-        </div>
 
         <!-- BỘ LỌC TÌM KIẾM (FILTER BAR) -->
         <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3.5 text-xs">
@@ -1187,25 +1147,36 @@
   </div>
 
   <!-- ========================================================================= -->
-  <!-- MODAL 1: TẠO / SỬA CTKM (HỖ TRỢ ĐA KHU VỰC, PRIORITY) -->
+  <!-- MODAL 1: TẠO / SỬA CTKM (HỖ TRỢ ĐA KHU VỰC, PHÂN LOẠI CTKM) -->
   <!-- ========================================================================= -->
   <div id="modal-promo" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-lg w-full p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b pb-3">
         <h3 id="modal-promo-title" class="font-bold text-slate-800 text-base">Tạo Chương Trình Khuyến Mãi Mới</h3>
-        <button onclick="closePromoModal()" class="text-slate-400 hover:text-slate-600"><i data-lucide="x" class="w-5 h-5"></i></button>
+        <button onclick="closePromoModal()" class="text-slate-400 hover:text-slate-600 cursor-pointer"><i data-lucide="x" class="w-5 h-5"></i></button>
       </div>
-      <form id="promo-form" onsubmit="savePromo(event)" class="space-y-3.5 text-sm">
+      <form id="promo-form" onsubmit="savePromo(event)" class="space-y-3.5 text-xs">
         <input type="hidden" id="form-promo-id" />
+        
         <div>
-          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Tên Chương Trình Khuyến Mãi *</label>
-          <input type="text" id="form-promo-name" required placeholder="VD: KM001 - Mua hàng tặng hàng" class="w-full border rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-blue-500 text-xs font-medium" />
+          <label class="block font-bold text-slate-700 uppercase mb-1">Tên Chương Trình Khuyến Mãi *</label>
+          <input type="text" id="form-promo-name" required placeholder="VD: KM001 - Mua hàng tặng hàng" class="w-full border border-slate-300 rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-blue-500 font-medium bg-white text-xs" />
+        </div>
+
+        <!-- PHÂN LOẠI CTKM (3 LỰA CHỌN) -->
+        <div>
+          <label class="block font-bold text-slate-700 uppercase mb-1">Phân Loại CTKM *</label>
+          <select id="form-promo-type" class="w-full border border-slate-300 rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-blue-500 font-semibold bg-white text-xs">
+            <option value="BUY_GIFT_TIERS">Mua hàng tặng hàng (Mua X tặng Y)</option>
+            <option value="DISCOUNT">Giảm giá / Discount (Theo % hoặc Tiền)</option>
+            <option value="MOQ_BUNDLE">Quà tặng kèm / Thưởng MOQ (Theo mốc doanh số)</option>
+          </select>
         </div>
         
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Áp Dụng Quý *</label>
-            <select id="form-promo-quarter" class="w-full border rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-blue-500 text-xs">
+            <label class="block font-bold text-slate-700 uppercase mb-1">Áp Dụng Quý *</label>
+            <select id="form-promo-quarter" class="w-full border border-slate-300 rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-blue-500 font-medium bg-white text-xs">
               <option value="Q1">Quý 1 (Q1)</option>
               <option value="Q2">Quý 2 (Q2)</option>
               <option value="Q3" selected>Quý 3 (Q3)</option>
@@ -1213,35 +1184,35 @@
             </select>
           </div>
           <div>
-            <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Thứ Tự Ưu Tiên (Priority) *</label>
-            <input type="number" id="form-promo-priority" min="1" max="99" required value="1" placeholder="1 = Ưu tiên cao nhất" class="w-full border rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-blue-500 text-xs font-bold text-blue-600" />
+            <label class="block font-bold text-slate-700 uppercase mb-1">Thứ Tự Ưu Tiên (Priority) *</label>
+            <input type="number" id="form-promo-priority" min="1" max="99" required value="1" placeholder="1 = Ưu tiên cao nhất" class="w-full border border-slate-300 rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-blue-500 font-bold text-blue-600 bg-white text-xs" />
           </div>
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-slate-600 uppercase mb-1.5">Khu Vực Áp Dụng (Chọn một hoặc nhiều) *</label>
-          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 bg-slate-50 p-3 rounded-xl border border-slate-200 text-xs">
-            <label class="flex items-center gap-2 cursor-pointer">
+          <label class="block font-bold text-slate-700 uppercase mb-1.5">Khu Vực Áp Dụng (Chọn một hoặc nhiều) *</label>
+          <div class="grid grid-cols-2 sm:grid-cols-3 gap-2 bg-slate-50 p-3 rounded-xl border border-slate-200">
+            <label class="flex items-center gap-2 cursor-pointer font-medium">
               <input type="checkbox" name="promo_region" value="Toàn quốc" class="rounded text-blue-600" />
               <span>Toàn quốc</span>
             </label>
-            <label class="flex items-center gap-2 cursor-pointer">
+            <label class="flex items-center gap-2 cursor-pointer font-medium">
               <input type="checkbox" name="promo_region" value="GT SOUTH" checked class="rounded text-blue-600" />
               <span>GT SOUTH (Miền Nam)</span>
             </label>
-            <label class="flex items-center gap-2 cursor-pointer">
+            <label class="flex items-center gap-2 cursor-pointer font-medium">
               <input type="checkbox" name="promo_region" value="GT CENTRAL" class="rounded text-blue-600" />
               <span>GT CENTRAL (Miền Trung)</span>
             </label>
-            <label class="flex items-center gap-2 cursor-pointer">
+            <label class="flex items-center gap-2 cursor-pointer font-medium">
               <input type="checkbox" name="promo_region" value="GT NORTH" class="rounded text-blue-600" />
               <span>GT NORTH (Miền Bắc)</span>
             </label>
-            <label class="flex items-center gap-2 cursor-pointer">
+            <label class="flex items-center gap-2 cursor-pointer font-medium">
               <input type="checkbox" name="promo_region" value="Key Account" class="rounded text-blue-600" />
               <span>Key Account (KA)</span>
             </label>
-            <label class="flex items-center gap-2 cursor-pointer">
+            <label class="flex items-center gap-2 cursor-pointer font-medium">
               <input type="checkbox" name="promo_region" value="Online" class="rounded text-blue-600" />
               <span>Online</span>
             </label>
@@ -1249,8 +1220,8 @@
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Trạng Thái</label>
-          <select id="form-promo-status" class="w-full border rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-blue-500 text-xs">
+          <label class="block font-bold text-slate-700 uppercase mb-1">Trạng Thái *</label>
+          <select id="form-promo-status" class="w-full border border-slate-300 rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-blue-500 font-bold bg-white text-xs">
             <option value="Đang chạy">Đang chạy</option>
             <option value="Sắp chạy">Sắp chạy</option>
             <option value="Tạm dừng">Tạm dừng</option>
@@ -1259,13 +1230,13 @@
         </div>
 
         <div>
-          <label class="block text-xs font-bold text-slate-600 uppercase mb-1">Mô Tả Chi Tiết</label>
-          <textarea id="form-promo-desc" rows="2" placeholder="Ghi chú điều kiện áp dụng, đối tượng khách hàng..." class="w-full border rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-blue-500 text-xs"></textarea>
+          <label class="block font-bold text-slate-700 uppercase mb-1">Mô Tả Chi Tiết</label>
+          <textarea id="form-promo-desc" rows="2" placeholder="Ghi chú điều kiện áp dụng, đối tượng khách hàng..." class="w-full border border-slate-300 rounded-xl p-2.5 outline-none focus:ring-2 focus:ring-blue-500 bg-white text-xs font-medium"></textarea>
         </div>
 
-        <div class="flex justify-end gap-2 pt-2 border-t">
-          <button type="button" onclick="closePromoModal()" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold">Hủy</button>
-          <button type="submit" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-semibold shadow">Lưu Chương Trình</button>
+        <div class="flex justify-end gap-2.5 pt-3 border-t">
+          <button type="button" onclick="closePromoModal()" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 font-semibold cursor-pointer">Hủy</button>
+          <button type="submit" class="px-5 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold shadow-md cursor-pointer transition">Lưu Chương Trình</button>
         </div>
       </form>
     </div>
@@ -2632,6 +2603,7 @@
       document.getElementById('modal-promo-title').innerText = 'Chỉnh Sửa CTKM';
       document.getElementById('form-promo-id').value = p.id;
       document.getElementById('form-promo-name').value = p.name;
+      document.getElementById('form-promo-type').value = p.type || 'BUY_GIFT_TIERS';
       document.getElementById('form-promo-quarter').value = p.quarter || 'Q3';
       document.getElementById('form-promo-priority').value = p.priority || 1;
       document.getElementById('form-promo-status').value = p.status || 'Đang chạy';
@@ -2656,19 +2628,26 @@
       const selectedRegions = Array.from(document.querySelectorAll('input[name="promo_region"]:checked')).map(cb => cb.value);
       const regions = selectedRegions.length > 0 ? selectedRegions : ['Toàn quốc'];
 
+      const promoType = document.getElementById('form-promo-type').value;
+
       let updated = [...promotions];
       if (id) {
         const idx = updated.findIndex(p => p.id === id);
         if (idx !== -1) {
-          updated[idx] = { ...updated[idx], name, quarter, priority, regions, status, desc };
+          updated[idx] = { ...updated[idx], name, type: promoType, quarter, priority, regions, status, desc };
         }
       } else {
         updated.unshift({
           id: `KM-${Date.now()}`,
+          code: `KM00${promotions.length + 1}`,
           name,
+          type: promoType,
           quarter,
           priority,
           regions,
+          channel: "Tất cả",
+          rank: "Tất cả",
+          time: "22/09/2026 - 31/12/2026",
           status,
           desc,
           rules: []
