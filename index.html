@@ -2497,7 +2497,7 @@
       const statusF = document.getElementById('promo-filter-status')?.value || 'ALL';
 
       const filtered = promotions.filter(p => {
-        const matchQ = !q || p.name.toLowerCase().includes(searchQ) || p.code.toLowerCase().includes(searchQ);
+        const matchQ = !searchQ || p.name.toLowerCase().includes(searchQ) || p.code.toLowerCase().includes(searchQ);
         const matchReg = regionF === 'ALL' || (p.regions && p.regions.includes(regionF)) || regionF === 'Toàn quốc';
         const matchChan = channelF === 'ALL' || (p.channel || 'Online') === channelF || p.channel === 'Tất cả';
         const matchRank = rankF === 'ALL' || (p.rank || 'Tất cả') === rankF || p.rank === 'Tất cả';
@@ -2657,6 +2657,7 @@
       persistPromotions(updated);
       closePromoModal();
       autoSelectPromotionsByCustomerRegion();
+      alert('Đã lưu chương trình khuyến mãi thành công!');
     }
 
     function deletePromo(id) {
