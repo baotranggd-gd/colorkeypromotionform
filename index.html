@@ -2131,60 +2131,7 @@
     // CHUYỂN TAB ĐỒNG BỘ THEO OPS PORTAL
 
 
-    function switchTab(tabId) {
-      console.log("Switching tab to:", tabId);
-      const tabs = ['dashboard', 'order-processing', 'crm', 'products', 'promotions', 'warehouse', 'analytics', 'setting'];
-      
-      tabs.forEach(t => {
-        const el = document.getElementById('view-' + t);
-        const btn = document.getElementById('btn-tab-' + t);
-        if (el) {
-          el.style.display = 'none';
-          el.classList.add('hidden');
-        }
-        if (btn) {
-          btn.classList.remove('sidebar-active');
-          btn.classList.add('text-slate-400');
-        }
-      });
-
-      const activeEl = document.getElementById('view-' + tabId);
-      const activeBtn = document.getElementById('btn-tab-' + tabId);
-      
-      if (activeEl) {
-        activeEl.style.display = 'block';
-        activeEl.classList.remove('hidden');
-      }
-      if (activeBtn) {
-        activeBtn.classList.add('sidebar-active');
-        activeBtn.classList.remove('text-slate-400');
-      }
-
-      if (tabId === 'crm') {
-        if (typeof filterCrmTable === 'function') filterCrmTable();
-      } else if (tabId === 'products') {
-        if (typeof filterProdManagementTable === 'function') filterProdManagementTable();
-      } else if (tabId === 'promotions') {
-        if (typeof renderPromotions === 'function') renderPromotions();
-      }
-
-      if (typeof lucide !== 'undefined') {
-        lucide.createIcons();
-      }
-    }
-
-    window.switchTab = switchTab;
-
-    // Đảm bảo ẩn tất cả view trừ dashboard khi trang vừa tải xong
-    document.addEventListener("DOMContentLoaded", () => {
-      const tabs = ['dashboard', 'order-processing', 'crm', 'products', 'promotions', 'warehouse', 'analytics', 'setting'];
-      tabs.forEach(t => {
-        const el = document.getElementById('view-' + t);
-        if (el) {
-          if (t === 'dashboard') {
-            el.style.display = 'block';
-            el.classList.remove('hidden');
-          } else {
+ else {
             el.style.display = 'none';
             el.classList.add('hidden');
           }
@@ -4154,6 +4101,77 @@
     }
 
     document.addEventListener("DOMContentLoaded", init);
-  </script>
+  
+    // Cơ chế chuyển tab dùng addEventListener trực tiếp qua JS thuần để 100% không bị xung đột
+    function switchTab(tabId) {
+      console.log("Switching tab to:", tabId);
+      const tabs = ['dashboard', 'order-processing', 'crm', 'products', 'promotions', 'warehouse', 'analytics', 'setting'];
+      
+      tabs.forEach(t => {
+        const el = document.getElementById('view-' + t);
+        const btn = document.getElementById('btn-tab-' + t);
+        if (el) {
+          el.style.display = (t === tabId) ? 'block' : 'none';
+          if (t === tabId) {
+            el.classList.remove('hidden');
+          } else {
+            el.classList.add('hidden');
+          }
+        }
+        if (btn) {
+          if (t === tabId) {
+            btn.classList.add('sidebar-active');
+            btn.classList.remove('text-slate-400');
+          } else {
+            btn.classList.remove('sidebar-active');
+            btn.classList.add('text-slate-400');
+          }
+        }
+      });
+
+      if (tabId === 'crm') {
+        if (typeof filterCrmTable === 'function') filterCrmTable();
+      } else if (tabId === 'products') {
+        if (typeof filterProdManagementTable === 'function') filterProdManagementTable();
+      } else if (tabId === 'promotions') {
+        if (typeof renderPromotions === 'function') renderPromotions();
+      }
+
+      if (typeof lucide !== 'undefined') {
+        lucide.createIcons();
+      }
+    }
+
+    window.switchTab = switchTab;
+
+    document.addEventListener("DOMContentLoaded", () => {
+      // Bind sự kiện click cho toàn bộ nút sidebar tự động bằng code JS
+      const tabMap = {
+        'btn-tab-dashboard': 'dashboard',
+        'btn-tab-order-processing': 'order-processing',
+        'btn-tab-crm': 'crm',
+        'btn-tab-products': 'products',
+        'btn-tab-promotions': 'promotions',
+        'btn-tab-warehouse': 'warehouse',
+        'btn-tab-analytics': 'analytics',
+        'btn-tab-setting': 'setting'
+      };
+
+      Object.keys(tabMap).forEach(btnId => {
+        const btn = document.getElementById(btnId);
+        if (btn) {
+          btn.addEventListener('click', (e) => {
+            e.preventDefault();
+            switchTab(tabMap[btnId]);
+          });
+        }
+      });
+
+      // Khởi chạy trạng thái mặc định ban đầu
+      switchTab('dashboard');
+      if (typeof init === 'function') init();
+    });
+
+</script>
 </body>
 </html>
