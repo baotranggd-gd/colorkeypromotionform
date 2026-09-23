@@ -904,61 +904,167 @@
       <!-- ========================================================================= -->
       <!-- VIEW 5: PROMOTION MANAGEMENT (Trang 5-10 PDF) -->
       <!-- ========================================================================= -->
-      <section id="view-promotions" class="hidden h-full overflow-y-auto p-8 space-y-6">
+      <section       <section id="view-promotions" class="hidden h-full overflow-y-auto p-8 space-y-6">
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h2 class="text-xl font-bold text-slate-800">Promotion Management</h2>
             <p class="text-xs text-slate-500 mt-0.5">Quản lý chương trình khuyến mãi, chiết khấu và quà tặng.</p>
           </div>
-          <button onclick="openPromoModal()" class="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs px-4 py-2.5 rounded-xl font-semibold shadow transition">
-            <i data-lucide="plus-circle" class="w-4 h-4"></i> + Thêm chương trình
+          <button onclick="openPromoModal()" class="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs px-4 py-2.5 rounded-xl font-semibold shadow transition cursor-pointer">
+            <i data-lucide="plus" class="w-4 h-4"></i> + Thêm chương trình
           </button>
         </div>
 
-        <!-- 3 ACTION CARDS (Trang 5 PDF) -->
+        <!-- 3 ACTION CARDS (Theo ảnh mẫu) -->
         <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
           <div onclick="openRuleModalWithSchemeType('BUY_GIFT_TIERS')" class="p-4 bg-white hover:bg-blue-50/50 border border-slate-200 hover:border-blue-300 rounded-2xl cursor-pointer transition shadow-sm flex items-center justify-between group">
             <div class="flex items-center gap-3">
-              <div class="p-2.5 bg-blue-100 text-blue-600 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition">
-                <i data-lucide="shopping-bag" class="w-5 h-5"></i>
+              <div class="p-2.5 bg-blue-50 text-blue-600 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition">
+                <i data-lucide="shopping-cart" class="w-5 h-5"></i>
               </div>
               <div>
                 <div class="font-bold text-slate-800 text-xs group-hover:text-blue-600">Mua hàng tặng hàng</div>
-                <div class="text-[11px] text-slate-400">Tạo chương trình mua X tặng Y (cùng/khác loại)</div>
+                <div class="text-[11px] text-slate-400">Tạo chương trình mua X tặng Y</div>
               </div>
             </div>
             <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 group-hover:text-blue-600"></i>
           </div>
 
-          <div onclick="openPromoModal()" class="p-4 bg-white hover:bg-purple-50/50 border border-slate-200 hover:border-purple-300 rounded-2xl cursor-pointer transition shadow-sm flex items-center justify-between group">
+          <div onclick="openPromoModal()" class="p-4 bg-white hover:bg-blue-50/50 border border-slate-200 hover:border-blue-300 rounded-2xl cursor-pointer transition shadow-sm flex items-center justify-between group">
             <div class="flex items-center gap-3">
-              <div class="p-2.5 bg-purple-100 text-purple-600 rounded-xl group-hover:bg-purple-600 group-hover:text-white transition">
+              <div class="p-2.5 bg-blue-50 text-blue-600 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition">
                 <i data-lucide="percent" class="w-5 h-5"></i>
               </div>
               <div>
-                <div class="font-bold text-slate-800 text-xs group-hover:text-purple-600">Giảm giá / Discount</div>
-                <div class="text-[11px] text-slate-400">Tạo chương trình giảm giá theo % hoặc tiền</div>
+                <div class="font-bold text-slate-800 text-xs group-hover:text-blue-600">Giảm giá / Discount</div>
+                <div class="text-[11px] text-slate-400">Tạo chương trình giảm giá</div>
               </div>
             </div>
-            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 group-hover:text-purple-600"></i>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 group-hover:text-blue-600"></i>
           </div>
 
-          <div onclick="openRuleModalWithSchemeType('MOQ_BUNDLE')" class="p-4 bg-white hover:bg-amber-50/50 border border-slate-200 hover:border-amber-300 rounded-2xl cursor-pointer transition shadow-sm flex items-center justify-between group">
+          <div onclick="openRuleModalWithSchemeType('MOQ_BUNDLE')" class="p-4 bg-white hover:bg-blue-50/50 border border-slate-200 hover:border-blue-300 rounded-2xl cursor-pointer transition shadow-sm flex items-center justify-between group">
             <div class="flex items-center gap-3">
-              <div class="p-2.5 bg-amber-100 text-amber-600 rounded-xl group-hover:bg-amber-600 group-hover:text-white transition">
+              <div class="p-2.5 bg-blue-50 text-blue-600 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition">
                 <i data-lucide="gift" class="w-5 h-5"></i>
               </div>
               <div>
-                <div class="font-bold text-slate-800 text-xs group-hover:text-amber-600">Quà tặng kèm / MOQ</div>
-                <div class="text-[11px] text-slate-400">Tạo chương trình thưởng gói quà theo mốc tiền</div>
+                <div class="font-bold text-slate-800 text-xs group-hover:text-blue-600">Quà tặng kèm</div>
+                <div class="text-[11px] text-slate-400">Tạo chương trình quà tặng khi mua</div>
               </div>
             </div>
-            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 group-hover:text-amber-600"></i>
+            <i data-lucide="chevron-right" class="w-4 h-4 text-slate-300 group-hover:text-blue-600"></i>
           </div>
         </div>
 
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6" id="promotions-grid"></div>
+        <!-- BỘ LỌC TÌM KIẾM (FILTER BAR) -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3.5 text-xs">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
+            <div class="relative lg:col-span-2">
+              <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5"></i>
+              <input type="text" id="promo-filter-search" placeholder="Tìm theo tên chương trình, mã..." oninput="filterPromotionsTable()" 
+                class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" />
+            </div>
+            <div>
+              <select id="promo-filter-region" onchange="filterPromotionsTable()" class="w-full py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-700">
+                <option value="ALL">Tất cả Khu vực</option>
+                <option value="Toàn quốc">Toàn quốc</option>
+                <option value="GT SOUTH">GT SOUTH (Miền Nam)</option>
+                <option value="HCM">TP. Hồ Chí Minh</option>
+                <option value="Hà Nội">Hà Nội</option>
+                <option value="Đà Nẵng">Đà Nẵng</option>
+              </select>
+            </div>
+            <div>
+              <select id="promo-filter-channel" onchange="filterPromotionsTable()" class="w-full py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-700">
+                <option value="ALL">Tất cả Kênh (Channel)</option>
+                <option value="Online">Online</option>
+                <option value="MT">MT</option>
+                <option value="GT">GT</option>
+                <option value="KA">KA</option>
+              </select>
+            </div>
+            <div>
+              <select id="promo-filter-rank" onchange="filterPromotionsTable()" class="w-full py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-700">
+                <option value="ALL">Tất cả Rank khách hàng</option>
+                <option value="Tất cả">Tất cả</option>
+                <option value="A, B">A, B</option>
+                <option value="A">A</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-1">
+            <div>
+              <select id="promo-filter-status" onchange="filterPromotionsTable()" class="w-full py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-700">
+                <option value="ALL">Tất cả Trạng thái</option>
+                <option value="Đang chạy">Đang chạy</option>
+                <option value="Sắp chạy">Sắp chạy</option>
+                <option value="Đã kết thúc">Đã kết thúc</option>
+                <option value="Tạm dừng">Tạm dừng</option>
+              </select>
+            </div>
+            <div class="relative">
+              <input type="date" id="promo-filter-from" onchange="filterPromotionsTable()" class="w-full py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-slate-600" />
+            </div>
+            <div class="relative">
+              <input type="date" id="promo-filter-to" onchange="filterPromotionsTable()" class="w-full py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-slate-600" />
+            </div>
+            <div class="flex items-center justify-end lg:col-span-2">
+              <button onclick="resetPromoFilters()" class="text-xs text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-1 cursor-pointer">
+                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Xóa bộ lọc
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <!-- BẢNG DANH SÁCH CHƯƠNG TRÌNH KHUYẾN MÃI -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden space-y-0">
+          <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50/60">
+            <h3 class="font-bold text-slate-800 text-xs uppercase tracking-wider" id="promo-table-heading">Danh sách chương trình (12)</h3>
+            <span class="text-xs text-slate-400">Cập nhật theo thời gian thực</span>
+          </div>
+
+          <div class="overflow-x-auto">
+            <table class="w-full text-left border-collapse text-xs">
+              <thead>
+                <tr class="bg-slate-100 text-slate-600 uppercase font-bold border-b text-[11px]">
+                  <th class="p-3 text-center w-10"><input type="checkbox" class="rounded text-blue-600" /></th>
+                  <th class="p-3">Mã CTKM</th>
+                  <th class="p-3">Tên chương trình</th>
+                  <th class="p-3">Loại CTKM</th>
+                  <th class="p-3">Khu vực</th>
+                  <th class="p-3">Kênh</th>
+                  <th class="p-3">Rank KH</th>
+                  <th class="p-3">Sản phẩm áp dụng</th>
+                  <th class="p-3">Thời gian áp dụng</th>
+                  <th class="p-3 text-center">Trạng thái</th>
+                  <th class="p-3 text-center">Thao tác</th>
+                </tr>
+              </thead>
+              <tbody id="promotions-grid" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
+
+          <!-- FOOTER PHÂN TRANG (PAGINATION) -->
+          <div class="p-4 bg-slate-50 border-t border-slate-200 flex flex-wrap justify-between items-center text-xs text-slate-500">
+            <div>Hiển thị 1 - 8 / 12 chương trình</div>
+            <div class="flex items-center gap-3">
+              <div class="flex items-center gap-1">
+                <button class="w-7 h-7 rounded-lg border bg-white flex items-center justify-center text-slate-400 hover:bg-slate-100">&lt;</button>
+                <button class="w-7 h-7 rounded-lg border bg-blue-600 text-white font-bold flex items-center justify-center shadow-sm">1</button>
+                <button class="w-7 h-7 rounded-lg border bg-white flex items-center justify-center text-slate-700 hover:bg-slate-100 font-medium">2</button>
+                <button class="w-7 h-7 rounded-lg border bg-white flex items-center justify-center text-slate-700 hover:bg-slate-100">&gt;</button>
+              </div>
+              <select class="border rounded-lg px-2.5 py-1.5 bg-white text-xs outline-none">
+                <option value="10">10 / trang</option>
+                <option value="20">20 / trang</option>
+              </select>
+            </div>
+          </div>
+        </div>
       </section>
+
 
       <!-- ========================================================================= -->
       <!-- VIEW 6: WAREHOUSE (Trang 11 PDF - Inventory, Báo Cáo Tồn Kho) -->
@@ -2398,89 +2504,95 @@
     // =========================================================================
     // ADMIN PROMOTION & SCHEMES RENDER
     // =========================================================================
+
     function renderPromotions() {
-      const grid = document.getElementById('promotions-grid');
-      grid.innerHTML = promotions.map(p => {
-        const rules = p.rules || [];
-        const regionsStr = (p.regions || ['Toàn quốc']).join(', ');
+      const tbody = document.getElementById('promotions-grid');
+      if (!tbody) return;
+
+      const searchQ = (document.getElementById('promo-filter-search')?.value || '').toLowerCase().trim();
+      const regionF = document.getElementById('promo-filter-region')?.value || 'ALL';
+      const channelF = document.getElementById('promo-filter-channel')?.value || 'ALL';
+      const rankF = document.getElementById('promo-filter-rank')?.value || 'ALL';
+      const statusF = document.getElementById('promo-filter-status')?.value || 'ALL';
+
+      const filtered = promotions.filter(p => {
+        const matchQ = !q || p.name.toLowerCase().includes(searchQ) || p.code.toLowerCase().includes(searchQ);
+        const matchReg = regionF === 'ALL' || (p.regions && p.regions.includes(regionF)) || regionF === 'Toàn quốc';
+        const matchChan = channelF === 'ALL' || (p.channel || 'Online') === channelF || p.channel === 'Tất cả';
+        const matchRank = rankF === 'ALL' || (p.rank || 'Tất cả') === rankF || p.rank === 'Tất cả';
+        const matchSt = statusF === 'ALL' || p.status === statusF;
+        return matchQ && matchReg && matchChan && matchRank && matchSt;
+      });
+
+      const heading = document.getElementById('promo-table-heading');
+      if (heading) heading.innerText = `Danh sách chương trình (${filtered.length})`;
+
+      tbody.innerHTML = filtered.map(p => {
+        let statusBadge = 'bg-emerald-100 text-emerald-800';
+        if (p.status === 'Sắp chạy') statusBadge = 'bg-amber-100 text-amber-800';
+        else if (p.status === 'Đã kết thúc') statusBadge = 'bg-slate-100 text-slate-600';
+        else if (p.status === 'Tạm dừng') statusBadge = 'bg-rose-100 text-rose-800';
+
+        const typeLabel = p.type === 'BUY_GIFT_TIERS' ? 'Mua hàng tặng hàng' : (p.type === 'MOQ_BUNDLE' ? 'Quà tặng kèm' : 'Giảm giá');
+        const regionStr = (p.regions || ['Toàn quốc']).join(', ');
+        const prodCount = (p.rules || []).length > 0 ? `${(p.rules || []).length * 3} sản phẩm` : '5 sản phẩm';
 
         return `
-          <div class="bg-white rounded-2xl border border-slate-200 p-5 shadow-sm flex flex-col justify-between hover:shadow-md transition">
-            <div>
-              <div class="flex justify-between items-start mb-2.5">
-                <div class="flex items-center gap-2 flex-wrap">
-                  <span class="px-2 py-0.5 rounded-md text-xs font-black bg-blue-600 text-white">Ưu tiên #${p.priority || 1}</span>
-                  <span class="px-2 py-0.5 rounded-md text-xs font-bold bg-blue-100 text-blue-800">${p.quarter || 'Q3'}</span>
-                  <span class="px-2 py-0.5 rounded-md text-xs font-semibold ${p.status === 'Đang chạy' ? 'bg-emerald-100 text-emerald-800' : 'bg-slate-100 text-slate-600'}">
-                    ${p.status}
-                  </span>
-                </div>
-                <div class="flex items-center gap-1">
-                  <button onclick="editPromo('${p.id}')" class="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-slate-100 transition" title="Sửa CTKM">
-                    <i data-lucide="edit-3" class="w-4 h-4"></i>
-                  </button>
-                  <button onclick="deletePromo('${p.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-slate-100 transition" title="Xóa CTKM">
-                    <i data-lucide="trash-2" class="w-4 h-4"></i>
-                  </button>
-                </div>
+          <tr class="hover:bg-slate-50 transition border-b border-slate-100">
+            <td class="p-3 text-center"><input type="checkbox" class="rounded text-blue-600" /></td>
+            <td class="p-3 font-mono font-bold text-blue-600">${p.code}</td>
+            <td class="p-3 font-bold text-slate-900">
+              <div onclick="editPromo('${p.id}')" class="hover:text-blue-600 cursor-pointer">${p.name.replace(/^KM[0-9]+\s*-\s*/, '')}</div>
+              <div class="text-[10px] text-slate-400 font-normal truncate max-w-xs">${p.desc || ''}</div>
+            </td>
+            <td class="p-3 font-medium text-slate-700">${typeLabel}</td>
+            <td class="p-3 text-slate-600">${regionStr}</td>
+            <td class="p-3 font-medium text-slate-700">${p.channel || 'Online'}</td>
+            <td class="p-3 text-slate-600">${p.rank || 'Tất cả'}</td>
+            <td class="p-3 text-blue-600 font-medium cursor-pointer hover:underline" onclick="openRuleModal('${p.id}')">${prodCount}</td>
+            <td class="p-3 font-mono text-slate-600 text-[11px]">${p.time || '01/08/2026 - 31/08/2026'}</td>
+            <td class="p-3 text-center">
+              <span class="px-2.5 py-0.5 rounded-full text-[10px] font-bold ${statusBadge} inline-flex items-center gap-1">
+                <span class="w-1.5 h-1.5 rounded-full bg-current"></span> ${p.status || 'Đang chạy'}
+              </span>
+            </td>
+            <td class="p-3 text-center">
+              <div class="flex items-center justify-center gap-1.5">
+                <button onclick="editPromo('${p.id}')" class="p-1.5 text-slate-400 hover:text-blue-600 rounded-lg hover:bg-slate-100 transition cursor-pointer" title="Chỉnh sửa chương trình">
+                  <i data-lucide="edit-3" class="w-4 h-4"></i>
+                </button>
+                <button onclick="openRuleModal('${p.id}')" class="p-1.5 text-slate-400 hover:text-emerald-600 rounded-lg hover:bg-slate-100 transition cursor-pointer" title="Quản lý Scheme / Chi tiết">
+                  <i data-lucide="more-horizontal" class="w-4 h-4"></i>
+                </button>
+                <button onclick="deletePromo('${p.id}')" class="p-1.5 text-slate-400 hover:text-rose-600 rounded-lg hover:bg-slate-100 transition cursor-pointer" title="Xóa chương trình">
+                  <i data-lucide="trash-2" class="w-4 h-4"></i>
+                </button>
               </div>
-
-              <h4 class="font-bold text-slate-800 text-sm mb-1">${p.name}</h4>
-              <p class="text-xs text-slate-500 mb-2.5">${p.desc || 'Chưa có mô tả chi tiết'}</p>
-
-              <div class="text-xs text-slate-600 mb-3 border-y py-2 bg-slate-50/70 px-3 rounded-xl flex items-center justify-between">
-                <span>Khu vực: <strong class="text-blue-700">${regionsStr}</strong></span>
-                <span>Số Scheme: <strong class="text-emerald-700">${rules.length}</strong></span>
-              </div>
-
-              <!-- DANH SÁCH SCHEMES -->
-              <div class="space-y-2 mb-3">
-                <span class="text-[11px] font-bold uppercase text-slate-400 tracking-wider">Danh Sách Scheme Khuyến Mãi:</span>
-                ${rules.length === 0 ? '<div class="text-xs text-slate-400 italic">Chưa có scheme nào. Bấm nút dưới để thêm.</div>' : ''}
-                <div class="space-y-1.5 max-h-48 overflow-y-auto pr-1">
-                  ${rules.map((r) => {
-                    let badge = '';
-                    let details = '';
-                    if (r.type === 'BUY_GIFT_TIERS') {
-                      badge = '<span class="px-1.5 py-0.2 rounded bg-emerald-100 text-emerald-800 font-bold text-[10px]">Mua Tặng Hàng</span>';
-                      details = (r.tiers || []).map(t => {
-                        const giftLabel = t.giftName ? t.giftName : '(SP Cùng Loại)';
-                        return `• Mua ${t.buyQty} → Tặng ${t.giftQty} ${giftLabel}`;
-                      }).join('<br>');
-                    } else if (r.type === 'MOQ_BUNDLE') {
-                      badge = '<span class="px-1.5 py-0.2 rounded bg-amber-100 text-amber-800 font-bold text-[10px]">Thưởng MOQ</span>';
-                      details = (r.tiers || []).map(t => `• Mốc ${t.minAmount.toLocaleString()}đ → Tặng: ${t.bundleDesc || 'Gói quà'}`).join('<br>');
-                    }
-
-                    return `
-                      <div class="text-xs bg-slate-50 border border-slate-200 p-2.5 rounded-xl flex items-start justify-between gap-2">
-                        <div class="flex-1 leading-snug">
-                          <div class="flex items-center gap-1.5 flex-wrap">
-                            <span class="font-bold text-slate-800">${r.schemeName}</span>
-                            ${badge}
-                          </div>
-                          <div class="text-slate-600 text-[11px] mt-1">${details}</div>
-                        </div>
-                        <button onclick="deleteRule('${p.id}', '${r.id}')" class="text-slate-400 hover:text-rose-500 p-1" title="Xóa scheme này">
-                          <i data-lucide="x" class="w-3.5 h-3.5"></i>
-                        </button>
-                      </div>
-                    `;
-                  }).join('')}
-                </div>
-              </div>
-            </div>
-
-            <div class="pt-2 border-t">
-              <button onclick="openRuleModal('${p.id}')" class="w-full flex items-center justify-center gap-1.5 bg-slate-50 hover:bg-blue-50 text-slate-700 hover:text-blue-600 border border-dashed border-slate-300 hover:border-blue-400 py-2 rounded-xl text-xs font-bold transition shadow-sm">
-                <i data-lucide="plus" class="w-4 h-4"></i> Thêm Scheme Khuyến Mãi Mới
-              </button>
-            </div>
-          </div>
+            </td>
+          </tr>
         `;
       }).join('');
       lucide.createIcons();
     }
+
+    function filterPromotionsTable() {
+      renderPromotions();
+    }
+
+    function resetPromoFilters() {
+      const searchEl = document.getElementById('promo-filter-search');
+      if (searchEl) searchEl.value = '';
+      const regEl = document.getElementById('promo-filter-region');
+      if (regEl) regEl.value = 'ALL';
+      const chanEl = document.getElementById('promo-filter-channel');
+      if (chanEl) chanEl.value = 'ALL';
+      const rankEl = document.getElementById('promo-filter-rank');
+      if (rankEl) rankEl.value = 'ALL';
+      const stEl = document.getElementById('promo-filter-status');
+      if (stEl) stEl.value = 'ALL';
+      renderPromotions();
+    }
+
 
     function openPromoModal(isEdit = false) {
       document.getElementById('modal-promo').classList.remove('hidden');
