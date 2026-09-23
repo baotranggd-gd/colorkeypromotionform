@@ -2426,43 +2426,46 @@
     let warehouseInventory = [];
     let warehouseCharts = {};
     function normalizeWarehouseRow(row){ const val=(keys)=>{for(const k of keys)if(row[k]!=null)return row[k];return '';}; const sku=String(val(['SKU','sku','Barcode','barcode'])).trim(); const wh=String(val(['Kho','Warehouse','warehouse'])).trim(); const available=Number(String(val(['Khả dụng','Kha dung','Available','available','On-hand','On Hand'])).replace(/,/g,''))||0; const sd=Number(String(val(['Stockday','Stock Day','stockday','stockDay'])).replace(/,/g,'')); const prod=products.find(p=>String(p.barcode||'').trim()===sku||String(p.productCode||'').trim()===sku); return {warehouse:wh,sku,available,stockDay:Number.isFinite(sd)?sd:null,productName:prod?.name||sku,team:prod?.team||''}; }
+    let warehouseJsonpSeq = 0;
+    let warehouseJsonpActive = false;
     function fetchWarehouseInventory(){
       return new Promise((resolve,reject)=>{
-        const callbackName='clkWarehouseCb_'+Date.now()+'_'+Math.floor(Math.random()*100000);
+        if(warehouseJsonpActive){ reject(new Error('Warehouse API đang được gọi')); return; }
+        warehouseJsonpActive=true;
+        const callbackName='__CLK_WAREHOUSE_JSONP__';
         const script=document.createElement('script');
-        const timeout=setTimeout(()=>{
-          cleanup();
-          reject(new Error('JSONP timeout - API không phản hồi'));
-        },15000);
-        function cleanup(){
+        let finished=false;
+        const finish=(fn,value)=>{
+          if(finished)return;
+          finished=true;
+          warehouseJsonpActive=false;
           clearTimeout(timeout);
           try{delete window[callbackName];}catch(e){window[callbackName]=undefined;}
           if(script.parentNode)script.parentNode.removeChild(script);
-        }
+          fn(value);
+        };
+        const timeout=setTimeout(()=>finish(reject,new Error('JSONP timeout - callback không được thực thi')),20000);
         window[callbackName]=(response)=>{
           try{
-            // Apps Script response thực tế: { success:true, updatedAt:'...', data:[...] }
-            if(!response || response.success !== true){
+            if(!response || response.success!==true){
               throw new Error(response?.error || 'Warehouse API trả về response không hợp lệ');
             }
-            const rows=response.data;
-            if(!Array.isArray(rows)){
+            if(!Array.isArray(response.data)){
               throw new Error('Warehouse API: response.data không phải là mảng');
             }
-            const normalized=rows
+            const normalized=response.data
               .map(normalizeWarehouseRow)
-              .filter(x=>x.warehouse && x.sku);
-            resolve(normalized);
+              .filter(x=>x.warehouse&&x.sku);
+            finish(resolve,normalized);
           }catch(e){
-            reject(e);
-          }finally{
-            cleanup();
+            finish(reject,e);
           }
         };
-        script.onerror=()=>{ cleanup(); reject(new Error('Không thể tải Warehouse API')); };
-        script.src=WAREHOUSE_API_URL+(WAREHOUSE_API_URL.includes('?')?'&':'?')+'callback='+encodeURIComponent(callbackName)+'&_='+Date.now();
+        script.onerror=()=>finish(reject,new Error('Không thể tải Warehouse API. Kiểm tra CSP/network của trình duyệt.'));
+        script.src=WAREHOUSE_API_URL+'?callback='+callbackName+'&_='+Date.now()+'&seq='+(++warehouseJsonpSeq);
         script.async=true;
-        document.head.appendChild(script);
+        script.type='text/javascript';
+        document.body.appendChild(script);
       });
     }
     async function syncWarehouseInventory(showAlert=true){ try{ const btn=document.querySelector('button[onclick="syncWarehouseInventory()"]'); if(btn){btn.disabled=true;btn.classList.add('opacity-60');} warehouseInventory=await fetchWarehouseInventory(); localStorage.setItem('CLK_WAREHOUSE_LAST_SYNC',new Date().toISOString()); renderWarehouseInventory(); updateWarehouseSyncLabel(); if(showAlert) alert(`Đã đồng bộ ${warehouseInventory.length.toLocaleString('vi-VN')} dòng tồn kho từ Google Sheet.`); }catch(e){ console.error('Warehouse API error:',e); const el=document.getElementById('warehouse-last-sync'); if(el)el.textContent='Không thể đồng bộ Warehouse API • Kiểm tra response JSONP'; if(showAlert)alert(`Không thể lấy dữ liệu Warehouse.\n\n${e?.message||e}`); } finally { const btn=document.querySelector('button[onclick="syncWarehouseInventory()"]'); if(btn){btn.disabled=false;btn.classList.remove('opacity-60');} } }
