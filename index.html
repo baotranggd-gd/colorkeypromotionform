@@ -2744,16 +2744,20 @@
       if (!p) return;
       document.getElementById('modal-rule').classList.remove('hidden');
       document.getElementById('form-rule-promo-id').value = promoId;
-      document.getElementById('modal-rule-subtitle').innerText = `Áp dụng cho CTKM: [${p.quarter || 'Q3'}] ${p.name} (${p.type === 'MOQ_BUNDLE' ? 'Thưởng MOQ' : 'Mua hàng tặng hàng'})`;
+      
+      const typeLabel = p.type === 'MOQ_BUNDLE' ? 'Thưởng MOQ (Gói quà)' : (p.type === 'DISCOUNT' ? 'Giảm giá' : 'Mua hàng tặng hàng');
+      document.getElementById('modal-rule-subtitle').innerText = `Áp dụng cho CTKM: [${p.quarter || 'Q3'}] ${p.name} (${typeLabel})`;
 
       const tabsContainer = document.getElementById('modal-rule-tabs-container');
+      if (tabsContainer) {
+        // Ẩn luôn thanh tab switch trên modal khi chương trình đã chọn cố định phân loại từ trước
+        tabsContainer.classList.add('hidden');
+      }
 
       if (p.type === 'MOQ_BUNDLE') {
         setSchemeType('MOQ_BUNDLE');
-        if (tabsContainer) tabsContainer.classList.add('hidden');
       } else {
         setSchemeType('BUY_GIFT_TIERS');
-        if (tabsContainer) tabsContainer.classList.add('hidden'); // Hoặc ẩn/hiện tùy ý, user yêu cầu "nếu lúc tạo ct đã chọn phân loại hàng tặng quà, thì lúc add scheme chỉ popup ra giao diện scheme mua quà tặng quà thôi"
       }
 
       document.getElementById('form-scheme-name').value = '';
