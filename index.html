@@ -1217,7 +1217,7 @@
   <!-- MODAL 2: THÊM SCHEME VÀO CTKM (THEO ĐÚNG TRANG 7-10 PDF) -->
   <!-- ========================================================================= -->
   
-  <div id="modal-rule" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+    <div id="modal-rule" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-50 flex items-center justify-center p-4">
     <div class="bg-white rounded-2xl max-w-xl w-full p-6 shadow-2xl space-y-4 max-h-[92vh] overflow-y-auto">
       <div class="flex justify-between items-center border-b pb-3">
         <div>
@@ -1306,100 +1306,6 @@
       </form>
     </div>
   </div>
-
-
-            <!-- BẬC 2 -->
-            <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
-              <div class="flex items-center justify-between">
-                <span class="text-xs font-bold text-slate-700">Mức 2: Lũy tiến cao hơn (Tùy chọn)</span>
-              </div>
-              <div class="grid grid-cols-2 gap-2">
-                <div>
-                  <label class="block text-[11px] text-slate-500 font-semibold mb-0.5">SL Mua Bậc 2</label>
-                  <input type="number" id="form-gift-t2-buy" min="0" value="57" class="w-full border rounded-lg p-2 text-xs bg-white font-bold" />
-                </div>
-                <div>
-                  <label class="block text-[11px] text-slate-500 font-semibold mb-0.5">SL Quà Tặng Bậc 2</label>
-                  <input type="number" id="form-gift-t2-qty" min="0" value="4" class="w-full border rounded-lg p-2 text-xs bg-white font-bold text-emerald-600" />
-                </div>
-              </div>
-              <div class="grid grid-cols-2 gap-2">
-                <div>
-                  <label class="block text-[11px] text-slate-500 font-semibold mb-0.5">Mã SP Quà Tặng Bậc 2</label>
-                  <input type="text" id="form-gift-t2-code" placeholder="Để trống nếu tặng CÙNG LOẠI" class="w-full border rounded-lg p-2 text-xs bg-white font-mono" />
-                </div>
-                <div>
-                  <label class="block text-[11px] text-slate-500 font-semibold mb-0.5">Tên SP Quà Tặng Bậc 2</label>
-                  <input type="text" id="form-gift-t2-name" placeholder="Để trống sẽ lấy tên SP mua" class="w-full border rounded-lg p-2 text-xs bg-white" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        <!-- 3. PANEL THƯỞNG GÓI QUÀ DOANH SỐ (MOQ BUNDLE) -->
-        <div id="panel-moq-bundle" class="hidden space-y-4">
-          <div class="bg-amber-50/70 p-3.5 rounded-xl border border-amber-200 space-y-2">
-            <span class="text-xs font-bold text-amber-900 uppercase block">Phạm vi doanh số xét thưởng</span>
-            <div class="grid grid-cols-2 gap-2">
-              <div>
-                <label class="block text-[11px] text-slate-600 font-semibold mb-0.5">Phạm vi tính tiền:</label>
-                <select id="form-moq-scope" class="w-full border rounded-lg p-2 text-xs bg-white">
-                  <option value="ORDER">Toàn bộ đơn hàng</option>
-                  <option value="CATEGORY">Chỉ nhóm sản phẩm chỉ định</option>
-                </select>
-              </div>
-              <div>
-                <label class="block text-[11px] text-slate-600 font-semibold mb-0.5">Tiền tố nhóm SP (nếu chọn nhóm):</label>
-                <input type="text" id="form-moq-prefix" placeholder="VD: 2C06 (Dưỡng da)" class="w-full border rounded-lg p-2 text-xs bg-white font-mono" />
-              </div>
-            </div>
-          </div>
-
-          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
-            <div class="grid grid-cols-2 gap-2">
-              <div>
-                <label class="block text-[11px] text-slate-500 font-semibold mb-0.5">Mốc Doanh Số Tối Thiểu (VNĐ)</label>
-                <input type="number" id="form-moq-m1-amt" value="10000000" class="w-full border rounded-lg p-2 text-xs bg-white font-bold text-blue-600" />
-              </div>
-              <div>
-                <label class="block text-[11px] text-slate-500 font-semibold mb-0.5">Tiêu đề gói quà</label>
-                <input type="text" id="form-moq-m1-desc" value="Gói Quà Tiêu Chuẩn" class="w-full border rounded-lg p-2 text-xs bg-white" />
-              </div>
-            </div>
-            <div>
-              <label class="block text-[11px] text-slate-600 font-semibold mb-0.5">Danh sách quà tặng (Gồm các sản phẩm cụ thể):</label>
-              <textarea id="form-moq-m1-items" rows="2" class="w-full border rounded-lg p-2 text-xs bg-white">2 Son Kem Lì R666, 3 Hộp Mask B5 Tím</textarea>
-            </div>
-          </div>
-
-          <div class="bg-slate-50 p-3 rounded-xl border border-slate-200 space-y-2">
-            <div class="grid grid-cols-2 gap-2">
-              <div>
-                <label class="block text-[11px] text-slate-500 font-semibold mb-0.5">Mốc Doanh Số Bậc 2 (Tùy chọn)</label>
-                <input type="number" id="form-moq-m2-amt" value="20000000" class="w-full border rounded-lg p-2 text-xs bg-white font-bold text-blue-600" />
-              </div>
-              <div>
-                <label class="block text-[11px] text-slate-500 font-semibold mb-0.5">Tiêu đề gói quà Bậc 2</label>
-                <input type="text" id="form-moq-m2-desc" value="Gói Quà VIP Cao Cấp" class="w-full border rounded-lg p-2 text-xs bg-white" />
-              </div>
-            </div>
-            <div>
-              <label class="block text-[11px] text-slate-600 font-semibold mb-0.5">Danh sách quà tặng Bậc 2:</label>
-              <textarea id="form-moq-m2-items" rows="2" class="w-full border rounded-lg p-2 text-xs bg-white">5 Son Kem Lì R666, 8 Hộp Mask B5 Tím, 2 Túi Tote Canvas</textarea>
-            </div>
-          </div>
-        </div>
-
-        <div class="flex justify-end gap-2 pt-3 border-t">
-          <button type="button" onclick="closeRuleModal()" class="px-4 py-2 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-600 text-xs font-semibold">Hủy</button>
-          <button type="submit" class="px-4 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-semibold shadow">Lưu Scheme Khuyến Mãi</button>
-        </div>
-      </form>
-    </div>
-  </div>
-
-
 
   <!-- ========================================================================= -->
   <!-- MODAL 4: XEM CHI TIẾT & CHỈNH SỬA / THÊM SẢN PHẨM (PRODUCT MANAGEMENT) -->
