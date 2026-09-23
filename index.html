@@ -908,125 +908,34 @@
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
           <div>
             <h2 class="text-xl font-bold text-slate-800">Promotion Management</h2>
-            <p class="text-xs text-slate-500 mt-0.5">Quản lý chương trình khuyến mãi, chiết khấu và quà tặng.</p>
+            <p class="text-xs text-slate-500 mt-0.5">Quản lý CTKM, schemes và điều kiện áp dụng. Với GWP, chỉ áp dụng một mốc quà tặng cao nhất đạt được.</p>
           </div>
-          <button onclick="openPromoModal()" class="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs px-4 py-2.5 rounded-xl font-semibold shadow transition cursor-pointer">
-            <i data-lucide="plus" class="w-4 h-4"></i> + Thêm chương trình
+          <button onclick="openPromotion()" class="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs px-4 py-2.5 rounded-xl font-semibold shadow transition cursor-pointer">
+            <i data-lucide="plus" class="w-4 h-4"></i> ＋ Thêm CTKM
           </button>
         </div>
 
-
-
-        <!-- BỘ LỌC TÌM KIẾM (FILTER BAR) -->
-        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3.5 text-xs">
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3">
-            <div class="relative lg:col-span-2">
-              <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3.5 top-2.5"></i>
-              <input type="text" id="promo-filter-search" placeholder="Tìm theo tên chương trình, mã..." oninput="filterPromotionsTable()" 
-                class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500" />
-            </div>
-            <div>
-              <select id="promo-filter-region" onchange="filterPromotionsTable()" class="w-full py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-700">
-                <option value="ALL">Tất cả Khu vực</option>
-                <option value="Toàn quốc">Toàn quốc</option>
-                <option value="GT SOUTH">GT SOUTH (Miền Nam)</option>
-                <option value="HCM">TP. Hồ Chí Minh</option>
-                <option value="Hà Nội">Hà Nội</option>
-                <option value="Đà Nẵng">Đà Nẵng</option>
-              </select>
-            </div>
-            <div>
-              <select id="promo-filter-channel" onchange="filterPromotionsTable()" class="w-full py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-700">
-                <option value="ALL">Tất cả Kênh (Channel)</option>
-                <option value="Online">Online</option>
-                <option value="MT">MT</option>
-                <option value="GT">GT</option>
-                <option value="KA">KA</option>
-              </select>
-            </div>
-            <div>
-              <select id="promo-filter-rank" onchange="filterPromotionsTable()" class="w-full py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-700">
-                <option value="ALL">Tất cả Rank khách hàng</option>
-                <option value="Tất cả">Tất cả</option>
-                <option value="A, B">A, B</option>
-                <option value="A">A</option>
-              </select>
-            </div>
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm flex flex-wrap gap-3 text-xs">
+          <div class="relative flex-1 min-w-[220px]">
+            <i data-lucide="search" class="w-4 h-4 text-slate-400 absolute left-3 top-2.5"></i>
+            <input type="text" id="promo-search" placeholder="Tìm kiếm mã CTKM, tên chương trình..." oninput="renderPromotions()" class="w-full pl-9 pr-3 py-2 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 font-medium" />
           </div>
-
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 pt-1">
-            <div>
-              <select id="promo-filter-status" onchange="filterPromotionsTable()" class="w-full py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 font-medium text-slate-700">
-                <option value="ALL">Tất cả Trạng thái</option>
-                <option value="Đang chạy">Đang chạy</option>
-                <option value="Sắp chạy">Sắp chạy</option>
-                <option value="Đã kết thúc">Đã kết thúc</option>
-                <option value="Tạm dừng">Tạm dừng</option>
-              </select>
-            </div>
-            <div class="relative">
-              <input type="date" id="promo-filter-from" onchange="filterPromotionsTable()" class="w-full py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-slate-600" />
-            </div>
-            <div class="relative">
-              <input type="date" id="promo-filter-to" onchange="filterPromotionsTable()" class="w-full py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl outline-none focus:ring-2 focus:ring-blue-500 text-slate-600" />
-            </div>
-            <div class="flex items-center justify-end lg:col-span-2">
-              <button onclick="resetPromoFilters()" class="text-xs text-blue-600 hover:text-blue-800 font-semibold flex items-center gap-1 cursor-pointer">
-                <i data-lucide="rotate-ccw" class="w-3.5 h-3.5"></i> Xóa bộ lọc
-              </button>
-            </div>
-          </div>
+          <select id="promo-filter-type" onchange="renderPromotions()" class="py-2 px-3 bg-slate-50 border border-slate-200 rounded-xl font-medium text-slate-700 outline-none">
+            <option value="">Tất cả loại CTKM</option>
+            <option value="Buy Get">Buy Get</option>
+            <option value="Discount">Discount</option>
+            <option value="GWP">GWP</option>
+          </select>
         </div>
 
-        <!-- BẢNG DANH SÁCH CHƯƠNG TRÌNH KHUYẾN MÃI -->
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden space-y-0">
-          <div class="p-4 border-b border-slate-200 flex justify-between items-center bg-slate-50/60">
-            <div class="flex items-center gap-3">
-              <h3 class="font-bold text-slate-800 text-xs uppercase tracking-wider" id="promo-table-heading">Danh sách chương trình (12)</h3>
-              <button onclick="deleteSelectedPromos()" id="btn-delete-selected" class="hidden text-xs bg-rose-50 text-rose-600 hover:bg-rose-100 px-2.5 py-1 rounded-lg font-bold transition flex items-center gap-1 cursor-pointer">
-                <i data-lucide="trash-2" class="w-3.5 h-3.5"></i> Xóa các mục đã chọn
-              </button>
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 items-start">
+          <div class="lg:col-span-4 bg-white rounded-2xl border border-slate-200 shadow-sm p-4 space-y-3">
+            <div class="flex justify-between items-center border-b pb-2">
+              <h3 class="font-bold text-xs uppercase tracking-wider text-slate-700">Danh sách CTKM</h3>
             </div>
-            <span class="text-xs text-slate-400">Cập nhật theo thời gian thực</span>
+            <div id="promotionList" class="space-y-2.5 max-h-[680px] overflow-y-auto pr-1"></div>
           </div>
-
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr class="bg-slate-100 text-slate-600 uppercase font-bold border-b text-[11px]">
-                  <th class="p-3 text-center w-10"><input type="checkbox" id="chk-all-promos" onchange="toggleAllPromos(this)" class="rounded text-blue-600 cursor-pointer" /></th>
-                  <th class="p-3">Mã CTKM</th>
-                  <th class="p-3">Tên chương trình</th>
-                  <th class="p-3">Loại CTKM</th>
-                  <th class="p-3">Khu vực</th>
-                  <th class="p-3">Kênh</th>
-                  <th class="p-3">Rank KH</th>
-                  <th class="p-3">Sản phẩm áp dụng</th>
-                  <th class="p-3">Thời gian áp dụng</th>
-                  <th class="p-3 text-center">Trạng thái</th>
-                  <th class="p-3 text-center">Thao tác</th>
-                </tr>
-              </thead>
-              <tbody id="promotions-grid" class="divide-y divide-slate-100"></tbody>
-            </table>
-          </div>
-
-          <!-- FOOTER PHÂN TRANG (PAGINATION) -->
-          <div class="p-4 bg-slate-50 border-t border-slate-200 flex flex-wrap justify-between items-center text-xs text-slate-500">
-            <div>Hiển thị 1 - 8 / 12 chương trình</div>
-            <div class="flex items-center gap-3">
-              <div class="flex items-center gap-1">
-                <button class="w-7 h-7 rounded-lg border bg-white flex items-center justify-center text-slate-400 hover:bg-slate-100">&lt;</button>
-                <button class="w-7 h-7 rounded-lg border bg-blue-600 text-white font-bold flex items-center justify-center shadow-sm">1</button>
-                <button class="w-7 h-7 rounded-lg border bg-white flex items-center justify-center text-slate-700 hover:bg-slate-100 font-medium">2</button>
-                <button class="w-7 h-7 rounded-lg border bg-white flex items-center justify-center text-slate-700 hover:bg-slate-100">&gt;</button>
-              </div>
-              <select class="border rounded-lg px-2.5 py-1.5 bg-white text-xs outline-none">
-                <option value="10">10 / trang</option>
-                <option value="20">20 / trang</option>
-              </select>
-            </div>
-          </div>
+          <div class="lg:col-span-8 bg-white rounded-2xl border border-slate-200 shadow-sm p-6" id="detail"></div>
         </div>
       </section>
 
