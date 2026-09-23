@@ -615,8 +615,13 @@
               </div>
             </div>
 
-            <div id="dropZonePdf" class="border-2 border-dashed border-slate-300 hover:border-emerald-500 rounded-2xl p-8 text-center cursor-pointer transition bg-slate-50 hover:bg-emerald-50/20">
-              <input type="file" id="fileInputPdf" class="hidden" accept=".pdf" multiple />
+            <div id="dropZonePdf" 
+                 onclick="document.getElementById('fileInputPdf').click()" 
+                 ondragover="event.preventDefault(); this.classList.add('border-emerald-500', 'bg-emerald-50/50');" 
+                 ondragleave="this.classList.remove('border-emerald-500', 'bg-emerald-50/50');" 
+                 ondrop="event.preventDefault(); this.classList.remove('border-emerald-500', 'bg-emerald-50/50'); handlePdfFiles(event.dataTransfer.files);" 
+                 class="border-2 border-dashed border-slate-300 hover:border-emerald-500 rounded-2xl p-8 text-center cursor-pointer transition bg-slate-50 hover:bg-emerald-50/20">
+              <input type="file" id="fileInputPdf" class="hidden" accept=".pdf" multiple onchange="handlePdfFiles(this.files)" onclick="event.stopPropagation()" />
               <div class="w-12 h-12 bg-emerald-100 text-emerald-600 rounded-2xl flex items-center justify-center mx-auto mb-3 shadow-sm">
                 <i data-lucide="upload-cloud" class="w-6 h-6"></i>
               </div>
@@ -1403,6 +1408,20 @@
       filterCrmTable();
       initDashboardCharts();
       initWarehouseCharts();
+      initPdfDropHandlers();
+      initTransformOrderButtons();
+
+      // Nạp danh sách khách hàng vào dropdown chọn khách của Transform Order
+      const selectCustEl = document.getElementById("selectCustomerDropdown");
+      if (selectCustEl && customers && customers.length > 0) {
+        selectCustEl.innerHTML = '<option value="">-- Chọn Khách Hàng / Chuỗi --</option>' + 
+          '<option value="CUST_TGSF">THẾ GIỚI SKIN FOOD (BLUE OCEAN)</option>' +
+          '<option value="CUST_GUARDIAN" selected>GUARDIAN VIỆT NAM</option>' +
+          '<option value="CUST_WATSONS">CÔNG TY TNHH WATSONS (VIỆT NAM)</option>' +
+          '<option value="CUST_HASAKI">HASAKI BEAUTY & CLINIC</option>' +
+          customers.map(c => `<option value="${c.code}">[${c.code}] ${c.name} (${c.rank})</option>`).join('');
+      }
+
       lucide.createIcons();
     }
 
