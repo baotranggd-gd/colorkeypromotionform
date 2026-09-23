@@ -2293,6 +2293,16 @@
         activeBtn.classList.add('sidebar-active');
         activeBtn.classList.remove('text-slate-400');
       }
+
+      // Kích hoạt render lại dữ liệu tương ứng cho từng tab
+      if (tabId === 'crm') {
+        filterCrmTable();
+      } else if (tabId === 'products') {
+        filterProdManagementTable();
+      } else if (tabId === 'promotions') {
+        renderPromotions();
+      }
+
       lucide.createIcons();
     }
 
