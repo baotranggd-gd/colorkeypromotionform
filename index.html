@@ -3663,8 +3663,8 @@
       document.getElementById('summary-rank-discount').innerText = r.rankPolicy.label;
       document.getElementById('summary-promo-priority').innerText = r.priorityOrderStr || 'Mặc định';
       document.getElementById('summary-total-qty').innerText = r.totalOrderQty.toLocaleString();
-      document.getElementById('summary-subtotal').innerText = `${r.subTotal.toLocaleString()} đ`;
-      document.getElementById('summary-grandtotal').innerText = `${r.grandTotal.toLocaleString()} đ`;
+      document.getElementById('summary-subtotal').innerText = `${Number(r.subTotal || 0).toLocaleString()} đ`;
+      document.getElementById('summary-grandtotal').innerText = `${Number(r.grandTotal || 0).toLocaleString()} đ`;
       document.getElementById('summary-product-gifts').innerText = `${r.totalProductGifts.toLocaleString()} món`;
       document.getElementById('summary-moq-gifts').innerText = `${r.totalMoqBundlesCount.toLocaleString()} gói quà`;
 
@@ -3698,9 +3698,9 @@
               <td class="p-2.5 font-mono text-xs text-slate-500">${row.barcode}</td>
               <td class="p-2.5 font-medium text-slate-900">${row.name}</td>
               <td class="p-2.5 text-right font-bold text-slate-900">${row.qty}</td>
-              <td class="p-2.5 text-right text-slate-500 text-xs">${row.priceList.toLocaleString()} đ</td>
-              <td class="p-2.5 text-right font-bold text-blue-600">${row.priceAfterRank.toLocaleString()} đ</td>
-              <td class="p-2.5 text-right font-bold text-slate-900">${row.lineTotal.toLocaleString()} đ</td>
+              <td class="p-2.5 text-right text-slate-500 text-xs">${Number(row.priceList || 0).toLocaleString()} đ</td>
+              <td class="p-2.5 text-right font-bold text-blue-600">${Number(row.priceAfterRank || 0).toLocaleString()} đ</td>
+              <td class="p-2.5 text-right font-bold text-slate-900">${Number(row.lineTotal || 0).toLocaleString()} đ</td>
               <td class="p-2.5 text-xs text-slate-500">${row.promoNote}</td>
             </tr>
           `;
