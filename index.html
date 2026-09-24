@@ -3597,6 +3597,26 @@
         }
       });
 
+      // MOQ bundle quà tặng là dòng Hàng Khuyến Mãi 0đ và phải hiển thị ngay trong bảng chi tiết.
+      moqBundleGiftsAchieved.forEach(m => {
+        (Array.isArray(m.bundleItems) ? m.bundleItems : []).forEach(bundleItem => {
+          const prod = resolveBundleProduct(bundleItem);
+          displayRows.push({
+            isGift: true,
+            code: prod?.productCode || bundleItem?.code || '',
+            barcode: prod?.barcode || bundleItem?.barcode || '',
+            name: prod?.name || bundleItem?.name || m.bundleDesc || 'Quà thưởng doanh số',
+            qty: Number(bundleItem?.qty || 1),
+            priceList: Number(prod?.priceList || 0),
+            priceAfterRank: 0,
+            lineTotal: 0,
+            promoName: m.promoName,
+            schemeName: m.schemeName,
+            promoNote: formatMoqExportNote(m)
+          });
+        });
+      });
+
       const grandTotal = subTotal;
       const totalMoqBundlesCount = moqBundleGiftsAchieved.length;
       const priorityOrderStr = activePromos.map(p => `#${p.priority} ${p.name}`).join(' → ');
@@ -3619,87 +3639,102 @@
     }
 
     function renderOrderResults() {
-      document.getElementById('empty-state').classList.add('hidden');
-      document.getElementById('results-box').classList.remove('hidden');
+      const emptyState = document.getElementById('empty-state');
+      const resultsBox = document.getElementById('results-box');
+      if (emptyState) emptyState.classList.add('hidden');
+      if (resultsBox) resultsBox.classList.remove('hidden');
 
-      const r = currentCalculation;
-      document.getElementById('badge-item-count').innerText = `${r.rows.length} dòng hiển thị`;
-      document.getElementById('summary-rank-badge').innerText = `${r.cust.rank} (${r.cust.code})`;
-      document.getElementById('summary-rank-discount').innerText = r.rankPolicy.label;
-      document.getElementById('summary-promo-priority').innerText = r.priorityOrderStr || 'Mặc định';
-      document.getElementById('summary-total-qty').innerText = r.totalOrderQty.toLocaleString();
-      document.getElementById('summary-subtotal').innerText = `${r.subTotal.toLocaleString()} đ`;
-      document.getElementById('summary-grandtotal').innerText = `${r.grandTotal.toLocaleString()} đ`;
-      document.getElementById('summary-product-gifts').innerText = `${r.totalProductGifts.toLocaleString()} món`;
-      document.getElementById('summary-moq-gifts').innerText = `${r.totalMoqBundlesCount.toLocaleString()} gói quà`;
+      const r = currentCalculation || {};
+      const rows = Array.isArray(r.rows) ? r.rows : [];
+      const fmt = (v) => Number(v || 0).toLocaleString('vi-VN');
+      const safe = (v) => escHtml(String(v ?? ''));
+
+      const setText = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.innerText = value;
+      };
+
+      setText('badge-item-count', `${rows.length} dòng hiển thị`);
+      setText('summary-rank-badge', `${r.cust?.rank || ''} (${r.cust?.code || ''})`);
+      setText('summary-rank-discount', r.rankPolicy?.label || 'CK 0%');
+      setText('summary-promo-priority', r.priorityOrderStr || 'Mặc định');
+      setText('summary-total-qty', fmt(r.totalOrderQty));
+      setText('summary-subtotal', `${fmt(r.subTotal)} đ`);
+      setText('summary-grandtotal', `${fmt(r.grandTotal)} đ`);
+      setText('summary-product-gifts', `${fmt(r.totalProductGifts)} món`);
+      setText('summary-moq-gifts', `${fmt(r.totalMoqBundlesCount)} gói quà`);
 
       const tbody = document.getElementById('order-table-body');
-      tbody.innerHTML = r.rows.map(row => {
-        if (row.isGift) {
-          return `
-            <tr class="gift-row border-b border-emerald-100">
-              <td class="p-2.5 text-center">
-                <span class="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-600 text-white uppercase tracking-wider">Hàng KM</span>
-              </td>
-              <td class="p-2.5 font-mono text-xs font-bold text-emerald-800">${row.code}</td>
-              <td class="p-2.5 font-mono text-xs text-slate-500">${row.barcode}</td>
-              <td class="p-2.5 font-bold text-emerald-900 flex items-center gap-1.5">
-                <i data-lucide="gift" class="w-3.5 h-3.5 text-emerald-600"></i> ${row.name}
-              </td>
-              <td class="p-2.5 text-right font-black text-emerald-700">+${row.qty}</td>
-              <td class="p-2.5 text-right text-slate-400 text-xs">${row.priceList ? row.priceList.toLocaleString() + ' đ' : '-'}</td>
-              <td class="p-2.5 text-right font-bold text-emerald-600">0 đ</td>
-              <td class="p-2.5 text-right font-bold text-emerald-600">0 đ</td>
-              <td class="p-2.5 text-xs text-emerald-800 font-medium italic">${row.promoNote}</td>
-            </tr>
-          `;
-        } else {
+      if (tbody) {
+        tbody.innerHTML = rows.map((row) => {
+          const isGift = row?.isGift === true;
+          const code = safe(row?.code || '-');
+          const barcode = safe(row?.barcode || '-');
+          const name = safe(row?.name || '-');
+          const qty = Number(row?.qty || 0);
+          const priceList = Number(row?.priceList || 0);
+          const priceAfterRank = Number(row?.priceAfterRank || 0);
+          const lineTotal = Number(row?.lineTotal || 0);
+          const note = safe(row?.promoNote || '');
+
+          if (isGift) {
+            return `
+              <tr class="gift-row border-b border-emerald-100">
+                <td class="p-2.5 text-center"><span class="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-600 text-white uppercase tracking-wider">Hàng KM</span></td>
+                <td class="p-2.5 font-mono text-xs font-bold text-emerald-800">${code}</td>
+                <td class="p-2.5 font-mono text-xs text-slate-500">${barcode}</td>
+                <td class="p-2.5 font-bold text-emerald-900"><div class="flex items-center gap-1.5"><i data-lucide="gift" class="w-3.5 h-3.5 text-emerald-600"></i>${name}</div></td>
+                <td class="p-2.5 text-right font-black text-emerald-700">+${fmt(qty)}</td>
+                <td class="p-2.5 text-right text-slate-400 text-xs">${priceList ? fmt(priceList) + ' đ' : '-'}</td>
+                <td class="p-2.5 text-right font-bold text-emerald-600">0 đ</td>
+                <td class="p-2.5 text-right font-bold text-emerald-600">0 đ</td>
+                <td class="p-2.5 text-xs text-emerald-800 font-medium italic">${note}</td>
+              </tr>`;
+          }
+
           return `
             <tr class="hover:bg-slate-50 transition border-b border-slate-200">
-              <td class="p-2.5 text-center">
-                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800">MUA</span>
-              </td>
-              <td class="p-2.5 font-mono text-xs font-semibold text-slate-800">${row.code}</td>
-              <td class="p-2.5 font-mono text-xs text-slate-500">${row.barcode}</td>
-              <td class="p-2.5 font-medium text-slate-900">${row.name}</td>
-              <td class="p-2.5 text-right font-bold text-slate-900">${row.qty}</td>
-              <td class="p-2.5 text-right text-slate-500 text-xs">${row.priceList.toLocaleString()} đ</td>
-              <td class="p-2.5 text-right font-bold text-blue-600">${row.priceAfterRank.toLocaleString()} đ</td>
-              <td class="p-2.5 text-right font-bold text-slate-900">${row.lineTotal.toLocaleString()} đ</td>
-              <td class="p-2.5 text-xs text-slate-500">${row.promoNote}</td>
-            </tr>
-          `;
-        }
-      }).join('');
+              <td class="p-2.5 text-center"><span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800">MUA</span></td>
+              <td class="p-2.5 font-mono text-xs font-semibold text-slate-800">${code}</td>
+              <td class="p-2.5 font-mono text-xs text-slate-500">${barcode}</td>
+              <td class="p-2.5 font-medium text-slate-900">${name}</td>
+              <td class="p-2.5 text-right font-bold text-slate-900">${fmt(qty)}</td>
+              <td class="p-2.5 text-right text-slate-500 text-xs">${fmt(priceList)} đ</td>
+              <td class="p-2.5 text-right font-bold text-blue-600">${fmt(priceAfterRank)} đ</td>
+              <td class="p-2.5 text-right font-bold text-slate-900">${fmt(lineTotal)} đ</td>
+              <td class="p-2.5 text-xs text-slate-500">${note}</td>
+            </tr>`;
+        }).join('');
+      }
 
       const moqContainer = document.getElementById('moq-bundle-container');
       const moqList = document.getElementById('moq-bundle-list');
-      if (r.moqBundleGiftsAchieved && r.moqBundleGiftsAchieved.length > 0) {
-        moqContainer.classList.remove('hidden');
-        moqList.innerHTML = r.moqBundleGiftsAchieved.map(m => `
-          <div class="bg-white p-3.5 rounded-xl border border-amber-300 flex flex-col md:flex-row justify-between items-start md:items-center gap-2 shadow-sm">
-            <div>
-              <div class="flex items-center gap-2">
-                <span class="px-2 py-0.5 rounded bg-amber-600 text-white text-[10px] font-extrabold">Ưu tiên #${m.priority}</span>
-                <span class="font-bold text-slate-900 text-xs">${m.promoName}</span>
-                <span class="text-slate-400 text-xs">•</span>
-                <span class="text-xs text-slate-600 font-semibold">${m.schemeName}</span>
+      if (moqContainer && moqList) {
+        if (Array.isArray(r.moqBundleGiftsAchieved) && r.moqBundleGiftsAchieved.length > 0) {
+          moqContainer.classList.remove('hidden');
+          moqList.innerHTML = r.moqBundleGiftsAchieved.map(m => `
+            <div class="bg-white p-3.5 rounded-xl border border-amber-300 flex flex-col md:flex-row justify-between items-start md:items-center gap-2 shadow-sm">
+              <div>
+                <div class="flex items-center gap-2">
+                  <span class="px-2 py-0.5 rounded bg-amber-600 text-white text-[10px] font-extrabold">Ưu tiên #${safe(m?.priority || '')}</span>
+                  <span class="font-bold text-slate-900 text-xs">${safe(m?.promoName || '')}</span>
+                  <span class="text-slate-400 text-xs">•</span>
+                  <span class="text-xs text-slate-600 font-semibold">${safe(m?.schemeName || '')}</span>
+                </div>
+                <div class="text-[11px] text-slate-500 mt-0.5">
+                  ${m.bundleItems && m.bundleItems.length ? `<div class="mb-1">Quà tặng: ${m.bundleItems.map(x=>`${safe(x.name || x.code || 'Sản phẩm')} × ${Number(x.qty || 1)}`).join(', ')}</div>` : ''}
+                  Phạm vi: <strong>${safe(m.scope)}</strong> (Doanh số đạt: <strong>${fmt(m.qualifyingAmount)} đ</strong> / Mốc tối thiểu: ${fmt(m.minAmount)} đ)
+                </div>
               </div>
-              <div class="text-[11px] text-slate-500 mt-0.5">
-                ${m.bundleItems && m.bundleItems.length ? `<div class="mb-1">Quà tặng: ${m.bundleItems.map(x=>`${x.name || x.code || 'Sản phẩm'} × ${x.qty || 1}`).join(', ')}</div>` : ''}
-                Phạm vi: <strong>${m.scope}</strong> (Doanh số đạt: <strong>${m.qualifyingAmount.toLocaleString()} đ</strong> / Mốc tối thiểu: ${m.minAmount.toLocaleString()} đ)
-              </div>
-            </div>
-            <div class="text-amber-800 font-bold text-xs bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-lg">
-              🎁 ${m.bundleDesc}
-            </div>
-          </div>
-        `).join('');
-      } else {
-        moqContainer.classList.add('hidden');
+              <div class="text-amber-800 font-bold text-xs bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-lg">🎁 ${safe(m.bundleDesc || '')}</div>
+            </div>`).join('');
+        } else {
+          moqContainer.classList.add('hidden');
+          moqList.innerHTML = '';
+        }
       }
 
-      lucide.createIcons();
+      if (window.lucide) lucide.createIcons();
     }
 
     function handleFile(e) {
@@ -3938,7 +3973,7 @@
     function exportToPDF() {
       if (!currentCalculation) return;
       const { jsPDF } = window.jspdf;
-      const doc = new jsPDF('landscape');
+      const doc = new jsPDF('landscape', 'mm', 'a4');
       const r = currentCalculation;
 
       try {
@@ -3946,79 +3981,129 @@
         doc.addFont('NotoSans-VN.ttf', 'NotoSansVN', 'normal');
         doc.setFont('NotoSansVN');
       } catch (e) {
-        console.error("Lỗi nạp font:", e);
+        console.error('Lỗi nạp font:', e);
+        doc.setFont('helvetica');
       }
 
-      doc.setFont('NotoSansVN');
-      doc.setFontSize(13);
-      doc.setTextColor(30, 41, 59);
-      doc.text('ĐƠN ĐẶT HÀNG & QUY ĐỔI KHUYẾN MÃI (XUẤT THEO DÒNG MUA VÀ DÒNG QUÀ 0Đ)', 14, 13);
+      const fmt = (v) => Number(v || 0).toLocaleString('vi-VN');
+      const promoNamesStr = (r.activePromos || []).map(p => {
+        const code = p?.code || p?.id || '';
+        const name = p?.name || '';
+        return `[#${p?.priority || ''}] ${code ? code + ' - ' : ''}${name}`.trim();
+      }).join(', ') || 'Không có';
 
-      doc.setFont('NotoSansVN');
-      doc.setFontSize(8.5);
-      doc.setTextColor(71, 85, 105);
-      doc.text(`Khách Hàng: ${r.cust.name} (${r.cust.code}) - Hạng: ${r.cust.rank} | Chính Sách: ${r.rankPolicy.label} | KV: ${r.cust.region}`, 14, 19);
-      doc.text(`CTKM Áp Dụng: ${r.priorityOrderStr || 'Mặc định'} | * Dòng mua liền kề ngay dòng quà tặng (0đ) của mã đó`, 14, 24);
+      const rows = [];
+      let sttCounter = 1;
 
-      let stt = 1;
-      const body = r.rows.map(row => {
-        if (!row.isGift) {
-          return [
-            stt++,
+      (r.rows || []).forEach(row => {
+        if (!row?.isGift) {
+          rows.push([
+            sttCounter++,
             'MUA',
-            row.code, 
-            row.barcode,
-            row.name, 
-            row.qty, 
-            row.priceAfterRank ? row.priceAfterRank.toLocaleString('vi-VN') + ' đ' : '-', 
-            row.lineTotal ? row.lineTotal.toLocaleString('vi-VN') + ' đ' : '0 đ', 
-            row.promoNote
-          ];
+            row.code || '',
+            row.barcode || '',
+            row.name || '',
+            Number(row.qty || 0),
+            Number(row.priceList || 0),
+            Number(row.priceAfterRank || 0),
+            Number(row.lineTotal || 0),
+            getExportPurchasePromoNote(row)
+          ]);
         } else {
-          return [
+          rows.push([
             '',
-            'QUÀ',
-            row.code, 
-            row.barcode,
-            '🎁 ' + row.name, 
-            '+' + row.qty, 
-            '0 đ', 
-            '0 đ', 
-            row.promoNote
-          ];
+            'Hàng Khuyến Mãi',
+            row.code || '',
+            row.barcode || '',
+            row.name || '',
+            Number(row.qty || 0),
+            Number(row.priceList || 0),
+            0,
+            0,
+            row.promoNote || ''
+          ]);
         }
       });
 
+      // MOQ bundle gifts are real 0đ order lines in the same template.
+      (r.moqBundleGiftsAchieved || []).forEach(m => {
+        (Array.isArray(m.bundleItems) ? m.bundleItems : []).forEach(bundleItem => {
+          const prod = resolveBundleProduct(bundleItem);
+          rows.push([
+            '',
+            'Hàng Khuyến Mãi',
+            prod?.productCode || bundleItem?.code || '',
+            prod?.barcode || bundleItem?.barcode || '',
+            prod?.name || bundleItem?.name || m.bundleDesc || 'Quà thưởng doanh số',
+            Number(bundleItem?.qty || 1),
+            Number(prod?.priceList || 0),
+            0,
+            0,
+            formatMoqExportNote(m)
+          ]);
+        });
+      });
+
+      const pageWidth = doc.internal.pageSize.getWidth();
+      const margin = 10;
+      const usableWidth = pageWidth - margin * 2;
+
+      doc.setTextColor(30, 41, 59);
+      doc.setFontSize(13);
+      doc.text('BẢNG ĐẶT HÀNG & QUY ĐỔI KHUYẾN MÃI TỔNG HỢP - OPS PORTAL', margin, 11);
+
+      doc.setFontSize(7.5);
+      doc.setTextColor(71, 85, 105);
+      doc.text(`Các CTKM Áp Dụng: ${promoNamesStr}`, margin, 17);
+      doc.text(`Khách Hàng: ${r.cust?.name || ''}`, margin, 22);
+      doc.text(`Hạng Khách Hàng: ${r.cust?.rank || ''}`, margin, 27);
+      doc.text(`Khu Vực Khách: ${r.cust?.region || ''}`, 105, 22);
+      doc.text(`Mã KH: ${r.cust?.code || ''}`, 105, 27);
+      doc.text(`Chính Sách Chiết Khấu: ${r.rankPolicy?.label || 'CK 0%'}`, 155, 22);
+      doc.text(`Ngày Tạo: ${new Date().toLocaleDateString('vi-VN')}`, 155, 27);
+      doc.text('Quy Cách Xuất: Dòng mua tiếp theo là dòng quà tặng (đơn giá 0đ) theo mã sản phẩm thực tế', margin, 32);
+
+      const totalColWidths = [10, 20, 24, 25, 57, 12, 25, 27, 25, usableWidth - (10+20+24+25+57+12+25+27+25)];
+
       doc.autoTable({
-        startY: 27,
-        head: [['STT', 'Loại', 'Mã SP', 'Barcode', 'Tên Sản Phẩm / Tên Quà Tặng', 'SL', 'Đơn Giá (VAT)', 'Thành Tiền (VAT)', 'Chi Tiết CTKM']],
-        body: body,
+        startY: 35,
+        margin: { left: margin, right: margin },
+        tableWidth: usableWidth,
+        head: [[
+          'STT', 'Phân Loại', 'Mã Sản Phẩm', 'Mã Vạch (Barcode)', 'Tên Sản Phẩm / Quà Tặng',
+          'SL', 'Giá Niêm Yết (VAT)', 'Đơn Giá Sau CK (VAT)', 'Thành Tiền (VAT)', 'Ghi Chú Khuyến Mãi'
+        ]],
+        body: rows,
         theme: 'grid',
-        styles: { 
-          font: 'NotoSansVN', 
-          fontSize: 7,
-          cellPadding: 1.5
+        styles: {
+          font: 'NotoSansVN',
+          fontSize: 6.2,
+          cellPadding: 1.2,
+          overflow: 'linebreak',
+          valign: 'middle'
         },
-        headStyles: { 
-          font: 'NotoSansVN', 
-          fillColor: [37, 99, 235], 
-          textColor: 255, 
-          halign: 'left',
-          fontSize: 7
+        headStyles: {
+          font: 'NotoSansVN',
+          fillColor: [37, 99, 235],
+          textColor: 255,
+          fontSize: 6.2,
+          fontStyle: 'bold',
+          halign: 'center'
         },
         columnStyles: {
-          0: { halign: 'center', cellWidth: 8 },
-          1: { halign: 'center', cellWidth: 12 },
-          2: { cellWidth: 26 },
-          3: { cellWidth: 25 },
-          4: { cellWidth: 68 },
-          5: { halign: 'right', cellWidth: 12 },
-          6: { halign: 'right', cellWidth: 22 },
-          7: { halign: 'right', cellWidth: 24 },
-          8: { cellWidth: 'auto' }
+          0: { cellWidth: totalColWidths[0], halign: 'center' },
+          1: { cellWidth: totalColWidths[1], halign: 'center' },
+          2: { cellWidth: totalColWidths[2] },
+          3: { cellWidth: totalColWidths[3] },
+          4: { cellWidth: totalColWidths[4] },
+          5: { cellWidth: totalColWidths[5], halign: 'right' },
+          6: { cellWidth: totalColWidths[6], halign: 'right', overflow: 'linebreak' },
+          7: { cellWidth: totalColWidths[7], halign: 'right', overflow: 'linebreak' },
+          8: { cellWidth: totalColWidths[8], halign: 'right', overflow: 'linebreak' },
+          9: { cellWidth: totalColWidths[9] }
         },
         didParseCell: function(data) {
-          if (data.row.raw && data.row.raw[1] === 'QUÀ') {
+          if (data.section === 'body' && data.row.raw && data.row.raw[1] === 'Hàng Khuyến Mãi') {
             data.cell.styles.fillColor = [240, 253, 244];
             data.cell.styles.textColor = [22, 101, 52];
             data.cell.styles.fontStyle = 'bold';
@@ -4026,43 +4111,21 @@
         }
       });
 
-      let finalY = doc.lastAutoTable.finalY + 5;
-
-      if (r.moqBundleGiftsAchieved && r.moqBundleGiftsAchieved.length > 0) {
-        doc.setFontSize(8.5);
-        doc.setTextColor(180, 83, 9);
-        doc.text('GÓI QUÀ THƯỞNG THEO MỐC DOANH SỐ (MOQ BUNDLE):', 14, finalY);
-        
-        const moqBody = r.moqBundleGiftsAchieved.map(m => [
-          `#${m.priority} ${m.promoName}`,
-          m.schemeName,
-          m.scope,
-          `Đạt: ${m.qualifyingAmount.toLocaleString('vi-VN')} đ (Mốc: ${m.minAmount.toLocaleString('vi-VN')} đ)`,
-          m.bundleDesc
-        ]);
-
-        doc.autoTable({
-          startY: finalY + 2,
-          head: [['CTKM & Ưu Tiên', 'Tên Scheme MOQ', 'Phạm Vi', 'Doanh Số Đạt', 'Gói Quà Tặng Thưởng']],
-          body: moqBody,
-          theme: 'grid',
-          styles: { font: 'NotoSansVN', fontSize: 7, cellPadding: 1.5 },
-          headStyles: { font: 'NotoSansVN', fillColor: [217, 119, 6], textColor: 255 }
-        });
-
-        finalY = doc.lastAutoTable.finalY + 5;
+      let finalY = (doc.lastAutoTable?.finalY || 35) + 5;
+      if (finalY > 190) {
+        doc.addPage();
+        finalY = 15;
       }
 
       doc.setFont('NotoSansVN');
-      doc.setFontSize(8);
+      doc.setFontSize(7.5);
       doc.setTextColor(71, 85, 105);
-      doc.text(`Tổng SL mua: ${r.totalOrderQty} sp | Quà tặng SP: ${r.totalProductGifts} món | Thưởng MOQ: ${r.totalMoqBundlesCount} gói quà`, 14, finalY);
-      
-      doc.setFontSize(10.5);
-      doc.setTextColor(220, 38, 38);
-      doc.text(`TỔNG CỘNG THANH TOÁN (ĐÃ GỒM VAT): ${r.grandTotal.toLocaleString('vi-VN')} đ`, 155, finalY);
+      doc.text(`Tổng SL mua: ${fmt(r.totalOrderQty)} | Quà tặng SP: ${fmt(r.totalProductGifts)} món | Thưởng MOQ: ${fmt(r.totalMoqBundlesCount)} gói`, margin, finalY);
+      doc.setFontSize(9);
+      doc.setTextColor(30, 64, 175);
+      doc.text(`TỔNG CỘNG HÀNG HÓA THANH TOÁN (ĐÃ GỒM VAT): ${fmt(r.grandTotal)} đ`, pageWidth - margin, finalY, { align: 'right' });
 
-      doc.save(`Don_Hang_${r.cust.code}_${Date.now()}.pdf`);
+      doc.save(`Don_Hang_${r.cust?.code || 'ORDER'}_${Date.now()}.pdf`);
     }
 
     // RENDER PRODUCT MANAGEMENT TABLE
