@@ -5054,10 +5054,22 @@
 
     function exportStockCheckResult(){
       if(!stockCheckUploadResults.length)return;
-      const rows=[['Barcode','Product','Kho','Order Qty','Actual Stock','Stock Day','Stock Status','Check Result','Shortage','Owner','Team Warning']];
-      stockCheckUploadResults.forEach(r=>rows.push([r.input.barcode,r.productName,r.input.warehouse,r.input.qty,r.row?r.available:'',r.row?.stockDay??'',r.row?WAREHOUSE_STATUS_META[r.stockStatus]?.label:'No Data',r.result,r.shortage,r.row?.team||'',r.otherTeam?'YES':'']));
-      const ws=XLSX.utils.aoa_to_sheet(rows);ws['!cols']=[{wch:20},{wch:45},{wch:20},{wch:12},{wch:14},{wch:12},{wch:16},{wch:18},{wch:12},{wch:20},{wch:14}];
-      const wb=XLSX.utils.book_new();XLSX.utils.book_append_sheet(wb,ws,'Stock_Check_Result');XLSX.writeFile(wb,`Check_Stock_Result_${new Date().toISOString().slice(0,10)}.xlsx`);
+      // Export chỉ giữ các cột cần cho kết quả check; không export Stock Day/Status/Owner/Team Warning.
+      const rows=[['Barcode','Product','Kho','Order Qty','Actual Stock','Check Result','Shortage']];
+      stockCheckUploadResults.forEach(r=>rows.push([
+        r.input.barcode,
+        r.productName,
+        r.input.warehouse,
+        r.input.qty,
+        r.row?r.available:'',
+        r.result,
+        r.shortage
+      ]));
+      const ws=XLSX.utils.aoa_to_sheet(rows);
+      ws['!cols']=[{wch:20},{wch:45},{wch:20},{wch:12},{wch:14},{wch:18},{wch:12}];
+      const wb=XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb,ws,'Stock_Check_Result');
+      XLSX.writeFile(wb,`Check_Stock_Result_${new Date().toISOString().slice(0,10)}.xlsx`);
     }
 
 </script>
