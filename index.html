@@ -3676,16 +3676,16 @@
               <td class="p-2.5 text-center">
                 <span class="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-600 text-white uppercase tracking-wider">Hàng KM</span>
               </td>
-              <td class="p-2.5 font-mono text-xs font-bold text-emerald-800">${row.code}</td>
-              <td class="p-2.5 font-mono text-xs text-slate-500">${row.barcode}</td>
+              <td class="p-2.5 font-mono text-xs font-bold text-emerald-800">${String(row.code || '')}</td>
+              <td class="p-2.5 font-mono text-xs text-slate-500">${String(row.barcode || '')}</td>
               <td class="p-2.5 font-bold text-emerald-900 flex items-center gap-1.5">
-                <i data-lucide="gift" class="w-3.5 h-3.5 text-emerald-600"></i> ${row.name}
+                <i data-lucide="gift" class="w-3.5 h-3.5 text-emerald-600"></i> ${String(row.name || '')}
               </td>
-              <td class="p-2.5 text-right font-black text-emerald-700">+${row.qty}</td>
-              <td class="p-2.5 text-right text-slate-400 text-xs">${row.priceList ? row.priceList.toLocaleString() + ' đ' : '-'}</td>
+              <td class="p-2.5 text-right font-black text-emerald-700">+${Number(row.qty || 0).toLocaleString()}</td>
+              <td class="p-2.5 text-right text-slate-400 text-xs">${Number(row.priceList || 0) > 0 ? Number(row.priceList).toLocaleString() + ' đ' : '-'}</td>
               <td class="p-2.5 text-right font-bold text-emerald-600">0 đ</td>
               <td class="p-2.5 text-right font-bold text-emerald-600">0 đ</td>
-              <td class="p-2.5 text-xs text-emerald-800 font-medium italic">${row.promoNote}</td>
+              <td class="p-2.5 text-xs text-emerald-800 font-medium italic">${String(row.promoNote || '')}</td>
             </tr>
           `;
         } else {
@@ -3694,45 +3694,23 @@
               <td class="p-2.5 text-center">
                 <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800">MUA</span>
               </td>
-              <td class="p-2.5 font-mono text-xs font-semibold text-slate-800">${row.code}</td>
-              <td class="p-2.5 font-mono text-xs text-slate-500">${row.barcode}</td>
-              <td class="p-2.5 font-medium text-slate-900">${row.name}</td>
-              <td class="p-2.5 text-right font-bold text-slate-900">${row.qty}</td>
+              <td class="p-2.5 font-mono text-xs font-semibold text-slate-800">${String(row.code || '')}</td>
+              <td class="p-2.5 font-mono text-xs text-slate-500">${String(row.barcode || '')}</td>
+              <td class="p-2.5 font-medium text-slate-900">${String(row.name || '')}</td>
+              <td class="p-2.5 text-right font-bold text-slate-900">${Number(row.qty || 0).toLocaleString()}</td>
               <td class="p-2.5 text-right text-slate-500 text-xs">${Number(row.priceList || 0).toLocaleString()} đ</td>
               <td class="p-2.5 text-right font-bold text-blue-600">${Number(row.priceAfterRank || 0).toLocaleString()} đ</td>
               <td class="p-2.5 text-right font-bold text-slate-900">${Number(row.lineTotal || 0).toLocaleString()} đ</td>
-              <td class="p-2.5 text-xs text-slate-500">${row.promoNote}</td>
+              <td class="p-2.5 text-xs text-slate-500">${String(row.promoNote || '')}</td>
             </tr>
           `;
         }
       }).join('');
 
+      // MOQ bundle gifts are already rendered as Hàng KM rows in the main table.
+      // Keep the legacy secondary MOQ panel hidden to avoid duplicate output.
       const moqContainer = document.getElementById('moq-bundle-container');
-      const moqList = document.getElementById('moq-bundle-list');
-      if (r.moqBundleGiftsAchieved && r.moqBundleGiftsAchieved.length > 0) {
-        moqContainer.classList.remove('hidden');
-        moqList.innerHTML = r.moqBundleGiftsAchieved.map(m => `
-          <div class="bg-white p-3.5 rounded-xl border border-amber-300 flex flex-col md:flex-row justify-between items-start md:items-center gap-2 shadow-sm">
-            <div>
-              <div class="flex items-center gap-2">
-                <span class="px-2 py-0.5 rounded bg-amber-600 text-white text-[10px] font-extrabold">Ưu tiên #${m.priority}</span>
-                <span class="font-bold text-slate-900 text-xs">${m.promoName}</span>
-                <span class="text-slate-400 text-xs">•</span>
-                <span class="text-xs text-slate-600 font-semibold">${m.schemeName}</span>
-              </div>
-              <div class="text-[11px] text-slate-500 mt-0.5">
-                ${m.bundleItems && m.bundleItems.length ? `<div class="mb-1">Quà tặng: ${m.bundleItems.map(x=>`${x.name || x.code || 'Sản phẩm'} × ${x.qty || 1}`).join(', ')}</div>` : ''}
-                Phạm vi: <strong>${m.scope}</strong> (Doanh số đạt: <strong>${m.qualifyingAmount.toLocaleString()} đ</strong> / Mốc tối thiểu: ${m.minAmount.toLocaleString()} đ)
-              </div>
-            </div>
-            <div class="text-amber-800 font-bold text-xs bg-amber-50 border border-amber-200 px-3 py-1.5 rounded-lg">
-              🎁 ${m.bundleDesc}
-            </div>
-          </div>
-        `).join('');
-      } else {
-        moqContainer.classList.add('hidden');
-      }
+      if (moqContainer) moqContainer.classList.add('hidden');
 
       lucide.createIcons();
     }
