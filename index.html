@@ -1841,8 +1841,8 @@
     function saveWarehouseSafetyStockDay(){ const el=document.getElementById('base-safety-stock-day'); const n=Number(el?.value); if(!Number.isFinite(n)||n<=0){alert('Safety Stock Day phải lớn hơn 0.');return;} localStorage.setItem('CLK_WAREHOUSE_SAFETY_STOCK_DAY',String(Math.round(n))); alert(`Đã lưu Safety Stock Day = ${Math.round(n)} ngày.`); renderWarehouseInventory(); }
     function initWarehouseSafetySetting(){ const el=document.getElementById('base-safety-stock-day'); if(el)el.value=getWarehouseSafetyStockDay(); }
     function renderBaseAssignments(){ loadBaseProductAssignment(); loadBaseCustomerAssignment(); }
-    function loadBaseProductAssignment(){ const code=document.getElementById('bd-product-select')?.value; const el=document.getElementById('bd-product-assignment'); if(!el)return; const p=products.find(x=>x.productCode===code); if(!p){el.innerHTML='';return;} el.innerHTML=`<select id="bpa-brand" class="border rounded-xl p-2 text-xs"><option>Brand</option>${opts(baseData.brands,p.brand||'')}</select><select id="bpa-category" class="border rounded-xl p-2 text-xs"><option>Category</option>${opts(baseData.categories,p.category||'')}</select><select id="bpa-line" class="border rounded-xl p-2 text-xs"><option>Line</option>${opts(baseData.lines,p.line||'')}</select><select id="bpa-type" class="border rounded-xl p-2 text-xs"><option>Type</option>${opts(baseData.types,p.type||'')}</select><div class="border rounded-xl p-2 text-xs bg-slate-50 text-slate-600 font-semibold">Owner Team: ${escHtml(PRODUCT_MANAGEMENT_TEAM)}</div><button onclick="saveBaseProductAssignment()" class="col-span-2 bg-blue-600 text-white rounded-xl py-2 text-xs font-bold">Lưu Product Base Data</button>`; }
-    function saveBaseProductAssignment(){ const code=document.getElementById('bd-product-select').value,p=products.find(x=>x.productCode===code); if(!p)return; p.brand=document.getElementById('bpa-brand').value;p.category=document.getElementById('bpa-category').value;p.line=document.getElementById('bpa-line').value;p.productLine=p.line;p.type=document.getElementById('bpa-type').value;p.team=PRODUCT_MANAGEMENT_TEAM;persistProducts();alert('Đã cập nhật Base Data cho Product. Owner Team = Team B2B.'); }
+    function loadBaseProductAssignment(){ const code=document.getElementById('bd-product-select')?.value; const el=document.getElementById('bd-product-assignment'); if(!el)return; const p=products.find(x=>x.productCode===code); if(!p){el.innerHTML='';return;} el.innerHTML=`<select id="bpa-brand" class="border rounded-xl p-2 text-xs"><option>Brand</option>${opts(baseData.brands,p.brand||'')}</select><select id="bpa-category" class="border rounded-xl p-2 text-xs"><option>Category</option>${opts(baseData.categories,p.category||'')}</select><select id="bpa-line" class="border rounded-xl p-2 text-xs"><option>Line</option>${opts(baseData.lines,p.line||'')}</select><select id="bpa-type" class="border rounded-xl p-2 text-xs"><option>Type</option>${opts(baseData.types,p.type||'')}</select><select id="bpa-team" class="border rounded-xl p-2 text-xs"><option value="">Team phụ trách</option>${opts(baseData.teams||[],p.team||'')}</select><button onclick="saveBaseProductAssignment()" class="col-span-2 bg-blue-600 text-white rounded-xl py-2 text-xs font-bold">Lưu Product Base Data</button>`; }
+    function saveBaseProductAssignment(){ const code=document.getElementById('bd-product-select').value,p=products.find(x=>x.productCode===code); if(!p)return; p.brand=document.getElementById('bpa-brand').value;p.category=document.getElementById('bpa-category').value;p.line=document.getElementById('bpa-line').value;p.productLine=p.line;p.type=document.getElementById('bpa-type').value;p.team=document.getElementById('bpa-team')?.value||'';persistProducts();alert('Đã cập nhật Base Data cho Product.'); }
     function loadBaseCustomerAssignment(){ const code=document.getElementById('bd-customer-select')?.value; const el=document.getElementById('bd-customer-assignment'); if(!el)return; const c=customers.find(x=>x.code===code); if(!c){el.innerHTML='';return;} el.innerHTML=`<select id="bca-region" class="border rounded-xl p-2 text-xs">${opts(baseData.regions,c.region||'')}</select><select id="bca-channel" class="border rounded-xl p-2 text-xs">${opts(baseData.channels,c.channel||'')}</select><select id="bca-rank" class="border rounded-xl p-2 text-xs">${opts(baseData.ranks,c.rank||'')}</select><select id="bca-discount" class="border rounded-xl p-2 text-xs">${baseData.discountPolicies.map(x=>`<option value="${escHtml(x.name)}">${escHtml(x.name)} - CK ${x.discountRate}%</option>`).join('')}</select><button onclick="saveBaseCustomerAssignment()" class="col-span-2 bg-emerald-600 text-white rounded-xl py-2 text-xs font-bold">Lưu Customer Base Data</button>`; const policy=getDiscountByRank(c.rank); }
     function saveBaseCustomerAssignment(){ const code=document.getElementById('bd-customer-select').value,c=customers.find(x=>x.code===code); if(!c)return; c.region=document.getElementById('bca-region').value;c.channel=document.getElementById('bca-channel').value;c.rank=document.getElementById('bca-rank').value;c.discountPolicy=document.getElementById('bca-discount').value;persistCustomers();alert('Đã cập nhật Base Data cho Customer.'); }
 
@@ -1884,31 +1884,18 @@
     // =========================================================================
     // PRODUCT MANAGEMENT: XEM CHI TIẾT, CHỈNH SỬA & THÊM MỚI (PERSISTENCE)
     // =========================================================================
-    // V1 business rule: every product managed in Product Management belongs to Team B2B.
-    const PRODUCT_MANAGEMENT_TEAM = 'Team B2B';
-    function normalizeProductManagementTeam(list) {
-      return (Array.isArray(list) ? list : []).map(p => ({ ...p, team: PRODUCT_MANAGEMENT_TEAM }));
-    }
     function loadProducts() {
       try {
         const stored = localStorage.getItem('CLK_PRODUCTS_STORAGE_V1');
         if (stored) {
           const parsed = JSON.parse(stored);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            const normalized = normalizeProductManagementTeam(parsed);
-            localStorage.setItem('CLK_PRODUCTS_STORAGE_V1', JSON.stringify(normalized));
-            return normalized;
-          }
+          if (Array.isArray(parsed) && parsed.length > 0) return parsed;
         }
       } catch (e) {}
-      const normalizedDefaults = normalizeProductManagementTeam(DEFAULT_PRODUCTS);
-      try { localStorage.setItem('CLK_PRODUCTS_STORAGE_V1', JSON.stringify(normalizedDefaults)); } catch (e) {}
-      return normalizedDefaults;
+      return DEFAULT_PRODUCTS;
     }
 
     function persistProducts() {
-      // Enforce Product Management ownership: all products are Team B2B.
-      products = normalizeProductManagementTeam(products);
       try {
         localStorage.setItem('CLK_PRODUCTS_STORAGE_V1', JSON.stringify(products));
       } catch (e) {}
@@ -2002,10 +1989,7 @@
         lineInp.value = prod.productLine || (prod.name.includes('Son') ? 'Lip Product' : (prod.name.includes('Mask') ? 'Facial Mask' : 'Cosmetics'));
         typeInp.value = prod.type || (prod.status === 'OFF' ? 'Limited' : 'Standard');
         const teamInp = document.getElementById('prod-form-team');
-        if (teamInp) {
-          teamInp.innerHTML = `<option value="${escHtml(PRODUCT_MANAGEMENT_TEAM)}">${escHtml(PRODUCT_MANAGEMENT_TEAM)}</option>`;
-          teamInp.value = PRODUCT_MANAGEMENT_TEAM;
-        }
+        if (teamInp) { teamInp.innerHTML = '<option value="">-- Chưa phân team --</option>' + (baseData.teams || []).map(x => `<option value="${escHtml(x)}">${escHtml(x)}</option>`).join(''); teamInp.value = prod.team || ''; }
         priceListInp.value = prod.priceList || 0;
         priceDailyInp.value = prod.priceDaily || 0;
         statusInp.value = prod.status || 'ON';
@@ -2077,7 +2061,7 @@
       const category = document.getElementById('prod-form-category').value;
       const productLine = document.getElementById('prod-form-line').value.trim();
       const type = document.getElementById('prod-form-type').value;
-      const team = PRODUCT_MANAGEMENT_TEAM;
+      const team = document.getElementById('prod-form-team')?.value || '';
       const priceList = parseFloat(document.getElementById('prod-form-pricelist').value) || 0;
       const priceDaily = parseFloat(document.getElementById('prod-form-pricedaily').value) || 0;
       const status = document.getElementById('prod-form-status').value;
@@ -2533,7 +2517,6 @@
     let warehouseDrillStockGroup = 'ALL';
     let warehouseJsonpSeq = 0;
     let warehouseJsonpActive = false;
-    let warehouseJsonpPromise = null;
 
     function getWarehouseSafetyStockDay(){
       const n=Number(localStorage.getItem('CLK_WAREHOUSE_SAFETY_STOCK_DAY'));
@@ -2606,54 +2589,27 @@
       };
     }
     function fetchWarehouseInventory(){
-      // Nếu một request đang chạy (ví dụ auto-sync khi mở Warehouse),
-      // mọi lần gọi tiếp theo dùng chung Promise thay vì báo "API đang được gọi".
-      if(warehouseJsonpPromise) return warehouseJsonpPromise;
-
-      warehouseJsonpActive=true;
-      warehouseJsonpPromise=new Promise((resolve,reject)=>{
+      return new Promise((resolve,reject)=>{
+        if(warehouseJsonpActive){reject(new Error('Warehouse API đang được gọi'));return;}
+        warehouseJsonpActive=true;
         const callbackName='__CLK_WAREHOUSE_JSONP__';
         const script=document.createElement('script');
         let finished=false;
-        let timeout=null;
-        const cleanup=()=>{
-          warehouseJsonpActive=false;
-          warehouseJsonpPromise=null;
-          if(timeout)clearTimeout(timeout);
-          try{delete window[callbackName];}catch(e){window[callbackName]=undefined;}
-          if(script.parentNode)script.parentNode.removeChild(script);
-        };
-        const finish=(fn,value)=>{
-          if(finished)return;
-          finished=true;
-          cleanup();
-          fn(value);
-        };
-
-        timeout=setTimeout(()=>finish(reject,new Error('JSONP timeout - API không phản hồi sau 20 giây')),20000);
-
+        const finish=(fn,value)=>{if(finished)return;finished=true;warehouseJsonpActive=false;clearTimeout(timeout);try{delete window[callbackName];}catch(e){window[callbackName]=undefined;}if(script.parentNode)script.parentNode.removeChild(script);fn(value);};
+        const timeout=setTimeout(()=>finish(reject,new Error('JSONP timeout - API không phản hồi')),20000);
         window[callbackName]=(response)=>{
           try{
-            if(!response||response.success!==true){
-              throw new Error(response?.error||'Warehouse API trả về response không hợp lệ');
-            }
-            if(!Array.isArray(response.data)){
-              throw new Error('Warehouse API: response.data không phải là mảng');
-            }
+            if(!response||response.success!==true)throw new Error(response?.error||'Warehouse API trả về response không hợp lệ');
+            if(!Array.isArray(response.data))throw new Error('Warehouse API: response.data không phải là mảng');
             const normalized=response.data.map(normalizeWarehouseRow).filter(x=>x.warehouse&&x.sku);
             finish(resolve,normalized);
-          }catch(e){
-            finish(reject,e);
-          }
+          }catch(e){finish(reject,e);}
         };
-
         script.onerror=()=>finish(reject,new Error('Không thể tải Warehouse API. Kiểm tra Web App / network.'));
         script.src=WAREHOUSE_API_URL+'?callback='+encodeURIComponent(callbackName)+'&_='+Date.now()+'&seq='+(++warehouseJsonpSeq);
         script.async=true;
         document.head.appendChild(script);
       });
-
-      return warehouseJsonpPromise;
     }
     async function syncWarehouseInventory(showAlert=true){
       try{
