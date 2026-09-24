@@ -3571,7 +3571,9 @@
         });
       });
 
-      // TỔ CHỨC CÁC DÒNG: DÒNG MUA LIỀN KỀ DÒNG QUÀ TẶNG CỦA MÃ ĐÓ
+      // TỔ CHỨC CÁC DÒNG: DÒNG MUA LIỀN KỀ DÒNG QUÀ TẶNG.
+      // MOQ/BUNDLE là quà theo cấp doanh số của toàn đơn nên được đưa thành
+      // các dòng QUÀ 0đ ngay trong bảng chính, không tạo thêm bảng phụ.
       const displayRows = [];
       purchasedItems.forEach(item => {
         displayRows.push({
@@ -3583,14 +3585,51 @@
           priceList: item.priceList,
           priceAfterRank: item.priceAfterRank,
           lineTotal: item.lineTotal,
-          promoNote: item.attachedGifts.length > 0 ? 'Có quà tặng kèm ngay bên dưới' : 'Hàng bán chuẩn'
+          promoNote: ''
         });
 
         if (item.attachedGifts && item.attachedGifts.length > 0) {
-          item.attachedGifts.forEach(g => {
-            displayRows.push(g);
-          });
+          item.attachedGifts.forEach(g => displayRows.push(g));
         }
+      });
+
+      // Đưa quà MOQ vào bảng chính theo đúng bundleItems đã cấu hình.
+      // Ưu tiên Product Code/Barcode trong bundleItems để có thể xuất phiếu kho.
+      moqBundleGiftsAchieved.forEach(m => {
+        const items = Array.isArray(m.bundleItems) ? m.bundleItems.filter(x => x) : [];
+        const fallbackItems = items.length ? items : [{
+          code: '',
+          name: m.bundleDesc || 'Gói quà tặng MOQ',
+          qty: 1
+        }];
+
+        fallbackItems.forEach(x => {
+          const rawCode = String(x.code || '').trim();
+          const rawBarcode = String(x.barcode || '').trim();
+          const foundGiftProd = products.find(p =>
+            (rawCode && String(p.productCode || '').toLowerCase() === rawCode.toLowerCase()) ||
+            (rawCode && String(p.barcode || '') === rawCode) ||
+            (rawBarcode && String(p.barcode || '') === rawBarcode)
+          );
+
+          const giftCode = foundGiftProd ? foundGiftProd.productCode : rawCode;
+          const giftBarcode = foundGiftProd ? foundGiftProd.barcode : rawBarcode;
+          const giftName = foundGiftProd ? (x.name || foundGiftProd.name) : (x.name || giftCode || 'Gói quà tặng');
+          const giftQty = Number(x.qty) || 1;
+
+          displayRows.push({
+            isGift: true,
+            isMoqGift: true,
+            code: giftCode,
+            barcode: giftBarcode,
+            name: giftName,
+            qty: giftQty,
+            priceList: foundGiftProd?.priceList || 0,
+            priceAfterRank: 0,
+            lineTotal: 0,
+            promoNote: `${m.promoName} • ${m.bundleDesc || 'Gói quà MOQ'} • Mốc ${Number(m.minAmount || 0).toLocaleString('vi-VN')}đ`
+          });
+        });
       });
 
       const grandTotal = subTotal;
@@ -3796,18 +3835,11 @@
         }
       });
 
+      // Không tạo block MOQ riêng. Quà MOQ đã nằm trong r.rows/r.rows.map ở bảng chính.
       const totalRows = [
         [],
         ['', '', '', '', 'TỔNG CỘNG HÀNG HÓA THANH TOÁN (ĐÃ GỒM VAT):', r.totalOrderQty, '', '', r.grandTotal, '']
       ];
-
-      if (r.moqBundleGiftsAchieved && r.moqBundleGiftsAchieved.length > 0) {
-        totalRows.push([]);
-        totalRows.push(['DANH SÁCH GÓI QUÀ THƯỞNG THEO DOANH SỐ (MOQ BUNDLE):']);
-        r.moqBundleGiftsAchieved.forEach((m, mIdx) => {
-          totalRows.push([mIdx + 1, 'THƯỞNG MOQ', m.promoName, m.schemeName, m.bundleDesc, 1, 0, 0, 0, `Doanh số đạt ${m.qualifyingAmount.toLocaleString()}đ (Mốc ${m.minAmount.toLocaleString()}đ)`]);
-        });
-      }
 
       const fullData = [...headerRows, tableHeaders, ...itemRows, ...totalRows];
       const ws = XLSX.utils.aoa_to_sheet(fullData);
