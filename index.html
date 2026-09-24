@@ -2533,6 +2533,7 @@
     let warehouseDrillStockGroup = 'ALL';
     let warehouseJsonpSeq = 0;
     let warehouseJsonpActive = false;
+    let warehouseJsonpPromise = null;
 
     function getWarehouseSafetyStockDay(){
       const n=Number(localStorage.getItem('CLK_WAREHOUSE_SAFETY_STOCK_DAY'));
