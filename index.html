@@ -3654,65 +3654,95 @@
     }
 
     function renderOrderResults() {
-      document.getElementById('empty-state').classList.add('hidden');
-      document.getElementById('results-box').classList.remove('hidden');
+      const empty = document.getElementById('empty-state');
+      const results = document.getElementById('results-box');
+      const tbody = document.getElementById('order-table-body');
+      if (!results || !tbody || !currentCalculation) return;
+
+      if (empty) empty.classList.add('hidden');
+      results.classList.remove('hidden');
 
       const r = currentCalculation;
-      document.getElementById('badge-item-count').innerText = `${r.rows.length} dòng hiển thị`;
-      document.getElementById('summary-rank-badge').innerText = `${r.cust.rank} (${r.cust.code})`;
-      document.getElementById('summary-rank-discount').innerText = r.rankPolicy.label;
-      document.getElementById('summary-promo-priority').innerText = r.priorityOrderStr || 'Mặc định';
-      document.getElementById('summary-total-qty').innerText = r.totalOrderQty.toLocaleString();
-      document.getElementById('summary-subtotal').innerText = `${Number(r.subTotal || 0).toLocaleString()} đ`;
-      document.getElementById('summary-grandtotal').innerText = `${Number(r.grandTotal || 0).toLocaleString()} đ`;
-      document.getElementById('summary-product-gifts').innerText = `${r.totalProductGifts.toLocaleString()} món`;
-      document.getElementById('summary-moq-gifts').innerText = `${r.totalMoqBundlesCount.toLocaleString()} gói quà`;
+      const rows = Array.isArray(r.rows) ? r.rows : [];
+      const safeNum = (v) => {
+        const n = Number(v);
+        return Number.isFinite(n) ? n : 0;
+      };
+      const safeText = (v) => String(v == null ? '' : v);
+      const money = (v) => safeNum(v).toLocaleString('vi-VN') + ' đ';
 
-      const tbody = document.getElementById('order-table-body');
-      tbody.innerHTML = r.rows.map(row => {
-        if (row.isGift) {
-          return `
-            <tr class="gift-row border-b border-emerald-100">
-              <td class="p-2.5 text-center">
-                <span class="px-2 py-0.5 rounded text-[10px] font-black bg-emerald-600 text-white uppercase tracking-wider">Hàng KM</span>
-              </td>
-              <td class="p-2.5 font-mono text-xs font-bold text-emerald-800">${String(row.code || '')}</td>
-              <td class="p-2.5 font-mono text-xs text-slate-500">${String(row.barcode || '')}</td>
-              <td class="p-2.5 font-bold text-emerald-900 flex items-center gap-1.5">
-                <i data-lucide="gift" class="w-3.5 h-3.5 text-emerald-600"></i> ${String(row.name || '')}
-              </td>
-              <td class="p-2.5 text-right font-black text-emerald-700">+${Number(row.qty || 0).toLocaleString()}</td>
-              <td class="p-2.5 text-right text-slate-400 text-xs">${Number(row.priceList || 0) > 0 ? Number(row.priceList).toLocaleString() + ' đ' : '-'}</td>
-              <td class="p-2.5 text-right font-bold text-emerald-600">0 đ</td>
-              <td class="p-2.5 text-right font-bold text-emerald-600">0 đ</td>
-              <td class="p-2.5 text-xs text-emerald-800 font-medium italic">${String(row.promoNote || '')}</td>
-            </tr>
-          `;
-        } else {
-          return `
-            <tr class="hover:bg-slate-50 transition border-b border-slate-200">
-              <td class="p-2.5 text-center">
-                <span class="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-100 text-blue-800">MUA</span>
-              </td>
-              <td class="p-2.5 font-mono text-xs font-semibold text-slate-800">${String(row.code || '')}</td>
-              <td class="p-2.5 font-mono text-xs text-slate-500">${String(row.barcode || '')}</td>
-              <td class="p-2.5 font-medium text-slate-900">${String(row.name || '')}</td>
-              <td class="p-2.5 text-right font-bold text-slate-900">${Number(row.qty || 0).toLocaleString()}</td>
-              <td class="p-2.5 text-right text-slate-500 text-xs">${Number(row.priceList || 0).toLocaleString()} đ</td>
-              <td class="p-2.5 text-right font-bold text-blue-600">${Number(row.priceAfterRank || 0).toLocaleString()} đ</td>
-              <td class="p-2.5 text-right font-bold text-slate-900">${Number(row.lineTotal || 0).toLocaleString()} đ</td>
-              <td class="p-2.5 text-xs text-slate-500">${String(row.promoNote || '')}</td>
-            </tr>
-          `;
-        }
-      }).join('');
+      const setText = (id, value) => {
+        const el = document.getElementById(id);
+        if (el) el.textContent = value;
+      };
 
-      // MOQ bundle gifts are already rendered as Hàng KM rows in the main table.
-      // Keep the legacy secondary MOQ panel hidden to avoid duplicate output.
+      setText('badge-item-count', `${rows.length} dòng hiển thị`);
+      setText('summary-rank-badge', `${safeText(r.cust?.rank)} (${safeText(r.cust?.code)})`);
+      setText('summary-rank-discount', safeText(r.rankPolicy?.label));
+      setText('summary-promo-priority', safeText(r.priorityOrderStr) || 'Mặc định');
+      setText('summary-total-qty', safeNum(r.totalOrderQty).toLocaleString('vi-VN'));
+      setText('summary-subtotal', money(r.subTotal));
+      setText('summary-grandtotal', money(r.grandTotal));
+      setText('summary-product-gifts', `${safeNum(r.totalProductGifts).toLocaleString('vi-VN')} món`);
+      setText('summary-moq-gifts', `${safeNum(r.totalMoqBundlesCount).toLocaleString('vi-VN')} gói quà`);
+
+      // Render bằng DOM API thay vì template string để không thể làm trắng bảng
+      // khi một dòng sản phẩm/quà có dữ liệu thiếu hoặc sai kiểu.
+      tbody.replaceChildren();
+      let purchaseIndex = 0;
+
+      rows.forEach((row) => {
+        if (!row) return;
+        const tr = document.createElement('tr');
+        const isGift = row.isGift === true;
+        tr.className = isGift
+          ? 'gift-row border-b border-emerald-100'
+          : 'hover:bg-slate-50 transition border-b border-slate-200';
+
+        const values = [
+          isGift ? 'Hàng KM' : 'MUA',
+          safeText(row.code),
+          safeText(row.barcode),
+          safeText(row.name),
+          `${isGift ? '+' : ''}${safeNum(row.qty).toLocaleString('vi-VN')}`,
+          safeNum(row.priceList) > 0 ? money(row.priceList) : '-',
+          isGift ? '0 đ' : money(row.priceAfterRank),
+          isGift ? '0 đ' : money(row.lineTotal),
+          safeText(row.promoNote)
+        ];
+
+        values.forEach((value, idx) => {
+          const td = document.createElement('td');
+          td.className = 'p-2.5 text-xs';
+          if (idx === 0) td.classList.add('text-center');
+          if (idx === 1 || idx === 2) td.classList.add('font-mono');
+          if (idx === 4 || idx === 5 || idx === 6 || idx === 7) td.classList.add('text-right');
+          if (idx === 4) td.classList.add('font-bold');
+          if (isGift) td.classList.add('text-emerald-800');
+          if (idx === 3) td.classList.add('font-medium');
+          td.textContent = value;
+          tr.appendChild(td);
+        });
+
+        // Mã dòng mua STT không cần thêm cột mới; giữ đúng 9 cột UI hiện tại.
+        if (!isGift) purchaseIndex++;
+        tbody.appendChild(tr);
+      });
+
+      // Hiển thị fallback rõ ràng nếu chưa có dòng, thay vì để bảng trắng.
+      if (rows.length === 0) {
+        const tr = document.createElement('tr');
+        const td = document.createElement('td');
+        td.colSpan = 9;
+        td.className = 'p-8 text-center text-slate-400';
+        td.textContent = 'Chưa có dữ liệu chi tiết đơn hàng.';
+        tr.appendChild(td);
+        tbody.appendChild(tr);
+      }
+
+      // Quà MOQ đã nằm trong bảng chính; ẩn panel cũ để không duplicate.
       const moqContainer = document.getElementById('moq-bundle-container');
       if (moqContainer) moqContainer.classList.add('hidden');
-
-      lucide.createIcons();
     }
 
     function handleFile(e) {
