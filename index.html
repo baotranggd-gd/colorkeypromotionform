@@ -528,11 +528,10 @@
 
             <!-- FOOTER TỔNG KẾT TIỀN -->
             <div class="p-6 bg-slate-50 border-t border-slate-200 flex flex-col md:flex-row justify-between items-end gap-4">
-              <div class="text-xs text-slate-500 space-y-1">
-                <div>* Giá sản phẩm được tự động tính theo Rank: <strong>Distributor (CK 57%)</strong>, <strong>Retailer 2 (CK 54%)</strong>, <strong>Retailer 1 (CK 52%)</strong>, <strong>KA = 1 (100% Niêm yết)</strong>.</div>
-                <div>* Hạng khách hàng: <strong id="summary-rank-badge">-</strong> | Tỷ lệ chiết khấu: <strong id="summary-rank-discount" class="text-blue-600 font-bold">0%</strong></div>
-                <div>* Thứ tự ưu tiên CTKM: <strong id="summary-promo-priority" class="text-slate-700">-</strong></div>
-                <div class="text-emerald-700 font-medium">* Tất cả đơn giá và tổng thanh toán <strong>ĐÃ BAO GỒM 10% THUẾ VAT</strong>.</div>
+              <div class="hidden" aria-hidden="true">
+                <span id="summary-rank-badge">-</span>
+                <span id="summary-rank-discount">0%</span>
+                <span id="summary-promo-priority">-</span>
               </div>
               <div class="w-full md:w-96 space-y-2 text-xs bg-white p-4 rounded-xl border border-slate-200 shadow-sm">
                 <div class="flex justify-between text-slate-600">
