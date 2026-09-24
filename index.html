@@ -1036,25 +1036,94 @@
 
 
       <!-- ========================================================================= -->
-      <!-- VIEW 6: WAREHOUSE (Trang 11 PDF - Inventory, Báo Cáo Tồn Kho) -->
+      <!-- VIEW 6: WAREHOUSE – INVENTORY DASHBOARD -->
       <!-- ========================================================================= -->
       <section id="view-warehouse" class="hidden h-full overflow-y-auto p-8 space-y-6">
-        <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
-          <div><h2 class="text-xl font-bold text-slate-800">Warehouse > Inventory</h2><p id="warehouse-last-sync" class="text-xs text-slate-500 mt-0.5">Tồn kho thực tế theo kho • Chưa đồng bộ API</p></div>
-          <div class="flex items-center gap-2"><select id="warehouse-owner-team" onchange="renderWarehouseInventory()" class="border border-slate-300 rounded-xl px-3 py-2.5 text-xs font-semibold bg-white"><option value="">Chọn team phụ trách</option></select><button onclick="syncWarehouseInventory()" class="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs px-4 py-2.5 rounded-xl font-semibold shadow transition"><i data-lucide="refresh-cw" class="w-4 h-4"></i> Sync Inventory</button></div>
+        <div class="flex flex-col xl:flex-row justify-between items-start xl:items-center gap-4">
+          <div>
+            <h2 class="text-xl font-bold text-slate-800">Inventory Dashboard</h2>
+            <p id="warehouse-last-sync" class="text-xs text-slate-500 mt-0.5">Current Inventory Status • Chưa đồng bộ API</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <select id="warehouse-current-team" onchange="renderWarehouseInventory()" class="border border-slate-300 rounded-xl px-3 py-2.5 text-xs font-semibold bg-white">
+              <option value="">Current Team</option>
+            </select>
+            <button onclick="syncWarehouseInventory()" class="flex items-center gap-1.5 bg-blue-600 hover:bg-blue-700 text-white text-xs px-4 py-2.5 rounded-xl font-semibold shadow transition">
+              <i data-lucide="refresh-cw" class="w-4 h-4"></i> Sync Inventory
+            </button>
+          </div>
         </div>
-        <div id="warehouse-other-team-warning" class="hidden bg-amber-50 border border-amber-200 rounded-2xl p-4"><div class="flex items-start gap-3"><div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0"><i data-lucide="triangle-alert" class="w-5 h-5"></i></div><div><div class="font-bold text-amber-800 text-sm">Cảnh báo SKU thuộc team khác</div><div id="warehouse-warning-text" class="text-xs text-amber-700 mt-1"></div></div></div></div>
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm"><div class="text-xs text-slate-500 font-semibold mb-1">Tổng tồn kho thực tế</div><div id="wh-kpi-total" class="text-2xl font-black text-slate-800">0</div><div class="text-[11px] text-slate-400 font-semibold mt-1">Tổng Khả dụng từ Warehouse API</div></div>
-          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm"><div class="text-xs text-slate-500 font-semibold mb-1">SKU đang theo dõi</div><div id="wh-kpi-sku" class="text-2xl font-black text-blue-600">0</div><div class="text-[11px] text-slate-400 font-semibold mt-1">Theo tất cả warehouse</div></div>
-          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm"><div class="text-xs text-slate-500 font-semibold mb-1">SKU stock day thấp</div><div id="wh-kpi-lowdays" class="text-2xl font-black text-amber-600">0</div><div class="text-[11px] text-amber-600 font-semibold mt-1">≤ 7 ngày</div></div>
-          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm"><div class="text-xs text-slate-500 font-semibold mb-1">SKU team khác</div><div id="wh-kpi-otherteam" class="text-2xl font-black text-rose-600">0</div><div class="text-[11px] text-rose-600 font-semibold mt-1">Cần kiểm tra trước khi xử lý</div></div>
+
+        <div id="warehouse-other-team-warning" class="hidden bg-amber-50 border border-amber-200 rounded-2xl p-4">
+          <div class="flex items-start gap-3">
+            <div class="w-9 h-9 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0"><i data-lucide="triangle-alert" class="w-5 h-5"></i></div>
+            <div><div class="font-bold text-amber-800 text-sm">⚠️ This SKU belongs to another team</div><div id="warehouse-warning-text" class="text-xs text-amber-700 mt-1"></div></div>
+          </div>
         </div>
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm lg:col-span-2"><h3 class="font-bold text-slate-800 text-sm mb-1">Tồn kho thực tế theo kho</h3><p class="text-[11px] text-slate-400 mb-4">Lấy từ cột Khả dụng</p><div class="h-56"><canvas id="chart-warehouse-bar"></canvas></div></div>
-          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm"><h3 class="font-bold text-slate-800 text-sm mb-1">Phân bố Stock Day</h3><p class="text-[11px] text-slate-400 mb-4">≤ 7 ngày / 8–30 ngày / &gt; 30 ngày</p><div class="h-56"><canvas id="chart-warehouse-stockday"></canvas></div></div>
+
+        <!-- KPI -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+          <button onclick="warehouseDrillDown('ALL')" class="text-left bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:border-blue-300 hover:shadow-md transition">
+            <div class="text-xs text-slate-500 font-semibold mb-1">Total SKU</div><div id="wh-kpi-sku" class="text-2xl font-black text-blue-600">0</div><div class="text-[11px] text-slate-400 mt-1">SKU trong phạm vi filter</div>
+          </button>
+          <button onclick="warehouseDrillDown('ALL')" class="text-left bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:border-blue-300 hover:shadow-md transition">
+            <div class="text-xs text-slate-500 font-semibold mb-1">Total Stock</div><div id="wh-kpi-total" class="text-2xl font-black text-slate-800">0</div><div class="text-[11px] text-slate-400 mt-1">Tổng Stock Qty</div>
+          </button>
+          <button onclick="warehouseDrillDown('LOW')" class="text-left bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:border-amber-300 hover:shadow-md transition">
+            <div class="text-xs text-slate-500 font-semibold mb-1">Low Stock</div><div id="wh-kpi-low" class="text-2xl font-black text-amber-600">0</div><div id="wh-kpi-low-sub" class="text-[11px] text-amber-600 font-semibold mt-1">Stock Day &lt; Safety Stock Day</div>
+          </button>
+          <button onclick="warehouseDrillDown('OOS')" class="text-left bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:border-rose-300 hover:shadow-md transition">
+            <div class="text-xs text-slate-500 font-semibold mb-1">Out of Stock</div><div id="wh-kpi-oos" class="text-2xl font-black text-rose-600">0</div><div class="text-[11px] text-rose-600 font-semibold mt-1">Stock Qty = 0</div>
+          </button>
+          <button onclick="warehouseDrillDown('WARNING')" class="text-left bg-white p-5 rounded-2xl border border-slate-200 shadow-sm hover:border-amber-300 hover:shadow-md transition">
+            <div class="text-xs text-slate-500 font-semibold mb-1">Warning SKU</div><div id="wh-kpi-warning" class="text-2xl font-black text-orange-600">0</div><div class="text-[11px] text-orange-600 font-semibold mt-1">Owner Team ≠ Current Team</div>
+          </button>
         </div>
-        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden"><div class="p-4 border-b border-slate-100 flex flex-wrap gap-3 justify-between items-center bg-slate-50"><div><span class="font-bold text-slate-800 text-xs uppercase">Bảng Tồn Kho Sản Phẩm Thực Tế</span><div class="text-[11px] text-slate-400 mt-0.5">Nguồn: Kho / SKU / Khả dụng / Stockday</div></div><div class="flex items-center gap-2"><select id="warehouse-filter" onchange="renderWarehouseInventory()" class="border border-slate-300 rounded-xl px-3 py-2 text-xs bg-white"><option value="ALL">Tất cả kho</option></select><input id="warehouse-search" oninput="renderWarehouseInventory()" class="border border-slate-300 rounded-xl px-3 py-2 text-xs" placeholder="Search SKU..." /></div></div><div class="overflow-x-auto"><table class="w-full text-left text-xs"><thead class="bg-slate-100 text-slate-600 font-bold uppercase border-b"><tr><th class="p-3">#</th><th class="p-3">Kho</th><th class="p-3">SKU</th><th class="p-3">Product</th><th class="p-3 text-right">Tồn thực tế</th><th class="p-3 text-right">Stock Day</th><th class="p-3">Team</th><th class="p-3 text-center">Status</th></tr></thead><tbody id="warehouse-inventory-body" class="divide-y divide-slate-100"></tbody></table></div></div>
+
+        <!-- Filters -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-4">
+          <div class="flex items-center justify-between gap-3 mb-3"><div><h3 class="font-bold text-slate-800 text-sm">Filters</h3><p class="text-[11px] text-slate-400">Có thể kết hợp nhiều điều kiện</p></div><button onclick="resetWarehouseFilters()" class="text-xs font-bold text-blue-600 hover:text-blue-800">Reset filters</button></div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-8 gap-2">
+            <select id="warehouse-brand-filter" onchange="renderWarehouseInventory()" class="border border-slate-300 rounded-xl px-3 py-2 text-xs bg-white"><option value="ALL">Brand: All</option></select>
+            <select id="warehouse-category-filter" onchange="renderWarehouseInventory()" class="border border-slate-300 rounded-xl px-3 py-2 text-xs bg-white"><option value="ALL">Category: All</option></select>
+            <select id="warehouse-line-filter" onchange="renderWarehouseInventory()" class="border border-slate-300 rounded-xl px-3 py-2 text-xs bg-white"><option value="ALL">Line: All</option></select>
+            <select id="warehouse-type-filter" onchange="renderWarehouseInventory()" class="border border-slate-300 rounded-xl px-3 py-2 text-xs bg-white"><option value="ALL">Type: All</option></select>
+            <select id="warehouse-filter" onchange="renderWarehouseInventory()" class="border border-slate-300 rounded-xl px-3 py-2 text-xs bg-white"><option value="ALL">Warehouse: All</option></select>
+            <select id="warehouse-owner-team" onchange="renderWarehouseInventory()" class="border border-slate-300 rounded-xl px-3 py-2 text-xs bg-white"><option value="ALL">Owner Team: All</option></select>
+            <select id="warehouse-status-filter" onchange="renderWarehouseInventory()" class="border border-slate-300 rounded-xl px-3 py-2 text-xs bg-white"><option value="ALL">Status: All</option><option value="SAFE">Safe</option><option value="WARNING">Warning</option><option value="TEAM_WARNING">Other Team</option><option value="CRITICAL">Critical</option><option value="URGENT">Urgent</option><option value="OOS">OOS</option><option value="HIGH_STOCK">High Stock</option><option value="NO_DATA">No Data</option></select>
+            <input id="warehouse-search" oninput="renderWarehouseInventory()" class="border border-slate-300 rounded-xl px-3 py-2 text-xs" placeholder="Search SKU / Product..." />
+          </div>
+        </div>
+
+        <!-- Stock Health + Distribution -->
+        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <div class="flex justify-between items-start mb-4"><div><h3 class="font-bold text-slate-800 text-sm">Stock Health</h3><p class="text-[11px] text-slate-400">Click status để drill-down</p></div><span id="warehouse-safety-label" class="px-2 py-1 rounded-lg bg-blue-50 text-blue-700 text-[10px] font-bold">Safety: 15 days</span></div>
+            <div class="h-64"><canvas id="chart-warehouse-health"></canvas></div>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <div class="mb-4"><h3 class="font-bold text-slate-800 text-sm">Stock Day Distribution</h3><p class="text-[11px] text-slate-400">Click group để drill-down</p></div>
+            <div class="h-64"><canvas id="chart-warehouse-stockday"></canvas></div>
+          </div>
+        </div>
+
+        <!-- Action Required -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="p-4 border-b border-slate-100 flex justify-between items-center bg-slate-50"><div><span class="font-bold text-slate-800 text-xs uppercase">⚠️ Action Required</span><div class="text-[11px] text-slate-400 mt-0.5">Các SKU cần Ops theo dõi hoặc xử lý</div></div><span id="warehouse-action-count" class="px-2 py-1 rounded-lg bg-rose-50 text-rose-700 text-[10px] font-bold">0 SKU</span></div>
+          <div class="overflow-x-auto"><table class="w-full text-left text-xs"><thead class="bg-slate-100 text-slate-600 font-bold uppercase border-b"><tr><th class="p-3">Status</th><th class="p-3">SKU</th><th class="p-3">Product</th><th class="p-3">Warehouse</th><th class="p-3 text-right">Stock</th><th class="p-3 text-right">Stock Day</th><th class="p-3">Action</th></tr></thead><tbody id="warehouse-action-body" class="divide-y divide-slate-100"></tbody></table></div>
+        </div>
+
+        <!-- Warehouse Summary -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="p-4 border-b border-slate-100 bg-slate-50"><span class="font-bold text-slate-800 text-xs uppercase">Warehouse Stock</span><div class="text-[11px] text-slate-400 mt-0.5">Click Warehouse để filter toàn bộ Dashboard</div></div>
+          <div class="overflow-x-auto"><table class="w-full text-left text-xs"><thead class="bg-slate-100 text-slate-600 font-bold uppercase border-b"><tr><th class="p-3">Warehouse</th><th class="p-3 text-right">SKU Count</th><th class="p-3 text-right">Total Stock</th><th class="p-3 text-right">Low Stock</th><th class="p-3 text-right">OOS</th><th class="p-3 text-right">Warning</th></tr></thead><tbody id="warehouse-summary-body" class="divide-y divide-slate-100"></tbody></table></div>
+        </div>
+
+        <!-- SKU Detail -->
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="p-4 border-b border-slate-100 flex flex-wrap gap-3 justify-between items-center bg-slate-50"><div><span class="font-bold text-slate-800 text-xs uppercase">SKU Inventory</span><div id="warehouse-detail-count" class="text-[11px] text-slate-400 mt-0.5">0 SKU</div></div></div>
+          <div class="overflow-x-auto"><table class="w-full text-left text-xs"><thead class="bg-slate-100 text-slate-600 font-bold uppercase border-b"><tr><th class="p-3">#</th><th class="p-3">SKU</th><th class="p-3">Product Name</th><th class="p-3">Brand</th><th class="p-3">Category</th><th class="p-3">Line</th><th class="p-3">Type</th><th class="p-3">Warehouse</th><th class="p-3 text-right">Stock Qty</th><th class="p-3 text-right">Stock Day</th><th class="p-3">Status</th><th class="p-3">Owner Team</th><th class="p-3">Warning</th></tr></thead><tbody id="warehouse-inventory-body" class="divide-y divide-slate-100"></tbody></table></div>
+        </div>
       </section>
 
       <!-- TAB 7: REPORT & ANALYTICS -->
@@ -1071,6 +1140,13 @@
         <div>
           <h2 class="text-xl font-bold text-slate-800">Base Data Management</h2>
           <p class="text-xs text-slate-500 mt-0.5">Quản lý dữ liệu chuẩn dùng chung cho Product, Customer, CTKM và Order.</p>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <div><h3 class="font-bold text-slate-800">Warehouse Parameter</h3><p class="text-[11px] text-slate-400">Safety Stock Day mặc định dùng cho Inventory Dashboard. Có thể thay đổi sau này.</p></div>
+            <div class="flex items-center gap-2"><label class="text-xs font-semibold text-slate-600">Safety Stock Day</label><input id="base-safety-stock-day" type="number" min="1" step="1" class="w-24 border border-slate-300 rounded-xl px-3 py-2 text-xs" value="15" /><button onclick="saveWarehouseSafetyStockDay()" class="px-4 py-2 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold">Lưu</button></div>
+          </div>
         </div>
 
         <div class="grid grid-cols-1 lg:grid-cols-2 gap-5">
@@ -1712,7 +1788,7 @@
       renderBaseData();
     }
     function escHtml(v){ return String(v??'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m])); }
-    function renderBaseData(){
+    function renderBaseData(){ initWarehouseSafetySetting();
       renderBaseDataType(activeBaseDataType);
       renderDiscountSummary();
       renderBaseAssignments();
@@ -1762,6 +1838,8 @@
       const ps=document.getElementById('bd-product-select'); if(ps){const cur=ps.value; ps.innerHTML='<option value="">-- Chọn Product --</option>'+products.slice(0,500).map(p=>`<option value="${escHtml(p.productCode)}">${escHtml(p.productCode)} | ${escHtml(p.name)}</option>`).join(''); if(cur)ps.value=cur;}
       const cs=document.getElementById('bd-customer-select'); if(cs){const cur=cs.value; cs.innerHTML='<option value="">-- Chọn Customer --</option>'+customers.map(c=>`<option value="${escHtml(c.code)}">${escHtml(c.code)} | ${escHtml(c.name)}</option>`).join(''); if(cur)cs.value=cur;}
     }
+    function saveWarehouseSafetyStockDay(){ const el=document.getElementById('base-safety-stock-day'); const n=Number(el?.value); if(!Number.isFinite(n)||n<=0){alert('Safety Stock Day phải lớn hơn 0.');return;} localStorage.setItem('CLK_WAREHOUSE_SAFETY_STOCK_DAY',String(Math.round(n))); alert(`Đã lưu Safety Stock Day = ${Math.round(n)} ngày.`); renderWarehouseInventory(); }
+    function initWarehouseSafetySetting(){ const el=document.getElementById('base-safety-stock-day'); if(el)el.value=getWarehouseSafetyStockDay(); }
     function renderBaseAssignments(){ loadBaseProductAssignment(); loadBaseCustomerAssignment(); }
     function loadBaseProductAssignment(){ const code=document.getElementById('bd-product-select')?.value; const el=document.getElementById('bd-product-assignment'); if(!el)return; const p=products.find(x=>x.productCode===code); if(!p){el.innerHTML='';return;} el.innerHTML=`<select id="bpa-brand" class="border rounded-xl p-2 text-xs"><option>Brand</option>${opts(baseData.brands,p.brand||'')}</select><select id="bpa-category" class="border rounded-xl p-2 text-xs"><option>Category</option>${opts(baseData.categories,p.category||'')}</select><select id="bpa-line" class="border rounded-xl p-2 text-xs"><option>Line</option>${opts(baseData.lines,p.line||'')}</select><select id="bpa-type" class="border rounded-xl p-2 text-xs"><option>Type</option>${opts(baseData.types,p.type||'')}</select><select id="bpa-team" class="border rounded-xl p-2 text-xs"><option value="">Team phụ trách</option>${opts(baseData.teams||[],p.team||'')}</select><button onclick="saveBaseProductAssignment()" class="col-span-2 bg-blue-600 text-white rounded-xl py-2 text-xs font-bold">Lưu Product Base Data</button>`; }
     function saveBaseProductAssignment(){ const code=document.getElementById('bd-product-select').value,p=products.find(x=>x.productCode===code); if(!p)return; p.brand=document.getElementById('bpa-brand').value;p.category=document.getElementById('bpa-category').value;p.line=document.getElementById('bpa-line').value;p.type=document.getElementById('bpa-type').value;p.team=document.getElementById('bpa-team')?.value||'';persistProducts();alert('Đã cập nhật Base Data cho Product.'); }
@@ -2422,58 +2500,213 @@
     // Google Apps Script Web App - Warehouse Inventory API
     const WAREHOUSE_API_URL = 'https://script.google.com/macros/s/AKfycbxxXOvez1kIpEodc97zOk9sIuBBEaykTuj3zQvst8CWP8VozsrTCy8gkJbOOuphtlWg/exec';
     localStorage.setItem('CLK_WAREHOUSE_API_URL', WAREHOUSE_API_URL);
-    const WAREHOUSE_STOCKDAY_LOW = 7;
+    const DEFAULT_WAREHOUSE_SAFETY_STOCK_DAY = 15;
+    const WAREHOUSE_STATUS_ORDER = ['SAFE','WARNING','CRITICAL','URGENT','OOS','HIGH_STOCK','NO_DATA'];
+    const WAREHOUSE_STATUS_META = {
+      SAFE:{label:'Safe',cls:'bg-emerald-100 text-emerald-700',action:'Theo dõi định kỳ'},
+      WARNING:{label:'Warning',cls:'bg-amber-100 text-amber-700',action:'Theo dõi và chuẩn bị replenishment'},
+      CRITICAL:{label:'Critical',cls:'bg-orange-100 text-orange-700',action:'Lên kế hoạch replenishment'},
+      URGENT:{label:'Urgent',cls:'bg-red-100 text-red-700',action:'Xử lý ưu tiên'},
+      OOS:{label:'OOS',cls:'bg-rose-100 text-rose-700',action:'Replenishment / kiểm tra tồn'},
+      HIGH_STOCK:{label:'High Stock',cls:'bg-blue-100 text-blue-700',action:'Theo dõi tồn cao'},
+      NO_DATA:{label:'No Data',cls:'bg-slate-100 text-slate-600',action:'Kiểm tra Stock Day'}
+    };
     let warehouseInventory = [];
     let warehouseCharts = {};
-    function normalizeWarehouseRow(row){ const val=(keys)=>{for(const k of keys)if(row[k]!=null)return row[k];return '';}; const sku=String(val(['SKU','sku','Barcode','barcode'])).trim(); const wh=String(val(['Kho','Warehouse','warehouse'])).trim(); const available=Number(String(val(['Khả dụng','Kha dung','Available','available','On-hand','On Hand'])).replace(/,/g,''))||0; const sd=Number(String(val(['Stockday','Stock Day','stockday','stockDay'])).replace(/,/g,'')); const prod=products.find(p=>String(p.barcode||'').trim()===sku||String(p.productCode||'').trim()===sku); return {warehouse:wh,sku,available,stockDay:Number.isFinite(sd)?sd:null,productName:prod?.name||sku,team:prod?.team||''}; }
+    let warehouseDrillStatus = 'ALL';
+    let warehouseDrillStockGroup = 'ALL';
     let warehouseJsonpSeq = 0;
     let warehouseJsonpActive = false;
+
+    function getWarehouseSafetyStockDay(){
+      const n=Number(localStorage.getItem('CLK_WAREHOUSE_SAFETY_STOCK_DAY'));
+      return Number.isFinite(n)&&n>0?n:DEFAULT_WAREHOUSE_SAFETY_STOCK_DAY;
+    }
+    function getWarehouseStatus(x){
+      if(Number(x.available)===0)return 'OOS';
+      const sd=x.stockDay;
+      if(sd==null)return 'NO_DATA';
+      if(sd>0&&sd<3)return 'URGENT';
+      if(sd>=3&&sd<7)return 'CRITICAL';
+      const safety=getWarehouseSafetyStockDay();
+      if(sd>=7&&sd<safety)return 'WARNING';
+      if(sd>=safety&&sd<=30)return 'SAFE';
+      if(sd>30)return 'HIGH_STOCK';
+      return 'NO_DATA';
+    }
+    function warehouseStockGroup(x){
+      const sd=x.stockDay;
+      if(sd==null)return 'NO_DATA';
+      if(sd===0)return '0';
+      if(sd>0&&sd<3)return '<3';
+      if(sd>=3&&sd<7)return '3-<7';
+      if(sd>=7&&sd<15)return '7-<15';
+      if(sd>=15&&sd<=30)return '15-30';
+      if(sd>30)return '>30';
+      return 'NO_DATA';
+    }
+    function normalizeWarehouseRow(row){
+      const val=(keys)=>{for(const k of keys)if(row&&row[k]!=null)return row[k];return '';};
+      const sku=String(val(['SKU','sku','Barcode','barcode'])).trim();
+      const wh=String(val(['Kho','Warehouse','warehouse'])).trim();
+      const available=Number(String(val(['Khả dụng','Kha dung','Available','available','On-hand','On Hand','Stock Qty','stockQty'])).replace(/,/g,''))||0;
+      const rawSd=String(val(['Stockday','Stock Day','stockday','stockDay'])).replace(/,/g,'').trim();
+      const sd=rawSd===''||rawSd==='#DIV/0!'||rawSd==='#N/A'?NaN:Number(rawSd);
+      const prod=products.find(p=>String(p.barcode||'').trim()===sku||String(p.productCode||'').trim()===sku);
+      return {
+        warehouse:wh, sku, available,
+        stockDay:Number.isFinite(sd)?sd:null,
+        productName:prod?.name||sku,
+        brand:prod?.brand||'', category:prod?.category||'', line:prod?.line||'', type:prod?.type||'',
+        team:prod?.team||'', productCode:prod?.productCode||''
+      };
+    }
     function fetchWarehouseInventory(){
       return new Promise((resolve,reject)=>{
-        if(warehouseJsonpActive){ reject(new Error('Warehouse API đang được gọi')); return; }
+        if(warehouseJsonpActive){reject(new Error('Warehouse API đang được gọi'));return;}
         warehouseJsonpActive=true;
         const callbackName='__CLK_WAREHOUSE_JSONP__';
         const script=document.createElement('script');
         let finished=false;
-        const finish=(fn,value)=>{
-          if(finished)return;
-          finished=true;
-          warehouseJsonpActive=false;
-          clearTimeout(timeout);
-          try{delete window[callbackName];}catch(e){window[callbackName]=undefined;}
-          if(script.parentNode)script.parentNode.removeChild(script);
-          fn(value);
-        };
-        const timeout=setTimeout(()=>finish(reject,new Error('JSONP timeout - callback không được thực thi')),20000);
+        const finish=(fn,value)=>{if(finished)return;finished=true;warehouseJsonpActive=false;clearTimeout(timeout);try{delete window[callbackName];}catch(e){window[callbackName]=undefined;}if(script.parentNode)script.parentNode.removeChild(script);fn(value);};
+        const timeout=setTimeout(()=>finish(reject,new Error('JSONP timeout - API không phản hồi')),20000);
         window[callbackName]=(response)=>{
           try{
-            if(!response || response.success!==true){
-              throw new Error(response?.error || 'Warehouse API trả về response không hợp lệ');
-            }
-            if(!Array.isArray(response.data)){
-              throw new Error('Warehouse API: response.data không phải là mảng');
-            }
-            const normalized=response.data
-              .map(normalizeWarehouseRow)
-              .filter(x=>x.warehouse&&x.sku);
+            if(!response||response.success!==true)throw new Error(response?.error||'Warehouse API trả về response không hợp lệ');
+            if(!Array.isArray(response.data))throw new Error('Warehouse API: response.data không phải là mảng');
+            const normalized=response.data.map(normalizeWarehouseRow).filter(x=>x.warehouse&&x.sku);
             finish(resolve,normalized);
-          }catch(e){
-            finish(reject,e);
-          }
+          }catch(e){finish(reject,e);}
         };
-        script.onerror=()=>finish(reject,new Error('Không thể tải Warehouse API. Kiểm tra CSP/network của trình duyệt.'));
-        script.src=WAREHOUSE_API_URL+'?callback='+callbackName+'&_='+Date.now()+'&seq='+(++warehouseJsonpSeq);
+        script.onerror=()=>finish(reject,new Error('Không thể tải Warehouse API. Kiểm tra Web App / network.'));
+        script.src=WAREHOUSE_API_URL+'?callback='+encodeURIComponent(callbackName)+'&_='+Date.now()+'&seq='+(++warehouseJsonpSeq);
         script.async=true;
-        script.type='text/javascript';
-        document.body.appendChild(script);
+        document.head.appendChild(script);
       });
     }
-    async function syncWarehouseInventory(showAlert=true){ try{ const btn=document.querySelector('button[onclick="syncWarehouseInventory()"]'); if(btn){btn.disabled=true;btn.classList.add('opacity-60');} warehouseInventory=await fetchWarehouseInventory(); localStorage.setItem('CLK_WAREHOUSE_LAST_SYNC',new Date().toISOString()); renderWarehouseInventory(); updateWarehouseSyncLabel(); if(showAlert) alert(`Đã đồng bộ ${warehouseInventory.length.toLocaleString('vi-VN')} dòng tồn kho từ Google Sheet.`); }catch(e){ console.error('Warehouse API error:',e); const el=document.getElementById('warehouse-last-sync'); if(el)el.textContent='Không thể đồng bộ Warehouse API • Kiểm tra response JSONP'; if(showAlert)alert(`Không thể lấy dữ liệu Warehouse.\n\n${e?.message||e}`); } finally { const btn=document.querySelector('button[onclick="syncWarehouseInventory()"]'); if(btn){btn.disabled=false;btn.classList.remove('opacity-60');} } }
-    function updateWarehouseSyncLabel(){const el=document.getElementById('warehouse-last-sync');if(!el)return;const t=localStorage.getItem('CLK_WAREHOUSE_LAST_SYNC');el.textContent=t?`Tồn kho thực tế theo kho • Đồng bộ: ${new Date(t).toLocaleString('vi-VN')}`:'Tồn kho thực tế theo kho • Chưa đồng bộ API';}
-    function renderWarehouseInventory(){ const ownerEl=document.getElementById('warehouse-owner-team'); if(ownerEl&&ownerEl.options.length<=1){ownerEl.innerHTML='<option value="">Chọn team phụ trách</option>'+(baseData.teams||[]).map(t=>`<option value="${escHtml(t)}">${escHtml(t)}</option>`).join('');} const owner=ownerEl?.value||''; const whEl=document.getElementById('warehouse-filter'); const current=whEl?.value||'ALL'; const whs=[...new Set(warehouseInventory.map(x=>x.warehouse))].sort(); if(whEl){whEl.innerHTML='<option value="ALL">Tất cả kho</option>'+whs.map(w=>`<option value="${escHtml(w)}">${escHtml(w)}</option>`).join('');whEl.value=whs.includes(current)?current:'ALL';} const wh=whEl?.value||'ALL'; const q=(document.getElementById('warehouse-search')?.value||'').trim().toLowerCase(); const rows=warehouseInventory.filter(x=>(wh==='ALL'||x.warehouse===wh)&&(!q||x.sku.toLowerCase().includes(q)||x.productName.toLowerCase().includes(q))); const total=rows.reduce((a,x)=>a+x.available,0); const low=rows.filter(x=>x.stockDay!=null&&x.stockDay<=WAREHOUSE_STOCKDAY_LOW).length; const other=owner?rows.filter(x=>x.team&&x.team!==owner).length:0; document.getElementById('wh-kpi-total').textContent=total.toLocaleString('vi-VN');document.getElementById('wh-kpi-sku').textContent=new Set(rows.map(x=>x.sku)).size.toLocaleString('vi-VN');document.getElementById('wh-kpi-lowdays').textContent=low.toLocaleString('vi-VN');document.getElementById('wh-kpi-otherteam').textContent=other.toLocaleString('vi-VN'); const warn=document.getElementById('warehouse-other-team-warning');warn?.classList.toggle('hidden',!(owner&&other));if(document.getElementById('warehouse-warning-text'))document.getElementById('warehouse-warning-text').textContent=other?`${other} SKU/dòng tồn kho đang thuộc team khác với ${owner}.` : ''; const tb=document.getElementById('warehouse-inventory-body'); if(tb)tb.innerHTML=rows.map((x,i)=>{const ot=owner&&x.team&&x.team!==owner,ld=x.stockDay!=null&&x.stockDay<=7,st=ot?'TEAM KHÁC':x.available<=0?'OUT OF STOCK':ld?'LOW STOCK':'NORMAL',cl=ot?'bg-rose-100 text-rose-700':x.available<=0?'bg-rose-100 text-rose-700':ld?'bg-amber-100 text-amber-700':'bg-emerald-100 text-emerald-700';return `<tr class="hover:bg-slate-50 ${ot?'bg-rose-50/50':''}"><td class="p-3 font-bold">${i+1}</td><td class="p-3">${escHtml(x.warehouse)}</td><td class="p-3 font-mono font-bold">${escHtml(x.sku)}</td><td class="p-3 font-medium">${escHtml(x.productName)}</td><td class="p-3 text-right font-bold">${x.available.toLocaleString('vi-VN')}</td><td class="p-3 text-right font-bold ${ld?'text-amber-600':''}">${x.stockDay==null?'-':x.stockDay}</td><td class="p-3">${x.team?escHtml(x.team):'<span class="text-slate-400">Chưa assign</span>'}</td><td class="p-3 text-center"><span class="px-2 py-0.5 rounded ${cl} text-[10px] font-bold">${st}</span></td></tr>`}).join('')||'<tr><td colspan="8" class="p-8 text-center text-slate-400">Chưa có dữ liệu tồn kho. Hãy Sync Inventory.</td></tr>'; renderWarehouseCharts(rows);lucide.createIcons(); }
-    function renderWarehouseCharts(rows){const by={};rows.forEach(x=>by[x.warehouse]=(by[x.warehouse]||0)+x.available);const b=document.getElementById('chart-warehouse-bar');if(b){if(warehouseCharts.bar)warehouseCharts.bar.destroy();warehouseCharts.bar=new Chart(b,{type:'bar',data:{labels:Object.keys(by),datasets:[{label:'Tồn thực tế',data:Object.values(by),backgroundColor:'#2563EB',borderRadius:8}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true}}}});}const buckets={'≤ 7 ngày':0,'8–30 ngày':0,'> 30 ngày':0,'Chưa có data':0};rows.forEach(x=>{if(x.stockDay==null)buckets['Chưa có data']++;else if(x.stockDay<=7)buckets['≤ 7 ngày']++;else if(x.stockDay<=30)buckets['8–30 ngày']++;else buckets['> 30 ngày']++;});const d=document.getElementById('chart-warehouse-stockday');if(d){if(warehouseCharts.stockday)warehouseCharts.stockday.destroy();warehouseCharts.stockday=new Chart(d,{type:'doughnut',data:{labels:Object.keys(buckets),datasets:[{data:Object.values(buckets),backgroundColor:['#F59E0B','#60A5FA','#10B981','#CBD5E1'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'65%'}});}}
-
-    function initWarehouseCharts(){ renderWarehouseInventory(); updateWarehouseSyncLabel(); syncWarehouseInventory(false); }
+    async function syncWarehouseInventory(showAlert=true){
+      try{
+        const btn=document.querySelector('button[onclick="syncWarehouseInventory()"]');
+        if(btn){btn.disabled=true;btn.classList.add('opacity-60');}
+        warehouseInventory=await fetchWarehouseInventory();
+        localStorage.setItem('CLK_WAREHOUSE_LAST_SYNC',new Date().toISOString());
+        warehouseDrillStatus='ALL';warehouseDrillStockGroup='ALL';
+        renderWarehouseInventory();updateWarehouseSyncLabel();
+        if(showAlert)alert(`Đã đồng bộ ${warehouseInventory.length.toLocaleString('vi-VN')} dòng tồn kho từ Google Sheet.`);
+      }catch(e){
+        console.error('Warehouse API error:',e);
+        const el=document.getElementById('warehouse-last-sync');
+        if(el)el.textContent='Không thể đồng bộ Warehouse API • Kiểm tra response JSONP';
+        if(showAlert)alert(`Không thể lấy dữ liệu Warehouse.\n\n${e?.message||e}`);
+      }finally{
+        const btn=document.querySelector('button[onclick="syncWarehouseInventory()"]');
+        if(btn){btn.disabled=false;btn.classList.remove('opacity-60');}
+      }
+    }
+    function updateWarehouseSyncLabel(){const el=document.getElementById('warehouse-last-sync');if(!el)return;const t=localStorage.getItem('CLK_WAREHOUSE_LAST_SYNC');el.textContent=t?`Current Inventory Status • Đồng bộ: ${new Date(t).toLocaleString('vi-VN')}`:'Current Inventory Status • Chưa đồng bộ API';}
+    function setWarehouseSelect(id,values,label,includeAll=true){
+      const el=document.getElementById(id);if(!el)return;
+      const current=el.value||'ALL';
+      const uniq=[...new Set(values.filter(v=>String(v||'').trim()!=='').map(String))].sort((a,b)=>a.localeCompare(b,'vi'));
+      el.innerHTML=(includeAll?`<option value="ALL">${escHtml(label)}: All</option>`:'')+uniq.map(v=>`<option value="${escHtml(v)}">${escHtml(v)}</option>`).join('');
+      el.value=uniq.includes(current)?current:(includeAll?'ALL':'');
+    }
+    function populateWarehouseFilters(){
+      setWarehouseSelect('warehouse-brand-filter',warehouseInventory.map(x=>x.brand),'Brand');
+      setWarehouseSelect('warehouse-category-filter',warehouseInventory.map(x=>x.category),'Category');
+      setWarehouseSelect('warehouse-line-filter',warehouseInventory.map(x=>x.line),'Line');
+      setWarehouseSelect('warehouse-type-filter',warehouseInventory.map(x=>x.type),'Type');
+      setWarehouseSelect('warehouse-filter',warehouseInventory.map(x=>x.warehouse),'Warehouse');
+      setWarehouseSelect('warehouse-owner-team',warehouseInventory.map(x=>x.team),'Owner Team');
+      const current=document.getElementById('warehouse-current-team');
+      if(current){const cur=current.value||localStorage.getItem('CLK_WAREHOUSE_CURRENT_TEAM')||'';current.innerHTML='<option value="">Current Team</option>'+(baseData.teams||[]).map(t=>`<option value="${escHtml(t)}">${escHtml(t)}</option>`).join('');current.value=cur;}
+      const safety=getWarehouseSafetyStockDay();
+      const label=document.getElementById('warehouse-safety-label');if(label)label.textContent=`Safety: ${safety} days`;
+      const sub=document.getElementById('wh-kpi-low-sub');if(sub)sub.textContent=`Stock Day < ${safety} ngày`;
+    }
+    function getWarehouseFilteredRows(){
+      const brand=document.getElementById('warehouse-brand-filter')?.value||'ALL';
+      const category=document.getElementById('warehouse-category-filter')?.value||'ALL';
+      const line=document.getElementById('warehouse-line-filter')?.value||'ALL';
+      const type=document.getElementById('warehouse-type-filter')?.value||'ALL';
+      const wh=document.getElementById('warehouse-filter')?.value||'ALL';
+      const owner=document.getElementById('warehouse-owner-team')?.value||'ALL';
+      const status=document.getElementById('warehouse-status-filter')?.value||'ALL';
+      const currentTeam=document.getElementById('warehouse-current-team')?.value||'';
+      const q=(document.getElementById('warehouse-search')?.value||'').trim().toLowerCase();
+      return warehouseInventory.filter(x=>{
+        const warning=currentTeam!==''&&x.team!==''&&x.team!==currentTeam;
+        const matchesStatus=status==='ALL'||(status==='TEAM_WARNING'&&warning)||(status!=='TEAM_WARNING'&&getWarehouseStatus(x)===status);
+        const matchesSearch=!q||String(x.sku).toLowerCase().includes(q)||String(x.productName).toLowerCase().includes(q);
+        return (brand==='ALL'||x.brand===brand)&&(category==='ALL'||x.category===category)&&(line==='ALL'||x.line===line)&&(type==='ALL'||x.type===type)&&(wh==='ALL'||x.warehouse===wh)&&(owner==='ALL'||x.team===owner)&&matchesStatus&&matchesSearch;
+      });
+    }
+    function warehouseDrillDown(type){
+      warehouseDrillStockGroup='ALL';
+      if(type==='LOW')warehouseDrillStatus='LOW';
+      else if(type==='WARNING')warehouseDrillStatus='TEAM_WARNING';
+      else if(type==='OOS')warehouseDrillStatus='OOS';
+      else warehouseDrillStatus='ALL';
+      const statusEl=document.getElementById('warehouse-status-filter');
+      if(statusEl){statusEl.value=type==='LOW'?'ALL':(type==='WARNING'?'TEAM_WARNING':type==='OOS'?'OOS':'ALL');}
+      renderWarehouseInventory();
+      document.getElementById('warehouse-inventory-body')?.scrollIntoView({behavior:'smooth',block:'start'});
+    }
+    function resetWarehouseFilters(){
+      ['warehouse-brand-filter','warehouse-category-filter','warehouse-line-filter','warehouse-type-filter','warehouse-filter','warehouse-owner-team','warehouse-status-filter'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='ALL';});
+      const q=document.getElementById('warehouse-search');if(q)q.value='';
+      warehouseDrillStatus='ALL';warehouseDrillStockGroup='ALL';renderWarehouseInventory();
+    }
+    function clickWarehouseStatus(status){
+      const el=document.getElementById('warehouse-status-filter');if(!el)return;
+      el.value=status==='ALL'?'ALL':status;warehouseDrillStatus=status;warehouseDrillStockGroup='ALL';renderWarehouseInventory();
+    }
+    function clickWarehouseStockGroup(group){
+      warehouseDrillStockGroup=group;warehouseDrillStatus='ALL';renderWarehouseInventory();
+    }
+    function renderWarehouseInventory(){
+      populateWarehouseFilters();
+      const rows=getWarehouseFilteredRows();
+      const currentTeam=document.getElementById('warehouse-current-team')?.value||'';
+      if(currentTeam)localStorage.setItem('CLK_WAREHOUSE_CURRENT_TEAM',currentTeam);
+      let displayRows=rows;
+      if(warehouseDrillStatus==='LOW')displayRows=rows.filter(x=>x.stockDay!=null&&x.stockDay<getWarehouseSafetyStockDay());
+      if(warehouseDrillStockGroup!=='ALL')displayRows=rows.filter(x=>warehouseStockGroup(x)===warehouseDrillStockGroup);
+      const skuCount=new Set(rows.map(x=>x.sku)).size;
+      const total=rows.reduce((a,x)=>a+Number(x.available||0),0);
+      const low=rows.filter(x=>x.stockDay!=null&&x.stockDay<getWarehouseSafetyStockDay()).length;
+      const oos=rows.filter(x=>Number(x.available)===0).length;
+      const warning=currentTeam?rows.filter(x=>x.team&&x.team!==currentTeam).length:0;
+      document.getElementById('wh-kpi-sku').textContent=skuCount.toLocaleString('vi-VN');
+      document.getElementById('wh-kpi-total').textContent=total.toLocaleString('vi-VN');
+      document.getElementById('wh-kpi-low').textContent=low.toLocaleString('vi-VN');
+      document.getElementById('wh-kpi-oos').textContent=oos.toLocaleString('vi-VN');
+      document.getElementById('wh-kpi-warning').textContent=warning.toLocaleString('vi-VN');
+      const warn=document.getElementById('warehouse-other-team-warning');warn?.classList.toggle('hidden',!(currentTeam&&warning));
+      if(document.getElementById('warehouse-warning-text'))document.getElementById('warehouse-warning-text').textContent=warning?`${warning} SKU đang thuộc team khác với ${currentTeam}.`:'Chưa chọn Current Team.';
+      const actionRows=rows.filter(x=>['OOS','URGENT','CRITICAL','WARNING'].includes(getWarehouseStatus(x))||(currentTeam&&x.team&&x.team!==currentTeam)).sort((a,b)=>{const order={OOS:0,URGENT:1,CRITICAL:2,WARNING:3};return (order[getWarehouseStatus(a)]??9)-(order[getWarehouseStatus(b)]??9);});
+      const actionBody=document.getElementById('warehouse-action-body');
+      if(actionBody)actionBody.innerHTML=actionRows.slice(0,100).map(x=>{const st=getWarehouseStatus(x),m=WAREHOUSE_STATUS_META[st];const other=currentTeam&&x.team&&x.team!==currentTeam;const label=other&&!['OOS','URGENT','CRITICAL','WARNING'].includes(st)?'Team khác':m.label;const action=other&&st==='SAFE'?'Kiểm tra ownership':m.action;return `<tr class="hover:bg-slate-50"><td class="p-3"><span class="px-2 py-1 rounded-lg ${m.cls} text-[10px] font-bold">${escHtml(label)}</span></td><td class="p-3 font-mono font-bold">${escHtml(x.sku)}</td><td class="p-3 font-medium">${escHtml(x.productName)}</td><td class="p-3">${escHtml(x.warehouse)}</td><td class="p-3 text-right font-bold">${Number(x.available).toLocaleString('vi-VN')}</td><td class="p-3 text-right font-bold">${x.stockDay==null?'-':x.stockDay}</td><td class="p-3 text-xs">${escHtml(action)}</td></tr>`}).join('')||'<tr><td colspan="7" class="p-8 text-center text-slate-400">Không có SKU cần action trong phạm vi filter.</td></tr>';
+      const ac=document.getElementById('warehouse-action-count');if(ac)ac.textContent=`${actionRows.length.toLocaleString('vi-VN')} SKU`;
+      const summary={};rows.forEach(x=>{if(!summary[x.warehouse])summary[x.warehouse]={sku:new Set(),stock:0,low:0,oos:0,warning:0};const z=summary[x.warehouse];z.sku.add(x.sku);z.stock+=Number(x.available||0);if(x.stockDay!=null&&x.stockDay<getWarehouseSafetyStockDay())z.low++;if(Number(x.available)===0)z.oos++;if(currentTeam&&x.team&&x.team!==currentTeam)z.warning++;});
+      const sb=document.getElementById('warehouse-summary-body');if(sb)sb.innerHTML=Object.entries(summary).sort((a,b)=>a[0].localeCompare(b[0],'vi')).map(([w,z])=>`<tr class="hover:bg-blue-50 cursor-pointer" onclick="setWarehouseFilter('${escHtml(w)}')"><td class="p-3 font-bold">${escHtml(w)}</td><td class="p-3 text-right">${z.sku.size.toLocaleString('vi-VN')}</td><td class="p-3 text-right font-bold">${z.stock.toLocaleString('vi-VN')}</td><td class="p-3 text-right text-amber-600 font-bold">${z.low.toLocaleString('vi-VN')}</td><td class="p-3 text-right text-rose-600 font-bold">${z.oos.toLocaleString('vi-VN')}</td><td class="p-3 text-right text-orange-600 font-bold">${z.warning.toLocaleString('vi-VN')}</td></tr>`).join('')||'<tr><td colspan="6" class="p-8 text-center text-slate-400">Chưa có dữ liệu Warehouse.</td></tr>';
+      const tb=document.getElementById('warehouse-inventory-body');
+      if(tb)tb.innerHTML=displayRows.map((x,i)=>{const st=getWarehouseStatus(x),m=WAREHOUSE_STATUS_META[st],other=currentTeam&&x.team&&x.team!==currentTeam;return `<tr class="hover:bg-slate-50 ${other?'bg-amber-50/50':''}"><td class="p-3 font-bold">${i+1}</td><td class="p-3 font-mono font-bold">${escHtml(x.sku)}</td><td class="p-3 font-medium max-w-xs">${escHtml(x.productName)}</td><td class="p-3">${escHtml(x.brand||'-')}</td><td class="p-3">${escHtml(x.category||'-')}</td><td class="p-3">${escHtml(x.line||'-')}</td><td class="p-3">${escHtml(x.type||'-')}</td><td class="p-3">${escHtml(x.warehouse)}</td><td class="p-3 text-right font-bold">${Number(x.available).toLocaleString('vi-VN')}</td><td class="p-3 text-right font-bold ${['URGENT','CRITICAL','WARNING','OOS'].includes(st)?'text-rose-600':''}">${x.stockDay==null?'-':x.stockDay}</td><td class="p-3"><span class="px-2 py-1 rounded-lg ${m.cls} text-[10px] font-bold">${m.label}</span></td><td class="p-3">${x.team?escHtml(x.team):'<span class="text-slate-400">Chưa assign</span>'}</td><td class="p-3 text-center">${other?'<span title="This SKU belongs to another team" class="text-amber-600 font-bold">⚠️</span>':'-'}</td></tr>`}).join('')||'<tr><td colspan="13" class="p-8 text-center text-slate-400">Chưa có dữ liệu tồn kho. Hãy Sync Inventory.</td></tr>';
+      const countEl=document.getElementById('warehouse-detail-count');if(countEl)countEl.textContent=`${displayRows.length.toLocaleString('vi-VN')} dòng inventory`;
+      renderWarehouseCharts(rows);lucide.createIcons();
+    }
+    function setWarehouseFilter(warehouse){const e=document.getElementById('warehouse-filter');if(e){e.value=warehouse;warehouseDrillStatus='ALL';warehouseDrillStockGroup='ALL';renderWarehouseInventory();document.getElementById('warehouse-inventory-body')?.scrollIntoView({behavior:'smooth',block:'start'});}}
+    function renderWarehouseCharts(rows){
+      const safety=getWarehouseSafetyStockDay();
+      const health={SAFE:0,WARNING:0,CRITICAL:0,URGENT:0,OOS:0,HIGH_STOCK:0,NO_DATA:0};
+      rows.forEach(x=>health[getWarehouseStatus(x)]++);
+      const h=document.getElementById('chart-warehouse-health');
+      if(h){if(warehouseCharts.health)warehouseCharts.health.destroy();warehouseCharts.health=new Chart(h,{type:'doughnut',data:{labels:['Safe','Warning','Critical','Urgent','Out of Stock','High Stock','No Data'],datasets:[{data:[health.SAFE,health.WARNING,health.CRITICAL,health.URGENT,health.OOS,health.HIGH_STOCK,health.NO_DATA],backgroundColor:['#10B981','#F59E0B','#F97316','#EF4444','#E11D48','#3B82F6','#CBD5E1'],borderWidth:0}]},options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'bottom'}},onClick:(evt,elements)=>{if(elements.length){const map=['SAFE','WARNING','CRITICAL','URGENT','OOS','HIGH_STOCK','NO_DATA'];clickWarehouseStatus(map[elements[0].index]);}}}});}
+      const groups={'0':0,'<3':0,'3-<7':0,'7-<15':0,'15-30':0,'>30':0,'NO_DATA':0};rows.forEach(x=>groups[warehouseStockGroup(x)]++);
+      const d=document.getElementById('chart-warehouse-stockday');
+      if(d){if(warehouseCharts.stockday)warehouseCharts.stockday.destroy();warehouseCharts.stockday=new Chart(d,{type:'bar',data:{labels:['0 days','<3 days','3–<7 days','7–<15 days','15–30 days','>30 days','No Data'],datasets:[{label:'SKU Count',data:[groups['0'],groups['<3'],groups['3-<7'],groups['7-<15'],groups['15-30'],groups['>30'],groups.NO_DATA],backgroundColor:'#3B82F6',borderRadius:8}]},options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{y:{beginAtZero:true,ticks:{precision:0}}},onClick:(evt,elements)=>{if(elements.length){const map=['0','<3','3-<7','7-<15','15-30','>30','NO_DATA'];clickWarehouseStockGroup(map[elements[0].index]);}}}});}
+    }
+    function initWarehouseCharts(){renderWarehouseInventory();updateWarehouseSyncLabel();syncWarehouseInventory(false);}
 
     // =========================================================================
     // MULTI-PROMOTION SELECTION & AUTO-SELECT KHỚP KHU VỰC KHÁCH
