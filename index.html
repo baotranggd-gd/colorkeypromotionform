@@ -3529,7 +3529,9 @@
                       priceList: hostItem.priceList,
                       priceAfterRank: 0,
                       lineTotal: 0,
-                      promoNote: promo.name
+                      promoName: promo.name,
+                      schemeName: scheme.schemeName,
+                      promoNote: `${promo.name} + ${scheme.schemeName}`
                     });
                   }
                 }
@@ -3583,7 +3585,9 @@
           priceList: item.priceList,
           priceAfterRank: item.priceAfterRank,
           lineTotal: item.lineTotal,
-          promoNote: item.attachedGifts.length > 0 ? 'Có quà tặng kèm ngay bên dưới' : 'Hàng bán chuẩn'
+          promoNote: item.attachedGifts.length > 0
+            ? [...new Set(item.attachedGifts.map(g => String(g.promoNote || `${g.promoName || ''} + ${g.schemeName || ''}`).trim()).filter(Boolean))].join(' | ')
+            : 'Hàng bán chuẩn'
         });
 
         if (item.attachedGifts && item.attachedGifts.length > 0) {
@@ -3756,89 +3760,176 @@
       reader.readAsBinaryString(file);
     }
 
-    // EXCEL EXPORT (1 DÒNG MUA LIỀN KỀ DÒNG QUÀ 0Đ)
+    // EXCEL EXPORT - TEMPLATE ĐƠN HÀNG OPS PORTAL
+    function formatExportPromoPrefix(promo) {
+      const quarter = String(promo?.quarter || '').trim();
+      const code = String(promo?.code || promo?.id || '').trim();
+      if (quarter) return `CTKM ${quarter} -`;
+      if (code) return `CTKM ${code} -`;
+      return 'CTKM -';
+    }
+
+    function formatBuyGiftExportNote(promo, scheme) {
+      return `${String(promo?.name || '').trim()} + ${String(scheme?.schemeName || '').trim()}`.replace(/\s*\+\s*$/, '').trim();
+    }
+
+    function formatMoqExportNote(m) {
+      return `${String(m?.promoName || '').trim()} + ${String(m?.schemeName || '').trim()}`.replace(/\s*\+\s*$/, '').trim();
+    }
+
+    function getExportPurchasePromoNote(row) {
+      // Chỉ đưa note CTKM thực tế lên dòng MUA; không xuất các text nội bộ của UI.
+      const note = String(row?.promoNote || '').trim();
+      if (!note || note === 'Hàng bán chuẩn' || note === 'Có quà tặng kèm ngay bên dưới') return '';
+      return note;
+    }
+
+    function resolveBundleProduct(bundleItem) {
+      const key = String(bundleItem?.code || bundleItem?.barcode || '').trim().toLowerCase();
+      if (!key) return null;
+      return products.find(p =>
+        String(p.productCode || '').trim().toLowerCase() === key ||
+        String(p.barcode || '').trim().toLowerCase() === key
+      ) || null;
+    }
+
     function exportToExcel() {
       if (!currentCalculation) return;
       const r = currentCalculation;
       const wb = XLSX.utils.book_new();
 
-      const promoNamesStr = r.activePromos.map(p => `[#${p.priority}] ${p.name}`).join(', ');
+      const promoNamesStr = r.activePromos.map(p => {
+        const code = p.code || p.id || '';
+        return `[#${p.priority}] ${code ? code + ' - ' : ''}${p.name || ''}`;
+      }).join(', ');
 
+      // ===== HEADER THEO TEMPLATE =====
       const headerRows = [
         ['BẢNG ĐẶT HÀNG & QUY ĐỔI KHUYẾN MÃI TỔNG HỢP - OPS PORTAL'],
-        ['Các CTKM Áp Dụng:', promoNamesStr || 'Không có', '', 'Khu Vực Khách:', r.cust.region],
-        ['Khách Hàng:', r.cust.name, '', 'Mã KH:', r.cust.code],
-        ['Hạng Khách Hàng:', r.cust.rank, '', 'Chính Sách Chiết Khấu:', r.rankPolicy.label],
+        ['Các CTKM Áp Dụng:', promoNamesStr || 'Không có', '', 'Khu Vực Khách:', r.cust?.region || ''],
+        ['Khách Hàng:', r.cust?.name || '', '', 'Mã KH:', r.cust?.code || ''],
+        ['Hạng Khách Hàng:', r.cust?.rank || '', '', 'Chính Sách Chiết Khấu:', r.rankPolicy?.label || 'CK 0%'],
         ['Quy Cách Xuất:', 'DÒNG MUA TIẾP THEO LÀ DÒNG QUÀ TẶNG (ĐƠN GIÁ 0Đ) THEO MÃ SẢN PHẨM THỰC TẾ', '', 'Ngày Tạo:', new Date().toLocaleDateString('vi-VN')],
         []
       ];
 
       const tableHeaders = [
-        'STT', 'Phân Loại', 'Mã Sản Phẩm', 'Mã Vạch (Barcode)', 'Tên Sản Phẩm / Quà Tặng', 'SL', 'Giá Niêm Yết (VAT)', 'Đơn Giá Sau CK (VAT)', 'Thành Tiền (VAT)', 'Ghi Chú Khuyến Mãi'
+        'STT', 'Phân Loại', 'Mã Sản Phẩm', 'Mã Vạch (Barcode)', 'Tên Sản Phẩm / Quà Tặng',
+        'SL', 'Giá Niêm Yết (VAT)', 'Đơn Giá Sau CK (VAT)', 'Thành Tiền (VAT)', 'Ghi Chú Khuyến Mãi'
       ];
 
       let sttCounter = 1;
-      const itemRows = r.rows.map(row => {
+      const itemRows = [];
+
+      // ===== DÒNG MUA + DÒNG QUÀ LIỀN KỀ =====
+      (r.rows || []).forEach(row => {
         if (!row.isGift) {
-          return [
+          itemRows.push([
             sttCounter++,
             'MUA',
-            row.code,
-            row.barcode,
-            row.name,
-            row.qty,
-            row.priceList,
-            row.priceAfterRank,
-            row.lineTotal,
-            row.promoNote
-          ];
+            row.code || '',
+            row.barcode || '',
+            row.name || '',
+            Number(row.qty || 0),
+            Number(row.priceList || 0),
+            Number(row.priceAfterRank || 0),
+            Number(row.lineTotal || 0),
+            getExportPurchasePromoNote(row)
+          ]);
         } else {
-          return [
+          itemRows.push([
             '',
             'Hàng Khuyến Mãi',
-            row.code,
-            row.barcode,
-            row.name,
-            row.qty,
-            row.priceList,
+            row.code || '',
+            row.barcode || '',
+            row.name || '',
+            Number(row.qty || 0),
+            Number(row.priceList || 0),
             0,
             0,
-            row.promoNote
-          ];
+            row.promoNote || ''
+          ]);
         }
       });
 
+      // ===== GÓI QUÀ MOQ: XUẤT THÀNH DÒNG HÀNG KHUYẾN MÃI THỰC TẾ =====
+      // Nếu CTKM có bundleItems thì map về Product Master để lấy mã/barcode/tên.
+      // Nếu bundleItems chưa được cấu hình, không tự bịa SKU; giữ thông tin trong phần ghi chú.
+      (r.moqBundleGiftsAchieved || []).forEach(m => {
+        const items = Array.isArray(m.bundleItems) ? m.bundleItems : [];
+        items.forEach(bundleItem => {
+          const prod = resolveBundleProduct(bundleItem);
+          const qty = Number(bundleItem?.qty || 1);
+          itemRows.push([
+            '',
+            'Hàng Khuyến Mãi',
+            prod?.productCode || bundleItem?.code || '',
+            prod?.barcode || bundleItem?.barcode || '',
+            prod?.name || bundleItem?.name || m.bundleDesc || 'Quà thưởng doanh số',
+            qty,
+            Number(prod?.priceList || 0),
+            0,
+            0,
+            formatMoqExportNote(m)
+          ]);
+        });
+      });
+
+      // ===== TOTAL =====
       const totalRows = [
         [],
-        ['', '', '', '', 'TỔNG CỘNG HÀNG HÓA THANH TOÁN (ĐÃ GỒM VAT):', r.totalOrderQty, '', '', r.grandTotal, '']
+        ['', '', '', '', 'TỔNG CỘNG HÀNG HÓA THANH TOÁN (ĐÃ GỒM VAT):', Number(r.totalOrderQty || 0), '', '', Number(r.grandTotal || 0), '']
       ];
-
-      if (r.moqBundleGiftsAchieved && r.moqBundleGiftsAchieved.length > 0) {
-        totalRows.push([]);
-        totalRows.push(['DANH SÁCH GÓI QUÀ THƯỞNG THEO DOANH SỐ (MOQ BUNDLE):']);
-        r.moqBundleGiftsAchieved.forEach((m, mIdx) => {
-          totalRows.push([mIdx + 1, 'THƯỞNG MOQ', m.promoName, m.schemeName, m.bundleDesc, 1, 0, 0, 0, `Doanh số đạt ${m.qualifyingAmount.toLocaleString()}đ (Mốc ${m.minAmount.toLocaleString()}đ)`]);
-        });
-      }
 
       const fullData = [...headerRows, tableHeaders, ...itemRows, ...totalRows];
       const ws = XLSX.utils.aoa_to_sheet(fullData);
 
+      // ===== FORMAT THEO TEMPLATE =====
       ws['!cols'] = [
         { wch: 6 },
-        { wch: 15 },
-        { wch: 20 },
-        { wch: 16 },
-        { wch: 48 },
+        { wch: 18 },
+        { wch: 22 },
+        { wch: 18 },
+        { wch: 58 },
         { wch: 10 },
-        { wch: 18 },
         { wch: 20 },
-        { wch: 18 },
-        { wch: 50 }
+        { wch: 22 },
+        { wch: 20 },
+        { wch: 48 }
       ];
 
-      XLSX.utils.book_append_sheet(wb, ws, "Don_Hang");
-      XLSX.writeFile(wb, `Don_Hang_${r.cust.code}_${Date.now()}.xlsx`);
+      // Merge title + value blocks giống form mẫu.
+      ws['!merges'] = [
+        { s: { r: 0, c: 0 }, e: { r: 0, c: 9 } },
+        { s: { r: 1, c: 1 }, e: { r: 1, c: 2 } },
+        { s: { r: 2, c: 1 }, e: { r: 2, c: 2 } },
+        { s: { r: 3, c: 1 }, e: { r: 3, c: 2 } },
+        { s: { r: 4, c: 1 }, e: { r: 4, c: 2 } },
+        { s: { r: 4, c: 4 }, e: { r: 4, c: 8 } }
+      ];
+
+      // Number formats: số lượng và tiền tệ không có phần thập phân khi là số nguyên.
+      const tableStartRow = headerRows.length; // 6, zero-based => Excel row 7
+      const dataEndRow = tableStartRow + 1 + itemRows.length;
+      for (let rowIdx = tableStartRow + 1; rowIdx < dataEndRow; rowIdx++) {
+        [5, 6, 7, 8].forEach(colIdx => {
+          const cell = ws[XLSX.utils.encode_cell({ r: rowIdx, c: colIdx })];
+          if (cell && typeof cell.v === 'number') cell.z = '#,##0.##';
+        });
+      }
+
+      // Total row number formats.
+      const totalRowIdx = dataEndRow + 1;
+      [5, 8].forEach(colIdx => {
+        const cell = ws[XLSX.utils.encode_cell({ r: totalRowIdx, c: colIdx })];
+        if (cell && typeof cell.v === 'number') cell.z = '#,##0.##';
+      });
+
+      // Freeze header table.
+      ws['!freeze'] = { xSplit: 0, ySplit: 7 };
+
+      XLSX.utils.book_append_sheet(wb, ws, 'Don_Hang');
+      XLSX.writeFile(wb, `Don_Hang_${r.cust?.code || 'CUSTOMER'}_${Date.now()}.xlsx`);
     }
 
     // PDF EXPORT
