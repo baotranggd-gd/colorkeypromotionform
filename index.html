@@ -1842,7 +1842,7 @@
     function initWarehouseSafetySetting(){ const el=document.getElementById('base-safety-stock-day'); if(el)el.value=getWarehouseSafetyStockDay(); }
     function renderBaseAssignments(){ loadBaseProductAssignment(); loadBaseCustomerAssignment(); }
     function loadBaseProductAssignment(){ const code=document.getElementById('bd-product-select')?.value; const el=document.getElementById('bd-product-assignment'); if(!el)return; const p=products.find(x=>x.productCode===code); if(!p){el.innerHTML='';return;} el.innerHTML=`<select id="bpa-brand" class="border rounded-xl p-2 text-xs"><option>Brand</option>${opts(baseData.brands,p.brand||'')}</select><select id="bpa-category" class="border rounded-xl p-2 text-xs"><option>Category</option>${opts(baseData.categories,p.category||'')}</select><select id="bpa-line" class="border rounded-xl p-2 text-xs"><option>Line</option>${opts(baseData.lines,p.line||'')}</select><select id="bpa-type" class="border rounded-xl p-2 text-xs"><option>Type</option>${opts(baseData.types,p.type||'')}</select><select id="bpa-team" class="border rounded-xl p-2 text-xs"><option value="">Team phụ trách</option>${opts(baseData.teams||[],p.team||'')}</select><button onclick="saveBaseProductAssignment()" class="col-span-2 bg-blue-600 text-white rounded-xl py-2 text-xs font-bold">Lưu Product Base Data</button>`; }
-    function saveBaseProductAssignment(){ const code=document.getElementById('bd-product-select').value,p=products.find(x=>x.productCode===code); if(!p)return; p.brand=document.getElementById('bpa-brand').value;p.category=document.getElementById('bpa-category').value;p.line=document.getElementById('bpa-line').value;p.type=document.getElementById('bpa-type').value;p.team=document.getElementById('bpa-team')?.value||'';persistProducts();alert('Đã cập nhật Base Data cho Product.'); }
+    function saveBaseProductAssignment(){ const code=document.getElementById('bd-product-select').value,p=products.find(x=>x.productCode===code); if(!p)return; p.brand=document.getElementById('bpa-brand').value;p.category=document.getElementById('bpa-category').value;p.line=document.getElementById('bpa-line').value;p.productLine=p.line;p.type=document.getElementById('bpa-type').value;p.team=document.getElementById('bpa-team')?.value||'';persistProducts();alert('Đã cập nhật Base Data cho Product.'); }
     function loadBaseCustomerAssignment(){ const code=document.getElementById('bd-customer-select')?.value; const el=document.getElementById('bd-customer-assignment'); if(!el)return; const c=customers.find(x=>x.code===code); if(!c){el.innerHTML='';return;} el.innerHTML=`<select id="bca-region" class="border rounded-xl p-2 text-xs">${opts(baseData.regions,c.region||'')}</select><select id="bca-channel" class="border rounded-xl p-2 text-xs">${opts(baseData.channels,c.channel||'')}</select><select id="bca-rank" class="border rounded-xl p-2 text-xs">${opts(baseData.ranks,c.rank||'')}</select><select id="bca-discount" class="border rounded-xl p-2 text-xs">${baseData.discountPolicies.map(x=>`<option value="${escHtml(x.name)}">${escHtml(x.name)} - CK ${x.discountRate}%</option>`).join('')}</select><button onclick="saveBaseCustomerAssignment()" class="col-span-2 bg-emerald-600 text-white rounded-xl py-2 text-xs font-bold">Lưu Customer Base Data</button>`; const policy=getDiscountByRank(c.rank); }
     function saveBaseCustomerAssignment(){ const code=document.getElementById('bd-customer-select').value,c=customers.find(x=>x.code===code); if(!c)return; c.region=document.getElementById('bca-region').value;c.channel=document.getElementById('bca-channel').value;c.rank=document.getElementById('bca-rank').value;c.discountPolicy=document.getElementById('bca-discount').value;persistCustomers();alert('Đã cập nhật Base Data cho Customer.'); }
 
@@ -2545,20 +2545,47 @@
       if(sd>30)return '>30';
       return 'NO_DATA';
     }
+    function getWarehouseProductMaster(sku){
+      const key=String(sku||'').trim().toLowerCase();
+      if(!key)return null;
+      return products.find(p=>{
+        const barcode=String(p.barcode||'').trim().toLowerCase();
+        const code=String(p.productCode||'').trim().toLowerCase();
+        return barcode===key||code===key;
+      })||null;
+    }
+    function inferWarehouseProductMeta(prod){
+      if(!prod)return {brand:'',category:'',line:'',type:'',team:''};
+      const code=String(prod.productCode||'').toUpperCase();
+      const name=String(prod.name||'').toUpperCase();
+      const brand=String(prod.brand||'').trim()||'COLORKEY';
+      const category=String(prod.category||'').trim()||
+        (code.startsWith('2C06') ? 'Skincare' : code.startsWith('2C01') ? 'Makeup' : 'Makeup');
+      const line=String(prod.line||prod.productLine||'').trim()||
+        (name.includes('MASK') || name.includes('泥膜') ? 'Facial Mask' :
+         name.includes('SON') || name.includes('LIP') ? 'Lip Product' :
+         name.includes('CUSHION') ? 'Cushion' :
+         name.includes('SERUM') ? 'Serum' :
+         name.includes('TONER') ? 'Toner' :
+         name.includes('CLEANSER') || name.includes('RỬA MẶT') ? 'Cleanser' : 'Cosmetics');
+      const type=String(prod.type||'').trim()||(String(prod.status||'').toUpperCase()==='OFF'?'Limited':'Standard');
+      return {brand,category,line,type,team:String(prod.team||'').trim()};
+    }
     function normalizeWarehouseRow(row){
       const val=(keys)=>{for(const k of keys)if(row&&row[k]!=null)return row[k];return '';};
-      const sku=String(val(['SKU','sku','Barcode','barcode'])).trim();
+      const sku=String(val(['SKU','sku','Barcode','barcode','Product Code','productCode'])).trim();
       const wh=String(val(['Kho','Warehouse','warehouse'])).trim();
       const available=Number(String(val(['Khả dụng','Kha dung','Available','available','On-hand','On Hand','Stock Qty','stockQty'])).replace(/,/g,''))||0;
       const rawSd=String(val(['Stockday','Stock Day','stockday','stockDay'])).replace(/,/g,'').trim();
       const sd=rawSd===''||rawSd==='#DIV/0!'||rawSd==='#N/A'?NaN:Number(rawSd);
-      const prod=products.find(p=>String(p.barcode||'').trim()===sku||String(p.productCode||'').trim()===sku);
+      const prod=getWarehouseProductMaster(sku);
+      const meta=inferWarehouseProductMeta(prod);
       return {
         warehouse:wh, sku, available,
         stockDay:Number.isFinite(sd)?sd:null,
         productName:prod?.name||sku,
-        brand:prod?.brand||'', category:prod?.category||'', line:prod?.line||'', type:prod?.type||'',
-        team:prod?.team||'', productCode:prod?.productCode||''
+        brand:meta.brand, category:meta.category, line:meta.line, type:meta.type,
+        team:meta.team, productCode:prod?.productCode||''
       };
     }
     function fetchWarehouseInventory(){
