@@ -401,7 +401,7 @@
               <button onclick="downloadSampleExcel()" class="w-full p-3 bg-white hover:bg-purple-50 border border-slate-200 hover:border-purple-300 rounded-xl text-xs font-semibold flex items-center justify-between text-left transition group cursor-pointer">
                 <div>
                   <div class="text-slate-800 group-hover:text-purple-600 font-bold">TẢI FILE MẪU ĐƠN HÀNG</div>
-                  <div class="text-[11px] text-slate-400">File mẫu .XLSX kiểm tra 133 cây son và mốc 10tr</div>
+                  <div class="text-[11px] text-slate-400">Chỉ cần điền Barcode hoặc Product Code và Số lượng</div>
                 </div>
                 <i data-lucide="download" class="w-4 h-4 text-slate-400 group-hover:text-purple-600"></i>
               </button>
@@ -474,7 +474,7 @@
             <div>
               <label class="block text-xs font-bold text-slate-700 uppercase mb-2">3. Upload File Đơn Hàng (.xlsx, .xls)</label>
               <input type="file" id="order-file-input" accept=".xlsx, .xls" onchange="handleFile(event)" class="w-full text-xs text-slate-500 file:mr-4 file:py-2.5 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer border border-slate-200 rounded-xl bg-slate-50" />
-              <div class="text-[11px] text-slate-400 mt-1.5">Tải file có cột Mã SP (Barcode) và Số Lượng Đặt.</div>
+              <div class="text-[11px] text-slate-400 mt-1.5">Chỉ cần điền Barcode hoặc Product Code và Số Lượng Đặt.</div>
             </div>
           </div>
 
@@ -561,10 +561,10 @@
             </div>
             <h3 class="font-bold text-slate-700 text-base">Chưa có dữ liệu đơn hàng</h3>
             <p class="text-slate-500 text-xs max-w-md mx-auto mt-1 mb-5">
-              Tải lên file Excel đơn hàng của bạn hoặc bấm "Tải File Mẫu Đơn Hàng" để kiểm tra tính toán quà tặng tự động.
+              Tải lên file Excel đơn hàng với Barcode hoặc Product Code và Số Lượng, hoặc bấm "Tải File Mẫu Đơn Hàng" để dùng file mẫu.
             </p>
             <button onclick="downloadSampleExcel()" class="inline-flex items-center gap-2 bg-[#0A192F] hover:bg-black text-white text-xs font-semibold px-4 py-2.5 rounded-xl transition cursor-pointer">
-              <i data-lucide="download" class="w-4 h-4"></i> Tải file mẫu .XLSX thử nghiệm
+              <i data-lucide="download" class="w-4 h-4"></i> Tải file mẫu .XLSX
             </button>
           </div>
         </div>
@@ -3714,27 +3714,39 @@
           return;
         }
 
-        const headers = rows[0].map(h => String(h).toUpperCase());
-        let codeIdx = headers.findIndex(h => h.includes('CODE') || h.includes('MÃ'));
+        const headers = rows[0].map(h => String(h ?? '').trim().toUpperCase());
+        let codeIdx = headers.findIndex(h => h.includes('PRODUCT CODE') || h === 'CODE' || h.includes('MÃ SP'));
         let barcodeIdx = headers.findIndex(h => h.includes('BARCODE') || h.includes('VẠCH'));
+        let identifierIdx = headers.findIndex(h => h.includes('BARCODE / PRODUCT CODE') || h.includes('PRODUCT CODE / BARCODE') || h.includes('MÃ SP / BARCODE'));
         let nameIdx = headers.findIndex(h => h.includes('NAME') || h.includes('TÊN'));
         let qtyIdx = headers.findIndex(h => h.includes('LƯỢNG') || h.includes('QTY'));
 
-        if (codeIdx === -1) codeIdx = 0;
-        if (barcodeIdx === -1) barcodeIdx = 1;
-        if (nameIdx === -1) nameIdx = 2;
-        if (qtyIdx === -1) qtyIdx = 3;
+        // File mẫu mới chỉ có: BARCODE / PRODUCT CODE + SỐ LƯỢNG ĐẶT.
+        // Mã nhập vào sẽ được tự động dò trong cả Product Code và Barcode.
+        if (identifierIdx !== -1) {
+          codeIdx = identifierIdx;
+          barcodeIdx = identifierIdx;
+        } else {
+          if (codeIdx === -1 && barcodeIdx !== -1) codeIdx = barcodeIdx;
+          if (barcodeIdx === -1 && codeIdx !== -1) barcodeIdx = codeIdx;
+          if (codeIdx === -1 && barcodeIdx === -1) codeIdx = barcodeIdx = 0;
+        }
+        if (qtyIdx === -1) qtyIdx = headers.length > 1 ? 1 : 0;
+        if (nameIdx === -1) nameIdx = -1;
 
         currentOrderItems = [];
         for (let i = 1; i < rows.length; i++) {
           const r = rows[i];
           if (!r || r.length === 0) continue;
-          const qty = Number(r[qtyIdx]) || 0;
-          if (qty > 0) {
+          const identifier = r[identifierIdx !== -1 ? identifierIdx : (codeIdx !== -1 ? codeIdx : barcodeIdx)];
+          const qty = Number(String(r[qtyIdx] ?? '').replace(/,/g, '')) || 0;
+          const key = identifier != null ? String(identifier).trim() : '';
+          if (key && qty > 0) {
+            // Đưa cùng một key vào cả 2 trường để recalculateOrder() tự match Product Code hoặc Barcode.
             currentOrderItems.push({
-              productCode: r[codeIdx] ? String(r[codeIdx]).trim() : '',
-              barcode: r[barcodeIdx] ? String(r[barcodeIdx]).trim() : '',
-              name: r[nameIdx] ? String(r[nameIdx]).trim() : '',
+              productCode: key,
+              barcode: key,
+              name: nameIdx !== -1 && r[nameIdx] ? String(r[nameIdx]).trim() : '',
               qty: qty
             });
           }
@@ -4097,18 +4109,20 @@
     }
 
     function downloadSampleExcel() {
+      // Chỉ cần 2 cột: người dùng điền MỘT trong hai loại mã (Barcode hoặc Product Code) + Số lượng.
       const data = [
-        ['PRODUCT CODE', 'BARCODE', 'PACKAGE NAME', 'SỐ LƯỢNG ĐẶT'],
-        ['2C01A381AR666-01', '6977304933225', 'Son Kem Lì Mịn Mượt COLORKEY R666# 2.5g', 133],
-        ['2C06F008AAAP1-01', '6938582359640', 'PHẤN NƯỚC CUSHION COLORKEY SPF50+ P1', 15],
-        ['2C06B009AAAAA-01', '8936231780089', 'Nước Tẩy Trang Colorkey Micellar 500ml', 44],
-        ['2C06A010AAA01-01', '6937467658205', 'COLORKEY LUMINOUS LOTUS CLAY CLEANSER 100g', 30],
-        ['1C01A346AAQ01-01', '6938582356373', 'SON BÙN ĐA NĂNG DẠNG HŨ COLORKEY Q01', 35]
+        ['BARCODE / PRODUCT CODE', 'SỐ LƯỢNG ĐẶT'],
+        ['6977304933225', 133],
+        ['2C01A381AR608-01', 15],
+        ['6977304933249', 44],
+        ['2C06A010AAA01-01', 30],
+        ['6938582356373', 35]
       ];
       const ws = XLSX.utils.aoa_to_sheet(data);
+      ws['!cols'] = [{ wch: 28 }, { wch: 18 }];
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Mau_Don_Hang");
-      XLSX.writeFile(wb, "Mau_Don_Hang_Q3.xlsx");
+      XLSX.writeFile(wb, "Mau_Don_Hang.xlsx");
     }
 
     
