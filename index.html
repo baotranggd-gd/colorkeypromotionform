@@ -3784,31 +3784,100 @@
           return;
         }
 
-        const headers = rows[0].map(h => String(h).toUpperCase());
-        let codeIdx = headers.findIndex(h => h.includes('CODE') || h.includes('MÃ'));
-        let barcodeIdx = headers.findIndex(h => h.includes('BARCODE') || h.includes('VẠCH'));
-        let nameIdx = headers.findIndex(h => h.includes('NAME') || h.includes('TÊN'));
-        let qtyIdx = headers.findIndex(h => h.includes('LƯỢNG') || h.includes('QTY'));
+        // TEMPLATE ĐƠN HÀNG CHỈ CẦN 2 CỘT:
+        // - CODE / BARCODE: mỗi dòng chỉ cần nhập MỘT mã, hệ thống tự nhận diện là Product Code hay Barcode
+        // - SỐ LƯỢNG ĐẶT / QTY / QUANTITY
+        // Không bắt buộc Product Name và không cần nhập đồng thời Product Code + Barcode.
+        const headers = rows[0].map(h => String(h ?? '').trim().toUpperCase());
 
-        if (codeIdx === -1) codeIdx = 0;
-        if (barcodeIdx === -1) barcodeIdx = 1;
-        if (nameIdx === -1) nameIdx = 2;
-        if (qtyIdx === -1) qtyIdx = 3;
+        const findHeader = (patterns) => headers.findIndex(h => patterns.some(p => h === p || h.includes(p)));
+
+        let codeIdx = findHeader(['PRODUCT CODE', 'PRODUCTCODE', 'PRODUCT CODE / BARCODE', 'CODE / BARCODE', 'CODE', 'MÃ SẢN PHẨM', 'MÃ SP']);
+        let barcodeIdx = findHeader(['BARCODE', 'MÃ VẠCH', 'MA VACH']);
+        let qtyIdx = findHeader(['SỐ LƯỢNG ĐẶT', 'SỐ LƯỢNG', 'QUANTITY', 'QTY', 'SL']);
+        let nameIdx = findHeader(['PACKAGE NAME', 'PRODUCT NAME', 'TÊN SẢN PHẨM', 'TÊN SP', 'TÊN']);
+
+        // Trường hợp file có một cột định danh duy nhất (CODE / BARCODE),
+        // cột đó được xử lý như một "mã nhập" và hệ thống tự lookup Product Master.
+        let identifierIdx = -1;
+        const hasSeparateCode = codeIdx >= 0 && !/BARCODE/.test(headers[codeIdx]);
+        const hasSeparateBarcode = barcodeIdx >= 0;
+        if (hasSeparateCode && hasSeparateBarcode) {
+          identifierIdx = -1;
+        } else if (codeIdx >= 0) {
+          identifierIdx = codeIdx;
+        } else if (barcodeIdx >= 0) {
+          identifierIdx = barcodeIdx;
+        }
+
+        if (identifierIdx === -1 && codeIdx === -1 && barcodeIdx === -1) {
+          // Fallback: file không có header chuẩn, cột A là mã nhập.
+          identifierIdx = 0;
+        }
+        if (qtyIdx === -1) {
+          qtyIdx = headers.length > 1 ? 1 : -1;
+        }
+
+        if (qtyIdx === -1 || (identifierIdx === -1 && codeIdx === -1 && barcodeIdx === -1)) {
+          alert('File đơn hàng cần tối thiểu 2 cột: CODE / BARCODE + SỐ LƯỢNG ĐẶT.');
+          return;
+        }
 
         currentOrderItems = [];
+        let invalidRows = 0;
+        let notFoundRows = [];
+
         for (let i = 1; i < rows.length; i++) {
-          const r = rows[i];
-          if (!r || r.length === 0) continue;
-          const qty = Number(r[qtyIdx]) || 0;
-          if (qty > 0) {
-            currentOrderItems.push({
-              productCode: r[codeIdx] ? String(r[codeIdx]).trim() : '',
-              barcode: r[barcodeIdx] ? String(r[barcodeIdx]).trim() : '',
-              name: r[nameIdx] ? String(r[nameIdx]).trim() : '',
-              qty: qty
-            });
+          const r = rows[i] || [];
+          let rawCode = codeIdx >= 0 && identifierIdx === -1 ? String(r[codeIdx] ?? '').trim() : '';
+          let rawBarcode = barcodeIdx >= 0 && identifierIdx === -1 ? String(r[barcodeIdx] ?? '').trim() : '';
+          let identifier = identifierIdx >= 0 ? String(r[identifierIdx] ?? '').trim() : (rawCode || rawBarcode);
+          const qty = Number(String(r[qtyIdx] ?? '').replace(/,/g, '').trim()) || 0;
+
+          if (!identifier && !qty) continue;
+          if (!identifier || qty <= 0) {
+            invalidRows++;
+            continue;
           }
+
+          // Tự nhận diện mã nhập: Product Code hoặc Barcode.
+          // Đây là phần quan trọng để file chỉ có một cột CODE / BARCODE vẫn lookup đúng Product Master.
+          if (identifierIdx >= 0) {
+            const key = identifier.toLowerCase();
+            const found = products.find(p =>
+              String(p.productCode || '').trim().toLowerCase() === key ||
+              String(p.barcode || '').trim() === identifier
+            );
+
+            if (found) {
+              rawCode = found.productCode || '';
+              rawBarcode = found.barcode || '';
+            } else {
+              // Giữ lại mã gốc để recalculateOrder có thể báo sản phẩm chưa có trong master.
+              // Không đoán barcode/product code.
+              if (/^\d{12,14}$/.test(identifier)) rawBarcode = identifier;
+              else rawCode = identifier;
+              notFoundRows.push(identifier);
+            }
+          }
+
+          currentOrderItems.push({
+            productCode: rawCode,
+            barcode: rawBarcode,
+            name: nameIdx >= 0 ? String(r[nameIdx] ?? '').trim() : '',
+            qty
+          });
         }
+
+        if (currentOrderItems.length === 0) {
+          alert('Không đọc được dòng đơn hàng. Vui lòng kiểm tra CODE/BARCODE và SỐ LƯỢNG ĐẶT.');
+          return;
+        }
+
+        if (invalidRows > 0) {
+          console.warn(`Đã bỏ qua ${invalidRows} dòng không hợp lệ trong file đơn hàng.`);
+        }
+
         recalculateOrder();
       };
       reader.readAsBinaryString(file);
@@ -4154,18 +4223,35 @@
     }
 
     function downloadSampleExcel() {
+      // TEMPLATE TỐI GIẢN: một cột CODE / BARCODE + SỐ LƯỢNG ĐẶT.
+      // Mỗi dòng chỉ cần nhập một mã; hệ thống tự nhận diện Product Code hoặc Barcode.
       const data = [
-        ['PRODUCT CODE', 'BARCODE', 'PACKAGE NAME', 'SỐ LƯỢNG ĐẶT'],
-        ['2C01A381AR666-01', '6977304933225', 'Son Kem Lì Mịn Mượt COLORKEY R666# 2.5g', 133],
-        ['2C06F008AAAP1-01', '6938582359640', 'PHẤN NƯỚC CUSHION COLORKEY SPF50+ P1', 15],
-        ['2C06B009AAAAA-01', '8936231780089', 'Nước Tẩy Trang Colorkey Micellar 500ml', 44],
-        ['2C06A010AAA01-01', '6937467658205', 'COLORKEY LUMINOUS LOTUS CLAY CLEANSER 100g', 30],
-        ['1C01A346AAQ01-01', '6938582356373', 'SON BÙN ĐA NĂNG DẠNG HŨ COLORKEY Q01', 35]
+        ['CODE / BARCODE', 'SỐ LƯỢNG ĐẶT'],
+        ['1C01A346AAQ01-01', 20],
+        ['1C01A346AAQ02-01', 40],
+        ['6938582356892', 60],
+        ['1C01A346AAQ04-01', 80],
+        ['6938582356403', 100],
+        ['1C01A346AAQ06-01', 120]
       ];
       const ws = XLSX.utils.aoa_to_sheet(data);
       const wb = XLSX.utils.book_new();
       XLSX.utils.book_append_sheet(wb, ws, "Mau_Don_Hang");
       XLSX.writeFile(wb, "Mau_Don_Hang_Q3.xlsx");
+    }
+
+    // Template thay thế nếu người dùng muốn nhập bằng BARCODE thay vì Product Code.
+    function downloadBarcodeOrderTemplate() {
+      const data = [
+        ['BARCODE', 'SỐ LƯỢNG ĐẶT'],
+        ['6938582356373', 20],
+        ['6938582356380', 40],
+        ['6938582356892', 60]
+      ];
+      const ws = XLSX.utils.aoa_to_sheet(data);
+      const wb = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(wb, ws, 'Mau_Don_Hang_Barcode');
+      XLSX.writeFile(wb, 'Mau_Don_Hang_Barcode.xlsx');
     }
 
     
