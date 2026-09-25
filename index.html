@@ -3444,7 +3444,6 @@
         }
 
         const lineTotal = item.qty * priceAfterRank;
-        subTotal += lineTotal;
         totalOrderQty += item.qty;
 
         return {
@@ -3455,6 +3454,7 @@
           priceList,
           priceAfterRank,
           lineTotal,
+          promoNote: '',
           attachedGifts: []
         };
       });
@@ -3462,6 +3462,50 @@
       const activePromos = promotions
         .filter(p => selectedPromoIds.includes(p.id) && (p.status === 'Đang chạy' || p.status === 'Active'))
         .sort((a, b) => (a.priority || 99) - (b.priority || 99));
+
+      // APPLY DISCOUNT CTKM THEO TỪNG MÃ SẢN PHẨM
+      // Rule: targetProducts là danh sách mã áp dụng; mỗi SKU tự kiểm tra minQty/minAmount.
+      // Giá sau CK khách hàng là base price, sau đó mới áp dụng các CTKM giảm giá theo thứ tự Priority.
+      activePromos.forEach(promo => {
+        (promo.rules || []).forEach(scheme => {
+          if (scheme.type !== 'DISCOUNT') return;
+
+          const targets = new Set((scheme.targetProducts || []).map(x => String(x).trim().toLowerCase()));
+          if (!targets.size) return;
+
+          purchasedItems.forEach(item => {
+            const codeKey = String(item.code || '').trim().toLowerCase();
+            const barcodeKey = String(item.barcode || '').trim().toLowerCase();
+            const isTarget = targets.has(codeKey) || targets.has(barcodeKey);
+            if (!isTarget) return;
+
+            const minQty = Number(scheme.minQty) || 0;
+            const minAmount = Number(scheme.minAmount) || 0;
+            const qualifiesQty = minQty <= 0 || item.qty >= minQty;
+            const qualifiesAmount = minAmount <= 0 || (item.qty * item.priceAfterRank) >= minAmount;
+            if (!qualifiesQty || !qualifiesAmount) return;
+
+            const before = item.priceAfterRank;
+            let after = before;
+            const value = Number(scheme.discountValue) || 0;
+
+            if (scheme.discountType === 'PERCENT') {
+              after = before * (1 - value / 100);
+            } else if (scheme.discountType === 'AMOUNT') {
+              after = Math.max(0, before - value);
+            }
+
+            item.priceAfterRank = Math.round(after * 100) / 100;
+            item.lineTotal = Math.round(item.qty * item.priceAfterRank);
+
+            const note = `${promo.name} + ${scheme.schemeName}`;
+            item.promoNote = item.promoNote ? `${item.promoNote} | ${note}` : note;
+          });
+        });
+      });
+
+      // Tính lại doanh số sau CK khách hàng + CTKM discount.
+      subTotal = purchasedItems.reduce((sum, item) => sum + item.lineTotal, 0);
 
       let totalProductGifts = 0;
       let moqBundleGiftsAchieved = [];
@@ -3608,7 +3652,7 @@
           priceList: item.priceList,
           priceAfterRank: item.priceAfterRank,
           lineTotal: item.lineTotal,
-          promoNote: ''
+          promoNote: item.promoNote || ''
         });
 
         if (item.attachedGifts && item.attachedGifts.length > 0) {
