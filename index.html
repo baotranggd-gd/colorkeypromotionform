@@ -3023,8 +3023,13 @@
       if (!panel) return;
       panel.classList.toggle('hidden', !different);
       if (hint) hint.innerText = different
-        ? 'Khác loại: phải chọn riêng sản phẩm mua và sản phẩm tặng.'
-        : 'Cùng loại: sản phẩm tặng chính là sản phẩm mua, không cần chọn lại sản phẩm tặng.';
+        ? 'Khác loại: phải chọn riêng sản phẩm mua và sản phẩm tặng. Có thể gộp số lượng nếu cần.'
+        : 'Cùng loại: tính điều kiện mua/tặng riêng trên từng mã sản phẩm; không cộng dồn các mã.';
+      const pool = document.getElementById('form-gift-pool');
+      if (pool) {
+        pool.disabled = !different;
+        if (!different) pool.checked = false;
+      }
     }
 
     function renderMoqProductOptions(selected = []) {
@@ -3315,7 +3320,7 @@
 
         newRule.targetPrefix = prefix;
         newRule.targetProducts = targetProducts;
-        newRule.poolQty = document.getElementById('form-gift-pool').checked;
+        newRule.poolQty = giftType === 'DIFFERENT' ? document.getElementById('form-gift-pool').checked : false;
         newRule.giftType = giftType;
         newRule.buyQty = buyQty;
         newRule.giftQty = giftQty;
@@ -3486,52 +3491,71 @@
           if (scheme.type === 'BUY_GIFT_TIERS') {
             const matchedPurchases = purchasedItems.filter(it => {
               if (scheme.targetPrefix && it.code.toLowerCase().startsWith(scheme.targetPrefix.toLowerCase())) return true;
-              if (scheme.targetProducts && scheme.targetProducts.some(p => p.toLowerCase() === it.code.toLowerCase() || p === it.barcode)) return true;
+              if (scheme.targetProducts && scheme.targetProducts.some(p => String(p).toLowerCase() === String(it.code).toLowerCase() || String(p) === String(it.barcode))) return true;
               return false;
             });
 
             if (matchedPurchases.length > 0) {
-              const schemeTotalQty = matchedPurchases.reduce((sum, i) => sum + i.qty, 0);
-              let remainingQty = schemeTotalQty;
-              const sortedTiers = [...(scheme.tiers || [])].sort((a, b) => b.buyQty - a.buyQty);
+              const sortedTiers = [...(scheme.tiers || [])].sort((a, b) => Number(b.buyQty) - Number(a.buyQty));
+              const isSameType = (scheme.giftType || 'SAME') === 'SAME';
 
-              let hostItem = matchedPurchases.reduce((prev, curr) => (curr.qty > prev.qty) ? curr : prev, matchedPurchases[0]);
+              // CÙNG LOẠI: tính điều kiện MUA/TẶNG RIÊNG TỪNG MÃ SẢN PHẨM.
+              // Ví dụ: 6 SKU, mỗi SKU mua 20, scheme MUA 17 TẶNG 1
+              // => mỗi SKU được 1 quà, không cộng 120 thành 7 quà cho SKU cuối.
+              // KHÔNG phụ thuộc checkbox "Gộp số lượng" khi là CÙNG LOẠI.
+              const purchaseGroups = isSameType
+                ? matchedPurchases.map(item => ({ items: [item], totalQty: item.qty }))
+                : (scheme.poolQty !== false
+                    ? [{
+                        items: matchedPurchases,
+                        totalQty: matchedPurchases.reduce((sum, i) => sum + i.qty, 0)
+                      }]
+                    : matchedPurchases.map(item => ({ items: [item], totalQty: item.qty })));
 
-              sortedTiers.forEach(t => {
-                if (t.buyQty > 0 && remainingQty >= t.buyQty) {
-                  const times = Math.floor(remainingQty / t.buyQty);
-                  const giftsCount = times * t.giftQty;
-                  remainingQty = remainingQty % t.buyQty;
+              purchaseGroups.forEach(group => {
+                let remainingQty = group.totalQty;
+                const hostItem = group.items[group.items.length - 1];
 
-                  if (giftsCount > 0) {
-                    totalProductGifts += giftsCount;
+                sortedTiers.forEach(t => {
+                  const tierBuyQty = Number(t.buyQty) || 0;
+                  const tierGiftQty = Number(t.giftQty) || 0;
+                  if (tierBuyQty <= 0 || remainingQty < tierBuyQty) return;
 
-                    let giftCode = t.giftCode || hostItem.code;
-                    let giftBarcode = hostItem.barcode;
-                    let giftName = t.giftName || hostItem.name;
+                  const times = Math.floor(remainingQty / tierBuyQty);
+                  const giftsCount = times * tierGiftQty;
+                  remainingQty = remainingQty % tierBuyQty;
+                  if (giftsCount <= 0) return;
 
-                    if (t.giftCode) {
-                      const foundGiftProd = products.find(p => p.productCode.toLowerCase() === t.giftCode.toLowerCase() || p.barcode === t.giftCode);
-                      if (foundGiftProd) {
-                        giftCode = foundGiftProd.productCode;
-                        giftBarcode = foundGiftProd.barcode;
-                        giftName = t.giftName || foundGiftProd.name;
-                      }
+                  totalProductGifts += giftsCount;
+
+                  let giftCode = isSameType ? hostItem.code : (t.giftCode || hostItem.code);
+                  let giftBarcode = isSameType ? hostItem.barcode : hostItem.barcode;
+                  let giftName = isSameType ? hostItem.name : (t.giftName || hostItem.name);
+
+                  if (!isSameType && t.giftCode) {
+                    const foundGiftProd = products.find(p =>
+                      String(p.productCode || '').toLowerCase() === String(t.giftCode).toLowerCase() ||
+                      String(p.barcode || '') === String(t.giftCode)
+                    );
+                    if (foundGiftProd) {
+                      giftCode = foundGiftProd.productCode;
+                      giftBarcode = foundGiftProd.barcode;
+                      giftName = t.giftName || foundGiftProd.name;
                     }
-
-                    hostItem.attachedGifts.push({
-                      isGift: true,
-                      code: giftCode,
-                      barcode: giftBarcode,
-                      name: giftName,
-                      qty: giftsCount,
-                      priceList: hostItem.priceList,
-                      priceAfterRank: 0,
-                      lineTotal: 0,
-                      promoNote: promo.name
-                    });
                   }
-                }
+
+                  hostItem.attachedGifts.push({
+                    isGift: true,
+                    code: giftCode,
+                    barcode: giftBarcode,
+                    name: giftName,
+                    qty: giftsCount,
+                    priceList: hostItem.priceList,
+                    priceAfterRank: 0,
+                    lineTotal: 0,
+                    promoNote: `${promo.name} + ${scheme.schemeName}`
+                  });
+                });
               });
             }
           }
