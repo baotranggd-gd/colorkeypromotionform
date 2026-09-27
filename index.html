@@ -100,22 +100,7 @@
   <div class="flex-1 flex flex-col overflow-hidden">
 
     <!-- GLOBAL TOPBAR -->
-    <header class="h-16 bg-white border-b border-slate-200 px-8 flex items-center justify-between flex-shrink-0 z-10 shadow-sm">
-      <div class="relative w-96">
-        <i data-lucide="search" class="w-4 h-4 absolute left-3 top-3 text-slate-400"></i>
-        <input 
-          type="text" 
-          id="global-search-input" 
-          placeholder="Search by order number, customer, SKU, barcode..." 
-          oninput="handleGlobalSearch(this.value)"
-          onfocus="handleGlobalSearch(this.value)"
-          onkeydown="handleGlobalSearchKeydown(event)"
-          autocomplete="off"
-          class="w-full pl-9 pr-4 py-2 text-xs bg-slate-100 border border-transparent rounded-xl focus:outline-none focus:bg-white focus:border-blue-500 transition"
-        />
-        <div id="global-search-results" class="hidden absolute left-0 right-0 top-11 bg-white border border-slate-200 rounded-xl shadow-xl z-50 overflow-hidden"></div>
-      </div>
-
+    <header class="h-16 bg-white border-b border-slate-200 px-8 flex items-center justify-end flex-shrink-0 z-10 shadow-sm">
       <div class="flex items-center space-x-5">
         <div class="flex items-center gap-2 text-xs text-slate-500 font-medium bg-slate-50 px-3 py-1.5 rounded-lg border">
           <i data-lucide="calendar" class="w-3.5 h-3.5 text-blue-600"></i>
@@ -151,6 +136,32 @@
             <span id="dashboard-sales-rows" class="px-3 py-2 rounded-xl bg-emerald-50 text-emerald-700 text-xs font-bold">0 rows</span>
             <button onclick="syncSalesData(true)" class="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-sm">↻ Sync Sales Data</button>
             <button onclick="switchTab('analytics')" class="px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 text-xs font-bold hover:bg-slate-50">View Report</button>
+          </div>
+        </div>
+
+        <!-- DASHBOARD FILTERS -->
+        <div class="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm">
+          <div class="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-3">
+            <div>
+              <div class="flex items-center gap-2 text-xs font-bold text-slate-800 uppercase"><i data-lucide="filter" class="w-4 h-4 text-blue-600"></i> Dashboard Filters</div>
+              <p class="text-[10px] text-slate-400 mt-0.5">Các biểu đồ và KPI sẽ cập nhật theo bộ lọc đang chọn.</p>
+            </div>
+            <button onclick="resetDashboardFilters()" class="px-3 py-1.5 rounded-lg border border-slate-200 text-[11px] font-semibold text-slate-600 hover:bg-slate-50">Reset Filter</button>
+          </div>
+          <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 xl:grid-cols-7 gap-2.5">
+            <select id="dashboard-filter-quarter" onchange="renderSalesDashboard()" class="border border-slate-200 rounded-xl px-2.5 py-2 text-[11px] bg-white"><option value="">All Quarter</option></select>
+            <select id="dashboard-filter-month" onchange="renderSalesDashboard()" class="border border-slate-200 rounded-xl px-2.5 py-2 text-[11px] bg-white"><option value="">All Month</option></select>
+            <select id="dashboard-filter-doc-type" onchange="renderSalesDashboard()" class="border border-slate-200 rounded-xl px-2.5 py-2 text-[11px] bg-white"><option value="">All Document Type</option></select>
+            <select id="dashboard-filter-channel" onchange="renderSalesDashboard()" class="border border-slate-200 rounded-xl px-2.5 py-2 text-[11px] bg-white"><option value="">All Channel</option></select>
+            <select id="dashboard-filter-team-pic" onchange="renderSalesDashboard()" class="border border-slate-200 rounded-xl px-2.5 py-2 text-[11px] bg-white"><option value="">All Team PIC</option></select>
+            <select id="dashboard-filter-pic" onchange="renderSalesDashboard()" class="border border-slate-200 rounded-xl px-2.5 py-2 text-[11px] bg-white"><option value="">All PIC</option></select>
+            <select id="dashboard-filter-region" onchange="renderSalesDashboard()" class="border border-slate-200 rounded-xl px-2.5 py-2 text-[11px] bg-white"><option value="">All Region</option></select>
+            <select id="dashboard-filter-rank" onchange="renderSalesDashboard()" class="border border-slate-200 rounded-xl px-2.5 py-2 text-[11px] bg-white"><option value="">All Customer Rank</option></select>
+            <select id="dashboard-filter-customer" onchange="renderSalesDashboard()" class="border border-slate-200 rounded-xl px-2.5 py-2 text-[11px] bg-white"><option value="">All Customer</option></select>
+            <select id="dashboard-filter-brand" onchange="renderSalesDashboard()" class="border border-slate-200 rounded-xl px-2.5 py-2 text-[11px] bg-white"><option value="">All Brand</option></select>
+            <select id="dashboard-filter-category" onchange="renderSalesDashboard()" class="border border-slate-200 rounded-xl px-2.5 py-2 text-[11px] bg-white"><option value="">All Category</option></select>
+            <select id="dashboard-filter-line" onchange="renderSalesDashboard()" class="border border-slate-200 rounded-xl px-2.5 py-2 text-[11px] bg-white"><option value="">All Product Line</option></select>
+            <select id="dashboard-filter-type" onchange="renderSalesDashboard()" class="border border-slate-200 rounded-xl px-2.5 py-2 text-[11px] bg-white"><option value="">All Type</option></select>
           </div>
         </div>
 
@@ -206,16 +217,26 @@
         </div>
 
         <!-- SALES BREAKDOWN -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+        <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-5 gap-6">
           <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
             <h3 class="font-bold text-slate-800 text-sm">Top Customers</h3>
-            <p class="text-[11px] text-slate-400 mb-4">By Final Revenue</p>
+            <p class="text-[11px] text-slate-400 mb-4">By Final Revenue · Tên khách hàng</p>
             <div id="dashboard-sales-top-customers" class="space-y-3"></div>
           </div>
           <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
             <h3 class="font-bold text-slate-800 text-sm">Top Products</h3>
-            <p class="text-[11px] text-slate-400 mb-4">By Final Revenue</p>
+            <p class="text-[11px] text-slate-400 mb-4">By Final Revenue · Tên sản phẩm</p>
             <div id="dashboard-sales-top-products" class="space-y-3"></div>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 class="font-bold text-slate-800 text-sm">Top Categories</h3>
+            <p class="text-[11px] text-slate-400 mb-4">By Final Revenue · Category</p>
+            <div id="dashboard-sales-top-categories" class="space-y-3"></div>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 class="font-bold text-slate-800 text-sm">Top Lines</h3>
+            <p class="text-[11px] text-slate-400 mb-4">By Final Revenue · Product Line</p>
+            <div id="dashboard-sales-top-lines" class="space-y-3"></div>
           </div>
           <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
             <h3 class="font-bold text-slate-800 text-sm">Revenue by Team PIC</h3>
@@ -2387,207 +2408,6 @@
 
       lucide.createIcons();
     }
-
-    // GLOBAL SEARCH
-    // Tìm thật trên 3 nguồn: Sales/Order, CRM Customer và Product Master.
-    // Kết quả có thể click để mở đúng màn hình và áp bộ lọc tương ứng.
-    let globalSearchResults = [];
-    let globalSearchActiveIndex = -1;
-
-    function normalizeSearchValue(value) {
-      return String(value ?? '').toLowerCase().trim();
-    }
-
-    function highlightSearch(value, query) {
-      const text = escapeSalesHtml(value);
-      const q = escapeSalesHtml(query);
-      if (!q) return text;
-      const re = new RegExp(`(${q.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'ig');
-      return text.replace(re, '<mark class="bg-yellow-100 text-slate-900 rounded px-0.5">$1</mark>');
-    }
-
-    function closeGlobalSearch() {
-      const box = document.getElementById('global-search-results');
-      if (box) box.classList.add('hidden');
-      globalSearchResults = [];
-      globalSearchActiveIndex = -1;
-    }
-
-    function renderGlobalSearchResults(query, results) {
-      const box = document.getElementById('global-search-results');
-      if (!box) return;
-      globalSearchResults = results;
-      globalSearchActiveIndex = -1;
-
-      if (!query) {
-        closeGlobalSearch();
-        return;
-      }
-
-      if (!results.length) {
-        box.innerHTML = `<div class="px-4 py-3 text-xs text-slate-400">Không tìm thấy kết quả phù hợp</div>`;
-        box.classList.remove('hidden');
-        return;
-      }
-
-      const groups = [
-        ['order', 'Đơn hàng / Sales'],
-        ['customer', 'Khách hàng'],
-        ['product', 'Sản phẩm']
-      ];
-      box.innerHTML = groups.map(([type, title]) => {
-        const items = results.filter(x => x.type === type);
-        if (!items.length) return '';
-        return `<div class="border-b border-slate-100 last:border-b-0">
-          <div class="px-4 py-2 bg-slate-50 text-[10px] font-bold uppercase tracking-wide text-slate-400">${title}</div>
-          ${items.slice(0, 6).map((item) => {
-            const idx = results.indexOf(item);
-            return `<button type="button" data-search-index="${idx}" onclick="selectGlobalSearchResult(${idx})" class="global-search-item w-full text-left px-4 py-2.5 hover:bg-blue-50 transition flex items-center gap-3">
-              <div class="w-7 h-7 rounded-lg ${type === 'order' ? 'bg-violet-50 text-violet-600' : type === 'customer' ? 'bg-blue-50 text-blue-600' : 'bg-emerald-50 text-emerald-600'} flex items-center justify-center text-[10px] font-bold">${type === 'order' ? 'SO' : type === 'customer' ? 'KH' : 'SKU'}</div>
-              <div class="min-w-0 flex-1">
-                <div class="text-xs font-bold text-slate-700 truncate">${highlightSearch(item.title, query)}</div>
-                <div class="text-[10px] text-slate-400 truncate">${highlightSearch(item.subtitle, query)}</div>
-              </div>
-              <i data-lucide="chevron-right" class="w-3.5 h-3.5 text-slate-300"></i>
-            </button>`;
-          }).join('')}
-        </div>`;
-      }).join('');
-      box.classList.remove('hidden');
-      lucide.createIcons();
-    }
-
-    function handleGlobalSearch(q) {
-      const query = normalizeSearchValue(q);
-      if (!query) {
-        closeGlobalSearch();
-        return;
-      }
-
-      const results = [];
-      const seen = new Set();
-      const addResult = (item) => {
-        const key = `${item.type}:${item.key}`;
-        if (!seen.has(key)) { seen.add(key); results.push(item); }
-      };
-
-      // CRM
-      (Array.isArray(customers) ? customers : []).forEach(c => {
-        const haystack = [c.code, c.name, c.pic, c.region, c.channel, c.rank].map(normalizeSearchValue).join(' | ');
-        if (haystack.includes(query)) {
-          addResult({
-            type: 'customer', key: c.code,
-            title: c.name || c.code,
-            subtitle: `${c.code || '-'} · ${c.channel || '-'} · ${c.region || '-'}${c.pic ? ' · PIC: ' + c.pic : ''}`,
-            code: c.code
-          });
-        }
-      });
-
-      // Product Master — hỗ trợ Product Code, Barcode, tên, brand/category/line/type.
-      (Array.isArray(products) ? products : []).forEach(p => {
-        const haystack = [p.productCode, p.barcode, p.name, p.brand, p.category, p.productLine, p.type].map(normalizeSearchValue).join(' | ');
-        if (haystack.includes(query)) {
-          addResult({
-            type: 'product', key: p.productCode,
-            title: p.name || p.productCode,
-            subtitle: `${p.productCode || '-'} · Barcode: ${p.barcode || '-'}${p.brand ? ' · ' + p.brand : ''}`,
-            code: p.productCode
-          });
-        }
-      });
-
-      // Sales / Order — search Doc No., customer, material code và barcode.
-      if (Array.isArray(salesRevenueData) && salesRevenueData.length) {
-        const orderMap = new Map();
-        salesRevenueData.forEach(row => {
-          const docNo = salesText(row['Doc No.']);
-          const customerCode = salesText(row['Customer code']);
-          const customerName = salesText(row['Customer Name']);
-          const materialCode = salesText(row['Material code']);
-          const product = row._product || (Array.isArray(products) ? products.find(p => salesText(p.productCode) === materialCode) : null);
-          const barcode = product ? salesText(product.barcode) : '';
-          const haystack = [docNo, customerCode, customerName, materialCode, barcode, row['Type']].map(normalizeSearchValue).join(' | ');
-          if (!docNo || !haystack.includes(query)) return;
-
-          if (!orderMap.has(docNo)) {
-            orderMap.set(docNo, {
-              type: 'order', key: docNo, title: docNo,
-              subtitle: `${customerCode || '-'} · ${customerName || '-'} · SKU: ${materialCode || '-'}${barcode ? ' · Barcode: ' + barcode : ''}`,
-              docNo
-            });
-          }
-        });
-        orderMap.forEach(addResult);
-      }
-
-      // Ưu tiên kết quả khớp bắt đầu bằng từ khóa, sau đó đến kết quả còn lại.
-      results.sort((a, b) => {
-        const aq = normalizeSearchValue(a.title).startsWith(query) ? 0 : 1;
-        const bq = normalizeSearchValue(b.title).startsWith(query) ? 0 : 1;
-        if (aq !== bq) return aq - bq;
-        return String(a.title).localeCompare(String(b.title), 'vi');
-      });
-
-      renderGlobalSearchResults(query, results.slice(0, 18));
-
-      // Nếu Sales chưa được sync mà người dùng đang tìm Order/Sales, tự sync một lần.
-      if (!salesRevenueData.length && !salesDataLoading) {
-        syncSalesData(false).then(() => {
-          const input = document.getElementById('global-search-input');
-          if (input && normalizeSearchValue(input.value) === query) handleGlobalSearch(query);
-        });
-      }
-    }
-
-    function selectGlobalSearchResult(index) {
-      const item = globalSearchResults[index];
-      if (!item) return;
-      const input = document.getElementById('global-search-input');
-      if (input) input.value = item.title || '';
-      closeGlobalSearch();
-
-      if (item.type === 'customer') {
-        showView('crm');
-        const el = document.getElementById('crm-search-input');
-        if (el) { el.value = item.code || item.title || ''; filterCrmTable(); }
-      } else if (item.type === 'product') {
-        showView('products');
-        const el = document.getElementById('prod-search-input');
-        if (el) { el.value = item.code || item.title || ''; filterProdManagementTable(); }
-      } else if (item.type === 'order') {
-        showView('analytics');
-        const el = document.getElementById('sales-filter-doc');
-        if (el) { el.value = item.docNo || item.title || ''; renderSalesAnalytics(); }
-      }
-    }
-
-    function handleGlobalSearchKeydown(event) {
-      if (!globalSearchResults.length) return;
-      const items = Array.from(document.querySelectorAll('.global-search-item'));
-      if (event.key === 'ArrowDown') {
-        event.preventDefault();
-        globalSearchActiveIndex = Math.min(globalSearchActiveIndex + 1, globalSearchResults.length - 1);
-      } else if (event.key === 'ArrowUp') {
-        event.preventDefault();
-        globalSearchActiveIndex = Math.max(globalSearchActiveIndex - 1, 0);
-      } else if (event.key === 'Enter' && globalSearchActiveIndex >= 0) {
-        event.preventDefault();
-        selectGlobalSearchResult(globalSearchActiveIndex);
-        return;
-      } else if (event.key === 'Escape') {
-        closeGlobalSearch();
-        return;
-      } else {
-        return;
-      }
-      items.forEach((el, idx) => el.classList.toggle('bg-blue-50', idx === globalSearchActiveIndex));
-    }
-
-    document.addEventListener('click', (event) => {
-      const wrap = document.getElementById('global-search-input')?.parentElement;
-      if (wrap && !wrap.contains(event.target)) closeGlobalSearch();
-    });
 
     // BIỂU ĐỒ DASHBOARD & WAREHOUSE (CHART.JS)
     function initDashboardCharts() {
@@ -5236,9 +5056,16 @@
 
     function mapSalesProduct(row) {
       const materialCode = salesText(row['Material code']);
-      const product = Array.isArray(products) ? products.find(p => salesText(p.productCode) === materialCode) : null;
+      const key = materialCode.toLowerCase();
+      // Match theo Product Code HOẶC Barcode để Top Product luôn lấy được tên sản phẩm từ Product Master.
+      const product = Array.isArray(products) ? products.find(p => {
+        const productCode = salesText(p.productCode).toLowerCase();
+        const barcode = salesText(p.barcode).toLowerCase();
+        return productCode === key || barcode === key;
+      }) : null;
       row._product = product || null;
       row._productFound = !!product;
+      row._productName = product ? salesText(product.name || product.productName || product.packageName) : salesText(row['Product Name']);
       row._brand = product ? salesText(product.brand) : '';
       row._category = product ? salesText(product.category) : '';
       row._productLine = product ? salesText(product.productLine) : '';
@@ -5453,29 +5280,108 @@
       </div>`).join('');
     }
 
+    function setDashboardFilterOptions(id, values, label, numeric = false) {
+      const el = document.getElementById(id); if (!el) return;
+      const current = el.value;
+      const arr = uniqueSortedSales(values, numeric);
+      el.innerHTML = `<option value="">${label}</option>` + arr.map(v => `<option value="${escapeSalesHtml(v)}">${escapeSalesHtml(v)}</option>`).join('');
+      if (arr.includes(current)) el.value = current;
+    }
+
+    function renderDashboardFilterOptions() {
+      if (!salesRevenueData.length) return;
+      setDashboardFilterOptions('dashboard-filter-quarter', salesRevenueData.map(r=>r['Quarter']), 'All Quarter');
+      setDashboardFilterOptions('dashboard-filter-month', salesRevenueData.map(r=>r['Month']), 'All Month', true);
+      setDashboardFilterOptions('dashboard-filter-doc-type', salesRevenueData.map(r=>r._docTypeGroup), 'All Document Type');
+      setDashboardFilterOptions('dashboard-filter-channel', salesRevenueData.map(r=>r['Channel']), 'All Channel');
+      setDashboardFilterOptions('dashboard-filter-team-pic', salesRevenueData.map(r=>r['Team PIC']), 'All Team PIC');
+      setDashboardFilterOptions('dashboard-filter-pic', salesRevenueData.map(r=>r['PIC']), 'All PIC');
+      setDashboardFilterOptions('dashboard-filter-region', salesRevenueData.map(r=>r._customerRegion), 'All Region');
+      setDashboardFilterOptions('dashboard-filter-rank', salesRevenueData.map(r=>r._customerRank), 'All Customer Rank');
+      setDashboardFilterOptions('dashboard-filter-brand', salesRevenueData.map(r=>r._brand), 'All Brand');
+      setDashboardFilterOptions('dashboard-filter-category', salesRevenueData.map(r=>r._category), 'All Category');
+      setDashboardFilterOptions('dashboard-filter-line', salesRevenueData.map(r=>r._productLine), 'All Product Line');
+      setDashboardFilterOptions('dashboard-filter-type', salesRevenueData.map(r=>r._productType), 'All Type');
+      const customerEl = document.getElementById('dashboard-filter-customer');
+      if (customerEl) {
+        const current = customerEl.value;
+        const codes = uniqueSortedSales(salesRevenueData.map(r=>r['Customer code']));
+        customerEl.innerHTML = '<option value="">All Customer</option>' + codes.map(code => {
+          const sample = salesRevenueData.find(r => salesText(r['Customer code']) === code);
+          const name = sample ? salesText(sample['Customer Name']) : '';
+          return `<option value="${escapeSalesHtml(code)}">${escapeSalesHtml(name || code)}${name && name !== code ? ' · ' + escapeSalesHtml(code) : ''}</option>`;
+        }).join('');
+        if (codes.includes(current)) customerEl.value = current;
+      }
+    }
+
+    function getDashboardFilteredSalesData() {
+      const val = id => salesText(document.getElementById(id)?.value);
+      const quarter=val('dashboard-filter-quarter'), month=val('dashboard-filter-month'), docType=val('dashboard-filter-doc-type'), channel=val('dashboard-filter-channel');
+      const team=val('dashboard-filter-team-pic'), pic=val('dashboard-filter-pic'), region=val('dashboard-filter-region'), rank=val('dashboard-filter-rank');
+      const customer=val('dashboard-filter-customer'), brand=val('dashboard-filter-brand'), category=val('dashboard-filter-category'), line=val('dashboard-filter-line'), type=val('dashboard-filter-type');
+      return salesRevenueData.filter(r =>
+        (!quarter || salesText(r['Quarter'])===quarter) && (!month || salesText(r['Month'])===month) && (!docType || salesText(r._docTypeGroup)===docType) &&
+        (!channel || salesText(r['Channel'])===channel) && (!team || salesText(r['Team PIC'])===team) && (!pic || salesText(r['PIC'])===pic) &&
+        (!region || salesText(r._customerRegion)===region) && (!rank || salesText(r._customerRank)===rank) && (!customer || salesText(r['Customer code'])===customer) &&
+        (!brand || salesText(r._brand)===brand) && (!category || salesText(r._category)===category) && (!line || salesText(r._productLine)===line) && (!type || salesText(r._productType)===type)
+      );
+    }
+
+    function resetDashboardFilters() {
+      document.querySelectorAll('[id^="dashboard-filter-"]').forEach(el => { el.value=''; });
+      renderSalesDashboard();
+    }
+
     function renderSalesDashboard() {
       if (!salesRevenueData.length) return;
-      const revenue = salesRevenueData.reduce((s,r)=>s+salesNum(r['Final Revenue']),0);
-      const qty = salesRevenueData.reduce((s,r)=>s+salesNum(r['Sales Qty']),0);
-      const orders = new Set(salesRevenueData.map(r=>salesText(r['Doc No.'])).filter(Boolean)).size;
-      const custs = new Set(salesRevenueData.map(r=>salesText(r['Customer code'])).filter(Boolean)).size;
-      const aov = orders ? revenue/orders : 0;
-      const set=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
-      set('dashboard-sales-revenue',formatSalesMoney(revenue));
-      set('dashboard-sales-orders',orders.toLocaleString('vi-VN'));
-      set('dashboard-sales-qty',formatSalesQty(qty));
-      set('dashboard-sales-customers',custs.toLocaleString('vi-VN'));
-      set('dashboard-sales-aov',formatSalesMoney(aov));
-      set('dashboard-sales-rows',`${salesRevenueData.length.toLocaleString('vi-VN')} rows`);
-      setDashboardSalesStatus('Sales data synced','success');
+      renderDashboardFilterOptions();
+      const data = getDashboardFilteredSalesData();
+      const revenue = data.reduce((s,r)=>s+salesNum(r['Final Revenue']),0);
+      const qty = data.reduce((s,r)=>s+salesNum(r['Sales Qty']),0);
+      const orders = new Set(data.map(r=>salesText(r['Doc No.'])).filter(Boolean)).size;
+      const customersCount = new Set(data.map(r=>salesText(r['Customer code'])).filter(Boolean)).size;
+      const aov = orders ? revenue / orders : 0;
+      const setKpi=(id,value)=>{const el=document.getElementById(id);if(el)el.textContent=value;};
+      setKpi('dashboard-sales-revenue',formatSalesMoney(revenue));
+      setKpi('dashboard-sales-orders',orders.toLocaleString('vi-VN'));
+      setKpi('dashboard-sales-qty',formatSalesQty(qty));
+      setKpi('dashboard-sales-customers',customersCount.toLocaleString('vi-VN'));
+      setKpi('dashboard-sales-aov',formatSalesMoney(aov));
+      const aggregate=(field)=>{const m={};data.forEach(r=>{const k=salesText(r[field])||'Unknown';m[k]=(m[k]||0)+salesNum(r['Final Revenue']);});return Object.entries(m).map(([label,value])=>({label,value})).sort((a,b)=>b.value-a.value);};
+      // TOP CUSTOMER: aggregate theo Customer Code nhưng HIỂN THỊ TÊN KHÁCH HÀNG.
+      const customerMap={};
+      data.forEach(r=>{
+        const code=salesText(r['Customer code']);
+        if(code) customerMap[code]=(customerMap[code]||0)+salesNum(r['Final Revenue']);
+      });
+      const customerEntries=Object.entries(customerMap).map(([code,value])=>{
+        const sample=data.find(r=>salesText(r['Customer code'])===code);
+        const name=sample?salesText(sample['Customer Name']):'';
+        return {label:name||code,value,code};
+      }).sort((a,b)=>b.value-a.value);
 
-      const aggregate=(field)=>{const m={};salesRevenueData.forEach(r=>{const k=salesText(r[field])||'Unknown';m[k]=(m[k]||0)+salesNum(r['Final Revenue']);});return Object.entries(m).map(([label,value])=>({label,value})).sort((a,b)=>b.value-a.value);};
-      const customerMap={}; salesRevenueData.forEach(r=>{const k=salesText(r['Customer code']);if(!k)return;customerMap[k]=(customerMap[k]||0)+salesNum(r['Final Revenue']);});
-      const productMap={}; salesRevenueData.forEach(r=>{const k=salesText(r['Material code']);if(!k)return;productMap[k]=(productMap[k]||0)+salesNum(r['Final Revenue']);});
-      renderDashboardSalesList('dashboard-sales-top-customers',Object.entries(customerMap).map(([label,value])=>({label,value})).sort((a,b)=>b.value-a.value));
-      renderDashboardSalesList('dashboard-sales-top-products',Object.entries(productMap).map(([label,value])=>({label,value})).sort((a,b)=>b.value-a.value));
+      // TOP PRODUCT: aggregate theo Material Code nhưng HIỂN THỊ TÊN SẢN PHẨM từ Product Master.
+      const productMap={};
+      data.forEach(r=>{
+        const k=salesText(r['Material code']);
+        if(k) productMap[k]=(productMap[k]||0)+salesNum(r['Final Revenue']);
+      });
+      const productEntries=Object.entries(productMap).map(([code,value])=>{
+        const sample=data.find(r=>salesText(r['Material code'])===code);
+        const name=sample ? salesText(sample._productName || sample._product?.name || sample._product?.productName || sample._product?.packageName || sample['Product Name']) : '';
+        return {label:name||code,value,code};
+      }).sort((a,b)=>b.value-a.value);
+      renderDashboardSalesList('dashboard-sales-top-customers',customerEntries);
+      renderDashboardSalesList('dashboard-sales-top-products',productEntries);
+      // TOP CATEGORY / TOP LINE: aggregate theo master data và vẫn tuân theo toàn bộ dashboard filters.
+      const categoryEntries = aggregate('_category');
+      const lineEntries = aggregate('_productLine');
+      renderDashboardSalesList('dashboard-sales-top-categories',categoryEntries);
+      renderDashboardSalesList('dashboard-sales-top-lines',lineEntries);
       renderDashboardSalesList('dashboard-sales-top-teams',aggregate('Team PIC'));
-      renderSalesDashboardCharts(salesRevenueData);
+      renderSalesDashboardCharts(data);
+      setDashboardSalesStatus(`${data.length.toLocaleString('vi-VN')} rows · filtered`, 'success');
     }
 
     async function initSalesDashboard() {
