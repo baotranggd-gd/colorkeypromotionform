@@ -1127,10 +1127,68 @@
 
       <!-- TAB 7: REPORT & ANALYTICS -->
       <section id="view-analytics" class="hidden h-full overflow-y-auto p-8 space-y-6">
-        <h2 class="text-xl font-bold text-slate-800">Report & Analytics</h2>
-        <p class="text-xs text-slate-500">Báo cáo hiệu suất kinh doanh, tỷ lệ chuyển đổi đơn hàng và hiệu quả khuyến mãi.</p>
-        <div class="bg-white p-8 rounded-2xl border border-slate-200 text-center text-slate-500 text-sm">
-          Tính năng Báo cáo chuyên sâu đang được đồng bộ dữ liệu thời gian thực.
+        <div class="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+          <div>
+            <h2 class="text-xl font-bold text-slate-800">Report & Analytics</h2>
+            <p class="text-xs text-slate-500 mt-0.5">Sales Revenue từ Sales Data, mapping theo Customer code với CRM và Material code với Product Management.</p>
+          </div>
+          <div class="flex items-center gap-2">
+            <span id="sales-api-status" class="px-3 py-2 rounded-xl bg-slate-100 text-slate-500 text-[11px] font-semibold">Chưa sync</span>
+            <button id="btn-sync-sales" onclick="syncSalesData(true)" class="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-sm">
+              ↻ Sync Sales Data
+            </button>
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-5 gap-4">
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5"><div class="text-[11px] text-slate-400 font-semibold uppercase">Final Revenue</div><div id="analytics-kpi-revenue" class="text-xl font-bold text-slate-800 mt-2">—</div></div>
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5"><div class="text-[11px] text-slate-400 font-semibold uppercase">Amount</div><div id="analytics-kpi-amount" class="text-xl font-bold text-slate-800 mt-2">—</div></div>
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5"><div class="text-[11px] text-slate-400 font-semibold uppercase">Sales Qty</div><div id="analytics-kpi-qty" class="text-xl font-bold text-slate-800 mt-2">—</div></div>
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5"><div class="text-[11px] text-slate-400 font-semibold uppercase">Documents</div><div id="analytics-kpi-docs" class="text-xl font-bold text-slate-800 mt-2">—</div></div>
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5"><div class="text-[11px] text-slate-400 font-semibold uppercase">Customers</div><div id="analytics-kpi-customers" class="text-xl font-bold text-slate-800 mt-2">—</div></div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+          <div class="flex items-center justify-between mb-4">
+            <div><h3 class="font-bold text-slate-800">Sales Filters</h3><p class="text-[11px] text-slate-400">Lọc trên toàn bộ Sales Revenue dataset đã sync.</p></div>
+            <button onclick="resetSalesFilters()" class="px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50">Reset</button>
+          </div>
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+            <select id="sales-filter-quarter" onchange="renderSalesAnalytics()" class="border border-slate-200 rounded-xl px-3 py-2.5 text-xs bg-white"><option value="">All Quarter</option></select>
+            <select id="sales-filter-month" onchange="renderSalesAnalytics()" class="border border-slate-200 rounded-xl px-3 py-2.5 text-xs bg-white"><option value="">All Month</option></select>
+            <select id="sales-filter-channel" onchange="renderSalesAnalytics()" class="border border-slate-200 rounded-xl px-3 py-2.5 text-xs bg-white"><option value="">All Channel</option></select>
+            <select id="sales-filter-customer" onchange="renderSalesAnalytics()" class="border border-slate-200 rounded-xl px-3 py-2.5 text-xs bg-white"><option value="">All Customer</option></select>
+            <input id="sales-filter-material" oninput="renderSalesAnalytics()" placeholder="Material code..." class="border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-blue-500" />
+            <input id="sales-filter-doc" oninput="renderSalesAnalytics()" placeholder="Doc No..." class="border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-blue-500" />
+          </div>
+        </div>
+
+        <div class="grid grid-cols-1 xl:grid-cols-2 gap-5">
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+            <div class="flex items-center justify-between mb-4"><div><h3 class="font-bold text-slate-800">Revenue by Channel</h3><p class="text-[11px] text-slate-400">Final Revenue</p></div></div>
+            <div id="sales-channel-breakdown" class="space-y-3"></div>
+          </div>
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5">
+            <div class="flex items-center justify-between mb-4"><div><h3 class="font-bold text-slate-800">Revenue by Month</h3><p class="text-[11px] text-slate-400">Final Revenue</p></div></div>
+            <div id="sales-month-breakdown" class="space-y-3"></div>
+          </div>
+        </div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center justify-between gap-3">
+            <div><h3 class="font-bold text-slate-800">Sales Detail</h3><p id="sales-detail-summary" class="text-[11px] text-slate-400 mt-0.5">Chưa có dữ liệu</p></div>
+            <div class="text-[11px] text-slate-400">17 columns · Customer code → CRM · Material code → Product</div>
+          </div>
+          <div class="overflow-x-auto">
+            <table class="w-full text-[11px] whitespace-nowrap">
+              <thead class="bg-slate-50 text-slate-500 uppercase font-bold">
+                <tr>
+                  <th class="p-3 text-left">Quarter</th><th class="p-3 text-left">Month</th><th class="p-3 text-left">Doc Type</th><th class="p-3 text-left">Doc No.</th><th class="p-3 text-left">Customer code</th><th class="p-3 text-left">Customer Name</th><th class="p-3 text-left">Channel</th><th class="p-3 text-left">PIC</th><th class="p-3 text-left">Team PIC</th><th class="p-3 text-left">Material code</th><th class="p-3 text-left">Type</th><th class="p-3 text-right">Sales Qty</th><th class="p-3 text-right">U/P</th><th class="p-3 text-right">Amount</th><th class="p-3 text-right">Back Margin</th><th class="p-3 text-right">Addtional BM</th><th class="p-3 text-right">Final Revenue</th>
+                </tr>
+              </thead>
+              <tbody id="sales-detail-body" class="divide-y divide-slate-100"></tbody>
+            </table>
+          </div>
         </div>
       </section>
 
@@ -2404,6 +2462,7 @@
         activeBtn.classList.remove('text-slate-400');
       }
       if (tabId === 'warehouse') initWarehouseCharts();
+      if (tabId === 'analytics') initSalesAnalytics();
 
       // Kích hoạt render lại dữ liệu tương ứng cho từng tab
       if (tabId === 'crm') {
@@ -4994,6 +5053,229 @@
       persistPromotions(updated);
       updateBatchDeleteBtn();
       alert('Đã xóa thành công các chương trình đã chọn!');
+    }
+
+    // ========================================================================
+    // SALES DATA -> REPORT & ANALYTICS
+    // Source: Google Apps Script Web App
+    // Sales structure is preserved exactly as the 17 source columns.
+    // Mapping only enriches rows with existing CRM/Product master records.
+    // ========================================================================
+    const SALES_API_URL = 'https://script.google.com/macros/s/AKfycbwdBVq1bYx-Zie6ePgwPRnzEMpTW6D1HshmX0KVBUCv7IRXXkNQ6pZybzfqj7_zitg5GA/exec';
+    let salesRevenueData = [];
+    let salesDataLoading = false;
+    let salesAnalyticsInitialized = false;
+
+    const SALES_COLUMNS = [
+      'Quarter','Month','Doc Type','Doc No.','Customer code','Customer Name','Channel','PIC','Team PIC',
+      'Material code','Type','Sales Qty','U/P','Amount','Back Margin','Addtional BM','Final Revenue'
+    ];
+
+    function setSalesApiStatus(text, type = 'idle') {
+      const el = document.getElementById('sales-api-status');
+      if (!el) return;
+      el.textContent = text;
+      el.className = 'px-3 py-2 rounded-xl text-[11px] font-semibold ' +
+        (type === 'success' ? 'bg-emerald-50 text-emerald-700' :
+         type === 'error' ? 'bg-red-50 text-red-700' :
+         type === 'loading' ? 'bg-blue-50 text-blue-700' :
+         'bg-slate-100 text-slate-500');
+    }
+
+    function salesNum(v) {
+      if (v === null || v === undefined || v === '') return 0;
+      if (typeof v === 'number') return Number.isFinite(v) ? v : 0;
+      const n = Number(String(v).replace(/,/g, '').trim());
+      return Number.isFinite(n) ? n : 0;
+    }
+
+    function salesText(v) {
+      return String(v === null || v === undefined ? '' : v).trim();
+    }
+
+    function escapeSalesHtml(value) {
+      return String(value === null || value === undefined ? '' : value)
+        .replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;').replace(/'/g, '&#039;');
+    }
+
+    function formatSalesMoney(value) {
+      return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 0 }).format(salesNum(value));
+    }
+
+    function formatSalesQty(value) {
+      return new Intl.NumberFormat('vi-VN', { maximumFractionDigits: 2 }).format(salesNum(value));
+    }
+
+    function normalizeSalesRow(row) {
+      const normalized = {};
+      SALES_COLUMNS.forEach(col => { normalized[col] = row ? row[col] : ''; });
+      normalized['Sales Qty'] = salesNum(normalized['Sales Qty']);
+      normalized['U/P'] = salesNum(normalized['U/P']);
+      normalized['Amount'] = salesNum(normalized['Amount']);
+      normalized['Back Margin'] = normalized['Back Margin'] === '' ? '' : salesNum(normalized['Back Margin']);
+      normalized['Addtional BM'] = normalized['Addtional BM'] === '' ? '' : salesNum(normalized['Addtional BM']);
+      normalized['Final Revenue'] = salesNum(normalized['Final Revenue']);
+      return normalized;
+    }
+
+    function mapSalesCustomer(row) {
+      const code = salesText(row['Customer code']);
+      const customer = Array.isArray(customers) ? customers.find(c => salesText(c.code) === code) : null;
+      row._crm = customer || null;
+      row._customerFound = !!customer;
+      return row;
+    }
+
+    function mapSalesProduct(row) {
+      const materialCode = salesText(row['Material code']);
+      const product = Array.isArray(products) ? products.find(p => salesText(p.productCode) === materialCode) : null;
+      row._product = product || null;
+      row._productFound = !!product;
+      return row;
+    }
+
+    async function fetchSalesData() {
+      const response = await fetch(SALES_API_URL, { method: 'GET', cache: 'no-store' });
+      if (!response.ok) throw new Error(`Sales API HTTP ${response.status}`);
+      const result = await response.json();
+      if (!result.success) throw new Error(result.error || 'Sales API returned an error');
+      if (!Array.isArray(result.data)) throw new Error('Sales API data is not an array');
+      return result.data;
+    }
+
+    async function syncSalesData(force = false) {
+      if (salesDataLoading) return salesRevenueData;
+      if (!force && salesRevenueData.length) return salesRevenueData;
+
+      const btn = document.getElementById('btn-sync-sales');
+      salesDataLoading = true;
+      setSalesApiStatus('Đang sync...', 'loading');
+      if (btn) { btn.disabled = true; btn.textContent = '↻ Syncing...'; }
+
+      try {
+        const rawData = await fetchSalesData();
+        salesRevenueData = rawData.map(normalizeSalesRow).map(mapSalesCustomer).map(mapSalesProduct);
+        setSalesApiStatus(`${salesRevenueData.length.toLocaleString('vi-VN')} rows`, 'success');
+        renderSalesFilterOptions();
+        renderSalesAnalytics();
+        return salesRevenueData;
+      } catch (error) {
+        console.error('Sales Data Sync Failed:', error);
+        setSalesApiStatus('Sync failed', 'error');
+        const body = document.getElementById('sales-detail-body');
+        if (body) body.innerHTML = `<tr><td colspan="17" class="p-8 text-center text-red-500">Không tải được Sales Data: ${escapeSalesHtml(error.message)}</td></tr>`;
+        return [];
+      } finally {
+        salesDataLoading = false;
+        if (btn) { btn.disabled = false; btn.textContent = '↻ Sync Sales Data'; }
+      }
+    }
+
+    function initSalesAnalytics() {
+      if (!salesAnalyticsInitialized) {
+        salesAnalyticsInitialized = true;
+        syncSalesData(false);
+      } else if (salesRevenueData.length) {
+        renderSalesAnalytics();
+      }
+    }
+
+    function uniqueSortedSales(values, numeric = false) {
+      const arr = [...new Set(values.map(v => salesText(v)).filter(Boolean))];
+      return numeric ? arr.sort((a,b) => salesNum(a)-salesNum(b)) : arr.sort((a,b) => a.localeCompare(b, 'vi'));
+    }
+
+    function setSelectOptions(id, values, label) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      const current = el.value;
+      el.innerHTML = `<option value="">${label}</option>` + values.map(v => `<option value="${escapeSalesHtml(v)}">${escapeSalesHtml(v)}</option>`).join('');
+      if (values.includes(current)) el.value = current;
+    }
+
+    function renderSalesFilterOptions() {
+      if (!salesRevenueData.length) return;
+      setSelectOptions('sales-filter-quarter', uniqueSortedSales(salesRevenueData.map(r => r['Quarter'])), 'All Quarter');
+      setSelectOptions('sales-filter-month', uniqueSortedSales(salesRevenueData.map(r => r['Month']), true), 'All Month');
+      setSelectOptions('sales-filter-channel', uniqueSortedSales(salesRevenueData.map(r => r['Channel'])), 'All Channel');
+      const customerCodes = uniqueSortedSales(salesRevenueData.map(r => r['Customer code']));
+      const customerEl = document.getElementById('sales-filter-customer');
+      if (customerEl) {
+        const current = customerEl.value;
+        customerEl.innerHTML = '<option value="">All Customer</option>' + customerCodes.map(code => {
+          const sample = salesRevenueData.find(r => salesText(r['Customer code']) === code);
+          const name = sample ? salesText(sample['Customer Name']) : '';
+          return `<option value="${escapeSalesHtml(code)}">${escapeSalesHtml(code)}${name ? ' · ' + escapeSalesHtml(name) : ''}</option>`;
+        }).join('');
+        if (customerCodes.includes(current)) customerEl.value = current;
+      }
+    }
+
+    function getFilteredSalesData() {
+      const quarter = salesText(document.getElementById('sales-filter-quarter')?.value);
+      const month = salesText(document.getElementById('sales-filter-month')?.value);
+      const channel = salesText(document.getElementById('sales-filter-channel')?.value);
+      const customer = salesText(document.getElementById('sales-filter-customer')?.value);
+      const material = salesText(document.getElementById('sales-filter-material')?.value).toLowerCase();
+      const doc = salesText(document.getElementById('sales-filter-doc')?.value).toLowerCase();
+
+      return salesRevenueData.filter(row =>
+        (!quarter || salesText(row['Quarter']) === quarter) &&
+        (!month || salesText(row['Month']) === month) &&
+        (!channel || salesText(row['Channel']) === channel) &&
+        (!customer || salesText(row['Customer code']) === customer) &&
+        (!material || salesText(row['Material code']).toLowerCase().includes(material)) &&
+        (!doc || salesText(row['Doc No.']).toLowerCase().includes(doc))
+      );
+    }
+
+    function resetSalesFilters() {
+      ['sales-filter-quarter','sales-filter-month','sales-filter-channel','sales-filter-customer','sales-filter-material','sales-filter-doc'].forEach(id => {
+        const el = document.getElementById(id); if (el) el.value = '';
+      });
+      renderSalesAnalytics();
+    }
+
+    function renderSalesAnalytics() {
+      if (!salesRevenueData.length) return;
+      const data = getFilteredSalesData();
+      const revenue = data.reduce((s,r) => s + salesNum(r['Final Revenue']), 0);
+      const amount = data.reduce((s,r) => s + salesNum(r['Amount']), 0);
+      const qty = data.reduce((s,r) => s + salesNum(r['Sales Qty']), 0);
+      const docs = new Set(data.map(r => salesText(r['Doc No.'])).filter(Boolean)).size;
+      const customersCount = new Set(data.map(r => salesText(r['Customer code'])).filter(Boolean)).size;
+
+      const setKpi = (id, value) => { const el = document.getElementById(id); if (el) el.textContent = value; };
+      setKpi('analytics-kpi-revenue', formatSalesMoney(revenue));
+      setKpi('analytics-kpi-amount', formatSalesMoney(amount));
+      setKpi('analytics-kpi-qty', formatSalesQty(qty));
+      setKpi('analytics-kpi-docs', docs.toLocaleString('vi-VN'));
+      setKpi('analytics-kpi-customers', customersCount.toLocaleString('vi-VN'));
+
+      renderSalesBreakdown('sales-channel-breakdown', data, 'Channel');
+      renderSalesBreakdown('sales-month-breakdown', data, 'Month');
+      renderSalesDetail(data);
+    }
+
+    function renderSalesBreakdown(containerId, data, field) {
+      const el = document.getElementById(containerId); if (!el) return;
+      const groups = {};
+      data.forEach(row => { const key = salesText(row[field]) || 'Unknown'; groups[key] = (groups[key] || 0) + salesNum(row['Final Revenue']); });
+      const entries = Object.entries(groups).sort((a,b) => b[1] - a[1]);
+      if (!entries.length) { el.innerHTML = '<div class="text-xs text-slate-400 py-4">No data</div>'; return; }
+      const max = entries[0][1] || 1;
+      el.innerHTML = entries.slice(0, 12).map(([key,value]) => `<div>\n        <div class="flex justify-between items-center mb-1"><span class="text-xs font-semibold text-slate-700">${escapeSalesHtml(key)}</span><span class="text-xs font-bold text-slate-800">${formatSalesMoney(value)}</span></div>\n        <div class="h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-blue-500 rounded-full" style="width:${Math.max(1, Math.min(100, value / max * 100))}%"></div></div>\n      </div>`).join('');
+    }
+
+    function renderSalesDetail(data) {
+      const body = document.getElementById('sales-detail-body');
+      const summary = document.getElementById('sales-detail-summary');
+      if (!body) return;
+      const limit = 500;
+      if (summary) summary.textContent = `${data.length.toLocaleString('vi-VN')} filtered rows · showing first ${Math.min(limit, data.length).toLocaleString('vi-VN')}`;
+      if (!data.length) { body.innerHTML = '<tr><td colspan="17" class="p-8 text-center text-slate-400">Không có dữ liệu phù hợp bộ lọc.</td></tr>'; return; }
+      body.innerHTML = data.slice(0, limit).map(r => `<tr class="hover:bg-slate-50">\n        <td class="p-3">${escapeSalesHtml(r['Quarter'])}</td><td class="p-3">${escapeSalesHtml(r['Month'])}</td><td class="p-3">${escapeSalesHtml(r['Doc Type'])}</td><td class="p-3">${escapeSalesHtml(r['Doc No.'])}</td><td class="p-3 font-semibold text-blue-700">${escapeSalesHtml(r['Customer code'])}</td><td class="p-3 max-w-[220px] truncate" title="${escapeSalesHtml(r['Customer Name'])}">${escapeSalesHtml(r['Customer Name'])}</td><td class="p-3">${escapeSalesHtml(r['Channel'])}</td><td class="p-3">${escapeSalesHtml(r['PIC'])}</td><td class="p-3">${escapeSalesHtml(r['Team PIC'])}</td><td class="p-3 font-semibold text-emerald-700">${escapeSalesHtml(r['Material code'])}</td><td class="p-3">${escapeSalesHtml(r['Type'])}</td><td class="p-3 text-right">${formatSalesQty(r['Sales Qty'])}</td><td class="p-3 text-right">${formatSalesMoney(r['U/P'])}</td><td class="p-3 text-right">${formatSalesMoney(r['Amount'])}</td><td class="p-3 text-right">${r['Back Margin'] === '' ? '' : formatSalesMoney(r['Back Margin'])}</td><td class="p-3 text-right">${r['Addtional BM'] === '' ? '' : formatSalesMoney(r['Addtional BM'])}</td><td class="p-3 text-right font-bold">${formatSalesMoney(r['Final Revenue'])}</td>\n      </tr>`).join('');
     }
 
     window.onload = init;
