@@ -52,7 +52,7 @@ function cleanModelName(value) {
   const raw = String(value || '').trim();
 
   if (!raw) {
-    return 'gemini-2.5-flash';
+    return 'gemini-3.8-flash';
   }
 
   return raw.replace(/^models\//, '');
