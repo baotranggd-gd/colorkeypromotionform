@@ -203,6 +203,16 @@
 }
 </style>
 
+
+<style id="auth-header-name-fix">
+@media (max-width: 767px){
+  header.h-16.bg-white.border-b{padding-right:1rem !important;}
+  .user-name-display{max-width:130px;overflow:hidden;text-overflow:ellipsis;}
+}
+@media (min-width: 768px){
+  .user-name-display{min-width:0;}
+}
+</style>
 </head>
 <body class="bg-slate-50 text-slate-800 flex h-screen overflow-hidden">
 
@@ -265,7 +275,7 @@
   <div class="flex-1 flex flex-col overflow-hidden">
 
     <!-- GLOBAL TOPBAR -->
-    <header class="h-16 bg-white border-b border-slate-200 px-8 flex items-center justify-end flex-shrink-0 z-10 shadow-sm">
+    <header class="h-16 bg-white border-b border-slate-200 px-8 pr-56 flex items-center justify-end flex-shrink-0 z-10 shadow-sm">
 <button type="button" class="mobile-menu-btn hidden items-center justify-center w-10 h-10 rounded-xl bg-slate-100 text-slate-700 border border-slate-200"
         onclick="toggleMobileSidebar()" aria-label="Open menu">
   <i data-lucide="menu" class="w-5 h-5"></i>
@@ -281,7 +291,7 @@
             BT
           </div>
           <div class="text-xs">
-            <div class="font-bold text-slate-800">Võ Ngọc Bảo Trang (Tera)</div>
+            <div class="font-bold text-slate-800 user-name-display whitespace-nowrap">Võ Ngọc Bảo Trang (Tera)</div>
           </div>
         </div>
       </div>
