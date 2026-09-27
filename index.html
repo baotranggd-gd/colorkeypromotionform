@@ -220,6 +220,13 @@
   .logout-portal-btn{width:36px;height:36px;padding:0;}
 }
 </style>
+<style id="password-ui-style">
+.password-toggle-btn{cursor:pointer;}
+@media (max-width: 767px){
+  .change-password-label,.logout-label{display:none;}
+  .change-password-btn,.logout-portal-btn{width:36px;height:36px;padding:0;}
+}
+</style>
 </head>
 <body class="bg-slate-50 text-slate-800 flex h-screen overflow-hidden">
 
@@ -300,6 +307,10 @@
           <div class="text-xs">
             <div class="flex items-center gap-2">
               <div class="font-bold text-slate-800 user-name-display whitespace-nowrap">Võ Ngọc Bảo Trang (Tera)</div>
+              <button type="button" onclick="openChangePasswordModal()" title="Đổi mật khẩu" class="change-password-btn px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 text-[11px] font-bold transition">
+                <i data-lucide="key-round" class="w-3.5 h-3.5 inline-block align-middle"></i>
+                <span class="change-password-label ml-1">Đổi mật khẩu</span>
+              </button>
               <button type="button" onclick="logoutPortal()" title="Đăng xuất" class="logout-portal-btn px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-red-50 hover:text-red-600 hover:border-red-200 text-[11px] font-bold transition">
                 <i data-lucide="log-out" class="w-3.5 h-3.5 inline-block align-middle"></i>
                 <span class="logout-label ml-1">Đăng xuất</span>
@@ -5732,7 +5743,12 @@ document.addEventListener('DOMContentLoaded', () => {
         </div>
         <div>
           <label class="block text-xs font-bold text-slate-600 mb-1.5" data-auth-i18n="Password">Password</label>
-          <input id="login-password" type="password" autocomplete="current-password" required class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
+          <div class="relative">
+          <input id="login-password" type="password" autocomplete="current-password" required class="w-full border border-slate-200 rounded-xl px-4 py-3 pr-11 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
+          <button type="button" onclick="togglePasswordVisibility('login-password','login-password-eye')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600" aria-label="Show password">
+            <i id="login-password-eye" data-lucide="eye" class="w-4 h-4"></i>
+          </button>
+        </div>
         </div>
         <label class="flex items-center gap-2 text-xs text-slate-500">
           <input id="login-remember" type="checkbox" class="rounded text-blue-600" checked />
@@ -5740,11 +5756,62 @@ document.addEventListener('DOMContentLoaded', () => {
         </label>
         <div id="login-error" class="hidden text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-100 rounded-xl px-3 py-2"></div>
         <button type="submit" class="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-lg shadow-blue-100 transition" data-auth-i18n="Sign In">Sign In</button>
+        <div class="text-[10px] text-slate-400 text-center mt-2">Bạn có thể đổi mật khẩu sau khi đăng nhập trong phần tài khoản.</div>
       </form>
       <div class="px-7 pb-6 text-[10px] text-slate-400 text-center" data-auth-i18n="Security note: This static portal stores accounts locally. For production security, connect authentication to a backend / SSO.">
         Security note: This static portal stores accounts locally. For production security, connect authentication to a backend / SSO.
       </div>
     </div>
+  </div>
+</div>
+
+<!-- Change My Password Modal -->
+<div id="modal-change-password" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[9100] items-center justify-center p-4">
+  <div class="bg-white rounded-2xl max-w-md w-full shadow-2xl">
+    <div class="p-5 border-b flex items-center justify-between">
+      <div>
+        <h3 class="font-bold text-slate-800">Đổi mật khẩu</h3>
+        <p class="text-xs text-slate-400 mt-0.5">Bạn có thể đổi mật khẩu khi cần hoặc bỏ qua bước này.</p>
+      </div>
+      <button type="button" onclick="closeChangePasswordModal()" class="text-slate-400 hover:text-slate-700">
+        <i data-lucide="x" class="w-5 h-5"></i>
+      </button>
+    </div>
+    <form id="change-password-form" class="p-5 space-y-4" onsubmit="saveMyPassword(event)">
+      <div>
+        <label class="text-xs font-bold text-slate-600">Mật khẩu hiện tại</label>
+        <div class="relative mt-1">
+          <input id="current-password" type="password" autocomplete="current-password" required class="w-full border rounded-xl px-3 py-2.5 pr-10 text-sm" />
+          <button type="button" onclick="togglePasswordVisibility('current-password','current-password-eye')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600">
+            <i id="current-password-eye" data-lucide="eye" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+      <div>
+        <label class="text-xs font-bold text-slate-600">Mật khẩu mới</label>
+        <div class="relative mt-1">
+          <input id="new-password" type="password" autocomplete="new-password" minlength="6" required class="w-full border rounded-xl px-3 py-2.5 pr-10 text-sm" />
+          <button type="button" onclick="togglePasswordVisibility('new-password','new-password-eye')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600">
+            <i id="new-password-eye" data-lucide="eye" class="w-4 h-4"></i>
+          </button>
+        </div>
+        <p class="text-[10px] text-slate-400 mt-1">Tối thiểu 6 ký tự.</p>
+      </div>
+      <div>
+        <label class="text-xs font-bold text-slate-600">Xác nhận mật khẩu mới</label>
+        <div class="relative mt-1">
+          <input id="confirm-new-password" type="password" autocomplete="new-password" minlength="6" required class="w-full border rounded-xl px-3 py-2.5 pr-10 text-sm" />
+          <button type="button" onclick="togglePasswordVisibility('confirm-new-password','confirm-new-password-eye')" class="absolute right-3 top-1/2 -translate-y-1/2 text-slate-400 hover:text-blue-600">
+            <i id="confirm-new-password-eye" data-lucide="eye" class="w-4 h-4"></i>
+          </button>
+        </div>
+      </div>
+      <div id="change-password-error" class="hidden text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-100 rounded-xl px-3 py-2"></div>
+      <div class="flex justify-end gap-2 pt-1">
+        <button type="button" onclick="closeChangePasswordModal()" class="px-4 py-2.5 rounded-xl border border-slate-200 text-xs font-bold text-slate-600">Để sau</button>
+        <button type="submit" class="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold">Lưu mật khẩu mới</button>
+      </div>
+    </form>
   </div>
 </div>
 
@@ -5979,6 +6046,65 @@ document.addEventListener('DOMContentLoaded', () => {
   if(un) un.value='';
   // Return to a neutral tab state until another account signs in.
   try { switchTab('dashboard'); } catch(e) {}
+};
+
+  window.togglePasswordVisibility=function(inputId, iconId){
+  const input=document.getElementById(inputId);
+  const icon=document.getElementById(iconId);
+  if(!input) return;
+  const visible=input.type==='text';
+  input.type=visible?'password':'text';
+  if(icon){
+    icon.setAttribute('data-lucide', visible?'eye':'eye-off');
+    if(typeof lucide!=='undefined') lucide.createIcons();
+  }
+};
+
+window.openChangePasswordModal=function(){
+  if(!currentUser()) return showGate(true);
+  const modal=document.getElementById('modal-change-password');
+  const form=document.getElementById('change-password-form');
+  const err=document.getElementById('change-password-error');
+  if(form) form.reset();
+  if(err){ err.textContent=''; err.classList.add('hidden'); }
+  if(modal){ modal.classList.remove('hidden'); modal.classList.add('flex'); }
+  if(typeof lucide!=='undefined') lucide.createIcons();
+};
+
+window.closeChangePasswordModal=function(){
+  const modal=document.getElementById('modal-change-password');
+  if(modal){ modal.classList.add('hidden'); modal.classList.remove('flex'); }
+};
+
+window.saveMyPassword=async function(e){
+  e.preventDefault();
+  const me=currentUser();
+  const err=document.getElementById('change-password-error');
+  if(!me) return showGate(true);
+
+  const current=document.getElementById('current-password').value;
+  const next=document.getElementById('new-password').value;
+  const confirmNext=document.getElementById('confirm-new-password').value;
+
+  const fail=(msg)=>{
+    if(err){ err.textContent=msg; err.classList.remove('hidden'); }
+  };
+
+  if(next.length<6) return fail('Mật khẩu mới phải có ít nhất 6 ký tự.');
+  if(next!==confirmNext) return fail('Mật khẩu xác nhận không khớp.');
+
+  const currentHash=await hashPassword(current);
+  if(currentHash!==me.passwordHash) return fail('Mật khẩu hiện tại không đúng.');
+
+  const users=loadUsers();
+  const target=users.find(u=>u.id===me.id);
+  if(!target) return fail('Không tìm thấy tài khoản.');
+
+  target.passwordHash=await hashPassword(next);
+  saveUsers(users);
+
+  closeChangePasswordModal();
+  alert('Đổi mật khẩu thành công. Mật khẩu mới đã được lưu trong phần Settings.');
 };
 
   window.requirePermission=function(module){
