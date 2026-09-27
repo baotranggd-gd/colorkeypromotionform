@@ -38,6 +38,171 @@
     .badge-duplicate { background-color: #EDE9FE; color: #5B21B6; }
     .workflow-btn-active { border-color: #2563eb !important; background-color: #eff6ff !important; color: #1e40af !important; font-weight: 700 !important; }
   </style>
+
+<style id="mobile-responsive-css">
+/* ===== MOBILE RESPONSIVE UI ===== */
+.mobile-menu-btn,.mobile-overlay{display:none}
+.mobile-bottom-nav{display:none}
+
+@media (max-width: 767px){
+  html,body{width:100%;height:100%;overflow:hidden}
+  body{font-size:14px}
+
+  /* Sidebar becomes an off-canvas drawer */
+  body > aside,
+  body > .flex > aside{
+    position:fixed !important;
+    left:0 !important;
+    top:0 !important;
+    bottom:0 !important;
+    width:280px !important;
+    max-width:84vw !important;
+    height:100vh !important;
+    z-index:60 !important;
+    transform:translateX(-105%);
+    transition:transform .25s ease;
+    box-shadow:20px 0 40px rgba(15,23,42,.25);
+  }
+  body.mobile-sidebar-open > aside,
+  body.mobile-sidebar-open > .flex > aside{
+    transform:translateX(0);
+  }
+
+  .mobile-overlay{
+    position:fixed;
+    inset:0;
+    background:rgba(15,23,42,.48);
+    backdrop-filter:blur(2px);
+    z-index:50;
+  }
+  body.mobile-sidebar-open .mobile-overlay{display:block}
+
+  /* Main wrapper */
+  body > .flex,
+  body > .flex-1{
+    width:100% !important;
+    min-width:0 !important;
+  }
+
+  header{
+    height:58px !important;
+    min-height:58px !important;
+    padding:0 12px !important;
+    justify-content:space-between !important;
+  }
+  header .mobile-menu-btn{display:flex}
+  header > div{gap:8px !important}
+  header .border-l{border-left:0 !important;padding-left:0 !important}
+  header .text-xs > div:last-child{display:none}
+  header .w-9{width:34px !important;height:34px !important}
+
+  main{min-width:0 !important}
+  main > section{
+    padding:14px !important;
+    padding-bottom:78px !important;
+    overflow-x:hidden !important;
+  }
+
+  /* Page headers */
+  main h2{font-size:18px !important}
+  main .flex.flex-col.md\:flex-row{
+    gap:10px !important;
+  }
+
+  /* KPI/card grids collapse cleanly */
+  .grid{
+    grid-template-columns:1fr !important;
+  }
+  .grid.md\:grid-cols-2,
+  .grid.lg\:grid-cols-2,
+  .grid.md\:grid-cols-3,
+  .grid.lg\:grid-cols-3,
+  .grid.lg\:grid-cols-4{
+    grid-template-columns:1fr !important;
+  }
+
+  /* Horizontal controls become scrollable instead of overflowing */
+  .overflow-x-auto{
+    max-width:100%;
+    -webkit-overflow-scrolling:touch;
+  }
+
+  /* Tables stay readable on phones */
+  table{
+    min-width:680px;
+  }
+  .overflow-x-auto table{
+    min-width:680px;
+  }
+
+  /* Charts */
+  canvas{
+    max-width:100% !important;
+  }
+
+  /* Buttons / inputs: touch-friendly */
+  button,select,input,textarea{
+    min-height:40px;
+  }
+  .text-\[10px\], .text-\[11px\]{
+    line-height:1.35;
+  }
+
+  /* Avoid clipped dropdowns / badges */
+  .truncate{max-width:100%}
+
+  /* Mobile bottom navigation */
+  .mobile-bottom-nav{
+    position:fixed;
+    left:0;
+    right:0;
+    bottom:0;
+    height:64px;
+    background:rgba(255,255,255,.97);
+    border-top:1px solid #e2e8f0;
+    box-shadow:0 -8px 24px rgba(15,23,42,.08);
+    z-index:45;
+    display:grid;
+    grid-template-columns:repeat(4,1fr);
+    padding:6px 8px calc(6px + env(safe-area-inset-bottom));
+    gap:4px;
+  }
+  .mobile-bottom-nav button{
+    border:0;
+    background:transparent;
+    color:#64748b;
+    border-radius:12px;
+    display:flex;
+    flex-direction:column;
+    align-items:center;
+    justify-content:center;
+    gap:2px;
+    font-size:10px;
+    font-weight:700;
+    min-height:50px;
+  }
+  .mobile-bottom-nav button.active{
+    background:#eff6ff;
+    color:#2563eb;
+  }
+  .mobile-bottom-nav i{width:18px;height:18px}
+
+  /* Full-width primary actions */
+  .mobile-full-width{
+    width:100% !important;
+  }
+
+  /* Modal/detail content */
+  .fixed.inset-0 .max-w-6xl,
+  .fixed.inset-0 .max-w-5xl,
+  .fixed.inset-0 .max-w-4xl,
+  .fixed.inset-0 .max-w-3xl{
+    width:calc(100vw - 20px) !important;
+    max-height:calc(100vh - 20px) !important;
+  }
+}
+</style>
+
 </head>
 <body class="bg-slate-50 text-slate-800 flex h-screen overflow-hidden">
 
@@ -101,6 +266,11 @@
 
     <!-- GLOBAL TOPBAR -->
     <header class="h-16 bg-white border-b border-slate-200 px-8 flex items-center justify-end flex-shrink-0 z-10 shadow-sm">
+<button type="button" class="mobile-menu-btn hidden items-center justify-center w-10 h-10 rounded-xl bg-slate-100 text-slate-700 border border-slate-200"
+        onclick="toggleMobileSidebar()" aria-label="Open menu">
+  <i data-lucide="menu" class="w-5 h-5"></i>
+</button>
+
       <div class="flex items-center space-x-5">
         <div class="flex items-center gap-2 text-xs text-slate-500 font-medium bg-slate-50 px-3 py-1.5 rounded-lg border">
           <i data-lucide="calendar" class="w-3.5 h-3.5 text-blue-600"></i>
@@ -1212,6 +1382,20 @@
           <div class="flex justify-between border-b pb-2"><span>Retailer 2:</span> <strong class="text-blue-600">Chiết khấu 54% (Factor 0.46)</strong></div>
           <div class="flex justify-between border-b pb-2"><span>Retailer 1:</span> <strong class="text-emerald-600">Chiết khấu 52% (Factor 0.48)</strong></div>
           <div class="flex justify-between"><span>Key Account:</span> <strong class="text-indigo-600">KA = 1 (100% Niêm yết)</strong></div>
+
+        <div class="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
+          <div class="p-5 border-b border-slate-100 flex items-center justify-between gap-3">
+            <div>
+              <h3 class="font-bold text-slate-800 text-sm" data-auth-i18n="User Management">User Management</h3>
+              <p class="text-xs text-slate-400 mt-1">Create accounts, assign roles and control module access.</p>
+            </div>
+            <button onclick="openUserModal()" class="px-4 py-2.5 bg-blue-600 hover:bg-blue-700 text-white rounded-xl text-xs font-bold flex items-center gap-2">
+              <i data-lucide="user-plus" class="w-4 h-4"></i>
+              <span data-auth-i18n="Create Account">Create Account</span>
+            </button>
+          </div>
+          <div id="users-table-wrap" class="overflow-x-auto"></div>
+        </div>
         </div>
       </section>
     </main>
@@ -2373,6 +2557,7 @@
 
     // CHUYỂN TAB ĐỒNG BỘ THEO OPS PORTAL
     function switchTab(tabId) {
+      if (typeof window.requirePermission === 'function' && !window.requirePermission(tabId)) return;
       const tabs = ['dashboard', 'order-processing', 'crm', 'products', 'promotions', 'warehouse', 'analytics', 'base-data', 'setting'];
       tabs.forEach(t => {
         const el = document.getElementById(`view-${t}`);
@@ -2407,6 +2592,7 @@
       }
 
       lucide.createIcons();
+      if (window.innerWidth <= 767 && typeof setMobileNav === 'function') setMobileNav(tabId);
     }
 
     // BIỂU ĐỒ DASHBOARD & WAREHOUSE (CHART.JS)
@@ -5450,6 +5636,1452 @@
     if (versionDate) versionDate.textContent = dateVN;
   }
   updatePortalDate();
+</script>
+
+<div class="mobile-overlay" onclick="toggleMobileSidebar(false)"></div>
+
+<nav class="mobile-bottom-nav" aria-label="Mobile navigation">
+  <button id="mobile-nav-dashboard" onclick="switchTab('dashboard'); setMobileNav('dashboard')">
+    <i data-lucide="layout-dashboard"></i><span>Dashboard</span>
+  </button>
+  <button id="mobile-nav-order-processing" onclick="switchTab('order-processing'); setMobileNav('order-processing')">
+    <i data-lucide="shopping-cart"></i><span>Orders</span>
+  </button>
+  <button id="mobile-nav-warehouse" onclick="switchTab('warehouse'); setMobileNav('warehouse')">
+    <i data-lucide="warehouse"></i><span>Warehouse</span>
+  </button>
+  <button id="mobile-nav-more" onclick="toggleMobileSidebar()">
+    <i data-lucide="menu"></i><span>More</span>
+  </button>
+</nav>
+
+
+<script id="mobile-responsive-js">
+function toggleMobileSidebar(force) {
+  const open = typeof force === 'boolean'
+    ? force
+    : !document.body.classList.contains('mobile-sidebar-open');
+  document.body.classList.toggle('mobile-sidebar-open', open);
+  if (open && typeof lucide !== 'undefined') lucide.createIcons();
+}
+function setMobileNav(tabId) {
+  document.querySelectorAll('.mobile-bottom-nav button').forEach(b => b.classList.remove('active'));
+  const el = document.getElementById('mobile-nav-' + tabId);
+  if (el) el.classList.add('active');
+  toggleMobileSidebar(false);
+}
+window.addEventListener('resize', () => {
+  if (window.innerWidth > 767) document.body.classList.remove('mobile-sidebar-open');
+});
+document.addEventListener('DOMContentLoaded', () => {
+  setMobileNav('dashboard');
+  if (typeof lucide !== 'undefined') lucide.createIcons();
+});
+</script>
+
+
+
+<!-- ========================================================================= -->
+<!-- AUTHENTICATION -->
+<!-- ========================================================================= -->
+<div id="auth-gate" class="hidden fixed inset-0 z-[10000] bg-slate-950 flex items-center justify-center p-4">
+  <div class="w-full max-w-md">
+    <div class="bg-white rounded-3xl shadow-2xl overflow-hidden">
+      <div class="bg-[#0A192F] px-7 py-7 text-white">
+        <div class="flex items-center gap-3">
+          <div class="w-12 h-12 rounded-2xl bg-blue-600 flex items-center justify-center shadow-lg">
+            <i data-lucide="sparkles" class="w-6 h-6"></i>
+          </div>
+          <div>
+            <div class="text-xl font-black">OPS PORTAL</div>
+            <div class="text-xs text-cyan-300">Operate Smarter. Grow Faster.</div>
+          </div>
+        </div>
+      </div>
+      <form id="login-form" class="p-7 space-y-4" onsubmit="handleLogin(event)">
+        <div>
+          <h2 class="text-xl font-bold text-slate-800" data-auth-i18n="Login to OPS PORTAL">Login to OPS PORTAL</h2>
+          <p class="text-xs text-slate-500 mt-1" id="login-user-hint"></p>
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5" data-auth-i18n="Email / Username">Email / Username</label>
+          <input id="login-username" autocomplete="username" required class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
+        </div>
+        <div>
+          <label class="block text-xs font-bold text-slate-600 mb-1.5" data-auth-i18n="Password">Password</label>
+          <input id="login-password" type="password" autocomplete="current-password" required class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm outline-none focus:border-blue-500 focus:ring-2 focus:ring-blue-100" />
+        </div>
+        <label class="flex items-center gap-2 text-xs text-slate-500">
+          <input id="login-remember" type="checkbox" class="rounded text-blue-600" checked />
+          <span data-auth-i18n="Remember me">Remember me</span>
+        </label>
+        <div id="login-error" class="hidden text-xs font-semibold text-rose-600 bg-rose-50 border border-rose-100 rounded-xl px-3 py-2"></div>
+        <button type="submit" class="w-full py-3 rounded-xl bg-blue-600 hover:bg-blue-700 text-white font-bold text-sm shadow-lg shadow-blue-100 transition" data-auth-i18n="Sign In">Sign In</button>
+      </form>
+      <div class="px-7 pb-6 text-[10px] text-slate-400 text-center" data-auth-i18n="Security note: This static portal stores accounts locally. For production security, connect authentication to a backend / SSO.">
+        Security note: This static portal stores accounts locally. For production security, connect authentication to a backend / SSO.
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Account Management Modal -->
+<div id="modal-user-account" class="hidden fixed inset-0 bg-slate-900/60 backdrop-blur-sm z-[9000] items-center justify-center p-4">
+  <div class="bg-white rounded-2xl max-w-2xl w-full shadow-2xl max-h-[92vh] overflow-y-auto">
+    <div class="p-5 border-b flex items-center justify-between">
+      <div>
+        <h3 id="user-modal-title" class="font-bold text-slate-800">Create Account</h3>
+        <p class="text-xs text-slate-400 mt-0.5">OPS PORTAL</p>
+      </div>
+      <button onclick="closeUserModal()" class="text-slate-400 hover:text-slate-700"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    <form id="user-account-form" class="p-5 space-y-4" onsubmit="saveUserAccount(event)">
+      <input type="hidden" id="user-edit-id" />
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-3">
+        <div>
+          <label class="text-xs font-bold text-slate-600" data-auth-i18n="Full Name">Full Name</label>
+          <input id="user-full-name" required class="mt-1 w-full border rounded-xl px-3 py-2.5 text-sm" />
+        </div>
+        <div>
+          <label class="text-xs font-bold text-slate-600" data-auth-i18n="Username">Username</label>
+          <input id="user-username" required class="mt-1 w-full border rounded-xl px-3 py-2.5 text-sm" />
+        </div>
+        <div>
+          <label class="text-xs font-bold text-slate-600" data-auth-i18n="Password">Password</label>
+          <input id="user-password" type="password" class="mt-1 w-full border rounded-xl px-3 py-2.5 text-sm" />
+        </div>
+        <div>
+          <label class="text-xs font-bold text-slate-600" data-auth-i18n="Role">Role</label>
+          <select id="user-role" onchange="applyRolePreset()" class="mt-1 w-full border rounded-xl px-3 py-2.5 text-sm">
+            <option value="admin">Admin</option>
+            <option value="ops">Operations</option>
+            <option value="sales">Sales</option>
+            <option value="warehouse">Warehouse</option>
+            <option value="viewer">Viewer</option>
+            <option value="custom">Custom</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="flex items-center justify-between bg-slate-50 rounded-xl p-3">
+        <div>
+          <div class="text-xs font-bold text-slate-700" data-auth-i18n="Account Status">Account Status</div>
+          <div class="text-[10px] text-slate-400">Enable / disable login</div>
+        </div>
+        <label class="relative inline-flex items-center cursor-pointer">
+          <input id="user-active" type="checkbox" class="sr-only peer" checked>
+          <span class="w-10 h-6 bg-slate-200 rounded-full peer peer-checked:bg-blue-600 after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:rounded-full after:h-5 after:w-5 after:transition peer-checked:after:translate-x-4"></span>
+        </label>
+      </div>
+
+      <div>
+        <div class="flex items-center justify-between mb-2">
+          <div class="text-xs font-bold text-slate-700" data-auth-i18n="Permissions">Permissions</div>
+          <button type="button" onclick="toggleAllUserPermissions(true)" class="text-[10px] text-blue-600 font-bold">All</button>
+        </div>
+        <div id="user-permissions-grid" class="grid grid-cols-1 sm:grid-cols-2 gap-2"></div>
+      </div>
+
+      <div class="flex justify-end gap-2 border-t pt-4">
+        <button type="button" onclick="closeUserModal()" class="px-4 py-2.5 rounded-xl bg-slate-100 text-slate-600 font-semibold" data-auth-i18n="Cancel">Cancel</button>
+        <button type="submit" class="px-5 py-2.5 rounded-xl bg-blue-600 text-white font-bold" data-auth-i18n="Save Account">Save Account</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+
+<script>
+(function(){
+  const AUTH_KEY='OPS_PORTAL_AUTH_USERS_V1';
+  const SESSION_KEY='OPS_PORTAL_AUTH_SESSION_V1';
+
+  const MODULES=[
+    ['dashboard','Dashboard'],
+    ['order-processing','Order Processing'],
+    ['crm','CRM'],
+    ['products','Product Management'],
+    ['promotions','Promotion Management'],
+    ['warehouse','Warehouse'],
+    ['analytics','Report & Analytics'],
+    ['base-data','Base Data'],
+    ['setting','Settings']
+  ];
+
+  const ROLE_PRESETS={
+    admin: MODULES.map(x=>x[0]),
+    ops:['dashboard','order-processing','crm','products','promotions','warehouse','analytics'],
+    sales:['dashboard','crm','analytics'],
+    warehouse:['dashboard','order-processing','warehouse'],
+    viewer:['dashboard','analytics'],
+    custom:[]
+  };
+
+  function defaultUsers(){
+    return [{
+      id:'USR_ADMIN_001',
+      username:'admin',
+      fullName:'System Administrator',
+      role:'admin',
+      active:true,
+      passwordHash:''
+    }];
+  }
+
+  function loadUsers(){
+    try{
+      const raw=localStorage.getItem(AUTH_KEY);
+      const users=raw?JSON.parse(raw):defaultUsers();
+      if(!users.some(u=>u.username==='admin')){
+        users.unshift(defaultUsers()[0]);
+      }
+      localStorage.setItem(AUTH_KEY,JSON.stringify(users));
+      return users;
+    }catch(e){ return defaultUsers(); }
+  }
+
+  function saveUsers(users){ localStorage.setItem(AUTH_KEY,JSON.stringify(users)); }
+
+  async function hashPassword(password){
+    if(window.crypto?.subtle){
+      const data=new TextEncoder().encode(password);
+      const hash=await crypto.subtle.digest('SHA-256',data);
+      return Array.from(new Uint8Array(hash)).map(b=>b.toString(16).padStart(2,'0')).join('');
+    }
+    return btoa(unescape(encodeURIComponent(password)));
+  }
+
+  async function ensureAdminPassword(){
+    const users=loadUsers();
+    const admin=users.find(u=>u.username==='admin');
+    if(admin && !admin.passwordHash){
+      admin.passwordHash=await hashPassword('admin123');
+      saveUsers(users);
+    }
+  }
+
+  function session(){ try{return JSON.parse(localStorage.getItem(SESSION_KEY)||'null')}catch(e){return null;} }
+
+  function currentUser(){
+    const s=session();
+    if(!s?.userId) return null;
+    return loadUsers().find(u=>u.id===s.userId && u.active) || null;
+  }
+
+  function hasPermission(module){
+    const u=currentUser();
+    return !!u && (u.permissions||[]).includes(module);
+  }
+
+  function showGate(show){
+    const gate=document.getElementById('auth-gate');
+    if(!gate) return;
+    gate.classList.toggle('hidden',!show);
+    document.body.classList.toggle('overflow-hidden',show);
+  }
+
+  function updateHeaderUser(){
+    const u=currentUser();
+    const target=document.querySelector('.user-name-display');
+    if(target && u) target.textContent=`${u.fullName} (${u.username})`;
+  }
+
+  function applyPermissions(){
+    const u=currentUser();
+    if(!u) return;
+    MODULES.forEach(([module])=>{
+      const btn=document.getElementById(`btn-tab-${module}`);
+      if(btn) btn.classList.toggle('hidden',!hasPermission(module));
+    });
+
+    if(!hasPermission('setting')){
+      const settingView=document.getElementById('view-setting');
+      if(settingView) settingView.classList.add('hidden');
+    }
+  }
+
+  window.handleLogin=async function(e){
+    e.preventDefault();
+    const username=document.getElementById('login-username').value.trim().toLowerCase();
+    const password=document.getElementById('login-password').value;
+    const err=document.getElementById('login-error');
+    const user=loadUsers().find(u=>u.username.toLowerCase()===username);
+
+    if(!user){
+      err.textContent='Invalid username or password.';
+      err.classList.remove('hidden');
+      return;
+    }
+    if(!user.active){
+      err.textContent='Your account is inactive.';
+      err.classList.remove('hidden');
+      return;
+    }
+
+    const hash=await hashPassword(password);
+    if(hash!==user.passwordHash){
+      err.textContent='Invalid username or password.';
+      err.classList.remove('hidden');
+      return;
+    }
+
+    localStorage.setItem(SESSION_KEY,JSON.stringify({userId:user.id,loginAt:new Date().toISOString()}));
+    err.classList.add('hidden');
+    showGate(false);
+    updateHeaderUser();
+    applyPermissions();
+    if(typeof renderUsersTable==='function') renderUsersTable();
+    if(typeof switchTab==='function'){
+      const first=(user.permissions||[])[0]||'dashboard';
+      switchTab(first);
+    }
+    if(typeof lucide!=='undefined') lucide.createIcons();
+  };
+
+  window.handleLogout=function(){
+    localStorage.removeItem(SESSION_KEY);
+    showGate(true);
+    document.getElementById('login-password').value='';
+  };
+
+  window.requirePermission=function(module){
+    if(!currentUser()){
+      showGate(true);
+      return false;
+    }
+    if(!hasPermission(module)){
+      const msg='You do not have permission to access this module.';
+      alert(msg);
+      return false;
+    }
+    return true;
+  };
+
+  window.openUserModal=function(userId){
+    if(!hasPermission('setting')) return alert('You do not have permission to access this module.');
+    const modal=document.getElementById('modal-user-account');
+    const user=userId?loadUsers().find(u=>u.id===userId):null;
+    document.getElementById('user-edit-id').value=user?.id||'';
+    document.getElementById('user-full-name').value=user?.fullName||'';
+    document.getElementById('user-username').value=user?.username||'';
+    document.getElementById('user-password').value='';
+    document.getElementById('user-role').value=user?.role||'viewer';
+    document.getElementById('user-active').checked=user?user.active:true;
+    renderPermissionChecks(user?.permissions||ROLE_PRESETS[user?.role||'viewer']);
+    document.getElementById('user-modal-title').textContent=user?'Edit Account':'Create Account';
+    modal.classList.remove('hidden'); modal.classList.add('flex');
+    if(typeof lucide!=='undefined') lucide.createIcons();
+  };
+
+  window.closeUserModal=function(){
+    const modal=document.getElementById('modal-user-account');
+    modal.classList.add('hidden'); modal.classList.remove('flex');
+  };
+
+  function renderPermissionChecks(selected=[]){
+    const wrap=document.getElementById('user-permissions-grid');
+    wrap.innerHTML=MODULES.map(([id,label])=>{
+      const checked=selected.includes(id)?'checked':'';
+      return `<label class="flex items-center gap-2 p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 cursor-pointer text-xs">
+        <input type="checkbox" value="${id}" ${checked} class="user-permission rounded text-blue-600">
+        <span>${label}</span>
+      </label>`;
+    }).join('');
+  }
+
+  window.toggleAllUserPermissions=function(value){
+    document.querySelectorAll('.user-permission').forEach(x=>x.checked=value);
+  };
+
+  window.applyRolePreset=function(){
+    const role=document.getElementById('user-role').value;
+    renderPermissionChecks(ROLE_PRESETS[role]||[]);
+  };
+
+  window.saveUserAccount=async function(e){
+    e.preventDefault();
+    const users=loadUsers();
+    const editId=document.getElementById('user-edit-id').value;
+    const fullName=document.getElementById('user-full-name').value.trim();
+    const username=document.getElementById('user-username').value.trim().toLowerCase();
+    const password=document.getElementById('user-password').value;
+    const role=document.getElementById('user-role').value;
+    const active=document.getElementById('user-active').checked;
+    const permissions=[...document.querySelectorAll('.user-permission:checked')].map(x=>x.value);
+
+    if(!permissions.length) return alert('At least one permission is required.');
+    if(users.some(u=>u.username===username && u.id!==editId)) return alert('Username already exists.');
+
+    if(editId){
+      const u=users.find(x=>x.id===editId);
+      if(!u) return;
+      u.fullName=fullName; u.username=username; u.role=role; u.active=active; u.permissions=permissions;
+      if(password) u.passwordHash=await hashPassword(password);
+    }else{
+      if(!password) return alert('Password is required.');
+      users.push({
+        id:'USR_'+Date.now(),
+        username, fullName, role, active, permissions,
+        passwordHash:await hashPassword(password)
+      });
+    }
+    saveUsers(users);
+    renderUsersTable();
+    closeUserModal();
+  };
+
+  window.deleteUserAccount=function(id){
+    const u=currentUser();
+    if(u?.id===id) return alert('Cannot delete the current account.');
+    const users=loadUsers().filter(x=>x.id!==id);
+    saveUsers(users);
+    renderUsersTable();
+  };
+
+  window.toggleUserActive=function(id){
+    const users=loadUsers();
+    const u=users.find(x=>x.id===id);
+    if(!u) return;
+    if(currentUser()?.id===id) return alert('Cannot disable the current account.');
+    u.active=!u.active;
+    saveUsers(users);
+    renderUsersTable();
+  };
+
+  function renderUsersTable(){
+    const wrap=document.getElementById('users-table-wrap');
+    if(!wrap) return;
+    const users=loadUsers();
+    wrap.innerHTML=`<table class="w-full text-xs">
+      <thead class="bg-slate-50 text-slate-500 uppercase font-bold">
+        <tr>
+          <th class="p-3 text-left">Name</th><th class="p-3 text-left">Username</th><th class="p-3 text-left">Role</th>
+          <th class="p-3 text-left">Permissions</th><th class="p-3 text-left">Status</th><th class="p-3 text-right">Action</th>
+        </tr>
+      </thead>
+      <tbody class="divide-y divide-slate-100">
+        ${users.map(u=>`<tr>
+          <td class="p-3 font-semibold text-slate-700">${escapeHtml(u.fullName)}</td>
+          <td class="p-3 text-slate-500">${escapeHtml(u.username)}</td>
+          <td class="p-3"><span class="px-2 py-1 rounded-lg bg-blue-50 text-blue-700 font-bold">${escapeHtml(u.role)}</span></td>
+          <td class="p-3 text-slate-500">${(u.permissions||[]).length}/${MODULES.length}</td>
+          <td class="p-3"><button onclick="toggleUserActive('${u.id}')" class="px-2 py-1 rounded-lg font-bold ${u.active?'bg-emerald-50 text-emerald-700':'bg-slate-100 text-slate-500'}">${u.active?'Active':'Inactive'}</button></td>
+          <td class="p-3 text-right">
+            <button onclick="openUserModal('${u.id}')" class="px-2 py-1 text-blue-600 font-bold">Edit</button>
+            <button onclick="deleteUserAccount('${u.id}')" class="px-2 py-1 text-rose-600 font-bold">Delete</button>
+          </td>
+        </tr>`).join('')}
+      </tbody>
+    </table>`;
+  }
+
+  function escapeHtml(s){
+    return String(s??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+  }
+
+  window.applyAuthLanguage=function(lang){
+    const idx=lang==='en'?0:lang==='zh'?2:1;
+    document.querySelectorAll('[data-auth-i18n]').forEach(el=>{
+      const key=el.getAttribute('data-auth-i18n');
+      const row={
+        'Login to OPS PORTAL':['Login to OPS PORTAL','Đăng nhập OPS PORTAL','登录 OPS PORTAL'],
+        'Email / Username':['Email / Username','Email / Tên đăng nhập','邮箱 / 用户名'],
+        'Password':['Password','Mật khẩu','密码'],
+        'Sign In':['Sign In','Đăng nhập','登录'],
+        'Remember me':['Remember me','Ghi nhớ đăng nhập','记住登录状态'],
+        'Security note: This static portal stores accounts locally. For production security, connect authentication to a backend / SSO.':['Security note: This static portal stores accounts locally. For production security, connect authentication to a backend / SSO.','Lưu ý bảo mật: Portal HTML này lưu tài khoản cục bộ. Khi triển khai thật, cần kết nối backend / SSO để bảo mật.','安全提示：此 HTML Portal 将账户存储在本地。正式部署时应连接后端 / SSO 以确保安全。'],
+        'Full Name':['Full Name','Họ và tên','姓名'],
+        'Username':['Username','Tên đăng nhập','用户名'],
+        'Role':['Role','Vai trò','角色'],
+        'Account Status':['Account Status','Trạng thái tài khoản','账户状态'],
+        'Permissions':['Permissions','Phân quyền','权限'],
+        'Cancel':['Cancel','Hủy','取消'],
+        'Save Account':['Save Account','Lưu tài khoản','保存账户'],
+        'User Management':['User Management','Quản lý tài khoản','用户管理'],
+        'Create Account':['Create Account','Tạo tài khoản','创建账户']
+      }[key];
+      if(row) el.textContent=row[idx];
+    });
+  };
+
+  document.addEventListener('DOMContentLoaded',async()=>{
+    await ensureAdminPassword();
+    const users=loadUsers();
+    users.forEach(u=>{ if(!u.permissions) u.permissions=ROLE_PRESETS[u.role]||[]; });
+    saveUsers(users);
+    renderUsersTable();
+
+    const u=currentUser();
+    if(u){
+      showGate(false); updateHeaderUser(); applyPermissions();
+    }else{
+      showGate(true);
+    }
+    if(typeof lucide!=='undefined') lucide.createIcons();
+  });
+})();
+</script>
+
+<div id="language-switcher" class="fixed top-3 right-3 z-[9999] pointer-events-auto flex items-center gap-1 bg-white/95 backdrop-blur border border-slate-200 shadow-sm rounded-xl p-1">
+  <button onclick="setLanguage('vi')" data-lang="vi" class="lang-btn px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition">VI</button>
+  <button onclick="setLanguage('en')" data-lang="en" class="lang-btn px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition">EN</button>
+  <button onclick="setLanguage('zh')" data-lang="zh" class="lang-btn px-2.5 py-1.5 rounded-lg text-[10px] font-bold transition">中文</button>
+</div>
+
+<script>
+(function(){
+  /*
+   * OPS PORTAL — Stable 3-language UI
+   * IMPORTANT: translations are matched against ALL three language variants,
+   * so switching VI → EN → 中文 → VI is reversible and never gets "stuck".
+   * Dynamic business data (customer/product names, codes, quantities, etc.)
+   * is intentionally left untouched.
+   */
+  const I18N = [
+    // Navigation
+    ['Dashboard','Dashboard','仪表盘'],
+    ['Order Processing','Xử lý đơn hàng','订单处理'],
+    ['CRM','CRM','客户管理'],
+    ['Product Management','Quản lý sản phẩm','产品管理'],
+    ['Promotion Management','Quản lý khuyến mãi','促销管理'],
+    ['Promotions','Khuyến mãi','促销管理'],
+    ['Warehouse','Kho hàng','仓库管理'],
+    ['Report & Analytics','Báo cáo & Phân tích','报表与分析'],
+    ['Analytics','Phân tích','数据分析'],
+    ['Base Data','Dữ liệu nền','基础数据'],
+    ['Setting','Cài đặt','设置'],
+    ['Settings','Cài đặt','设置'],
+    ['Powered by Tera','Powered by Tera','Powered by Tera'],
+    ['Operate Smarter. Grow Faster.','Operate Smarter. Grow Faster.','更智能地运营，更高效地增长。'],
+
+    // Dashboard
+    ['Sales Dashboard','Dashboard doanh số','销售仪表盘'],
+    ['Sales Overview','Tổng quan doanh số','销售概览'],
+    ['Today','Hôm nay','今天'],
+    ['Dashboard Filters','Bộ lọc Dashboard','仪表盘筛选'],
+    ['Reset Filter','Xóa bộ lọc','重置筛选'],
+    ['Sales KPI','KPI doanh số','销售 KPI'],
+    ['Revenue','Doanh thu','销售额'],
+    ['Orders','Đơn hàng','订单'],
+    ['Customers','Khách hàng','客户'],
+    ['Products','Sản phẩm','产品'],
+    ['Orders Qty','SL đơn hàng','订单数量'],
+    ['Sales Qty','SL bán','销售数量'],
+    ['Unique Order No.','Số đơn hàng duy nhất','唯一订单数'],
+    ['Unique Customer Code','Số mã khách hàng duy nhất','唯一客户数'],
+    ['Units','Số lượng','数量'],
+    ['AOV','Giá trị đơn hàng TB','平均订单金额'],
+    ['Revenue / Order','Doanh thu / đơn','每单销售额'],
+    ['Sales Revenue Trend','Xu hướng doanh thu','销售额趋势'],
+    ['Final Revenue by Month','Doanh thu cuối cùng theo tháng','按月最终销售额'],
+    ['Final Revenue','Doanh thu cuối cùng','最终销售额'],
+    ['Top Customers','Top khách hàng','重点客户'],
+    ['Top Products','Top sản phẩm','热销产品'],
+    ['Top Categories','Top danh mục','热门品类'],
+    ['Top Lines','Top line','热门产品线'],
+    ['Revenue by Channel','Doanh thu theo kênh','按渠道销售额'],
+    ['Revenue by Month','Doanh thu theo tháng','按月份销售额'],
+    ['Revenue by Team PIC','Doanh thu theo Team PIC','按 Team PIC 销售额'],
+    ['Sales Detail','Chi tiết doanh số','销售明细'],
+    ['Operational Snapshot','Tổng quan vận hành','运营概览'],
+    ['Inventory','Tồn kho','库存'],
+    ['Promotion','Khuyến mãi','促销'],
+    ['Operational data','Dữ liệu vận hành','运营数据'],
+    ['View Report','Xem báo cáo','查看报表'],
+    ['Refresh','Làm mới','刷新'],
+    ['Sync Sales Data','Đồng bộ dữ liệu doanh số','同步销售数据'],
+    ['↻ Sync Sales Data','↻ Đồng bộ dữ liệu doanh số','↻ 同步销售数据'],
+    ['Đang tải...','Đang tải...','加载中...'],
+    ['0 rows','0 dòng','0 行'],
+    ['No data available','Chưa có dữ liệu','暂无数据'],
+
+    // Common UI
+    ['Product','Sản phẩm','产品'],
+    ['Product Code','Mã sản phẩm','产品编码'],
+    ['Barcode','Barcode','条码'],
+    ['Product Name','Tên sản phẩm','产品名称'],
+    ['Customer','Khách hàng','客户'],
+    ['Customer Code','Mã khách hàng','客户编码'],
+    ['Quantity','Số lượng','数量'],
+    ['Price','Giá','价格'],
+    ['Discount','Chiết khấu','折扣'],
+    ['Total','Tổng cộng','合计'],
+    ['Amount','Thành tiền','金额'],
+    ['Status','Trạng thái','状态'],
+    ['Active','Đang hoạt động','启用'],
+    ['Inactive','Không hoạt động','停用'],
+    ['Warning','Cảnh báo','警告'],
+    ['Search','Tìm kiếm','搜索'],
+    ['Filter','Bộ lọc','筛选'],
+    ['Filters','Bộ lọc','筛选'],
+    ['Reset','Đặt lại','重置'],
+    ['Save','Lưu','保存'],
+    ['Cancel','Hủy','取消'],
+    ['Add','Thêm','新增'],
+    ['Edit','Sửa','编辑'],
+    ['Delete','Xóa','删除'],
+    ['Close','Đóng','关闭'],
+    ['Confirm','Xác nhận','确认'],
+    ['Export','Xuất file','导出'],
+    ['Import','Nhập file','导入'],
+    ['Sync','Đồng bộ','同步'],
+    ['+ Add Product','+ Thêm sản phẩm','+ 新增产品'],
+    ['+ Thêm','+ Thêm','+ 新增'],
+    ['Thao tác','Thao tác','操作'],
+
+    // Filters / options
+    ['All Quarter','Tất cả Quý','全部季度'],
+    ['All Month','Tất cả Tháng','全部月份'],
+    ['All Document Type','Tất cả loại chứng từ','全部单据类型'],
+    ['All Channel','Tất cả Kênh','全部渠道'],
+    ['All Team PIC','Tất cả Team PIC','全部 Team PIC'],
+    ['All PIC','Tất cả PIC','全部 PIC'],
+    ['All Region','Tất cả Khu vực','全部地区'],
+    ['All Customer Rank','Tất cả Rank khách hàng','全部客户等级'],
+    ['All Customer','Tất cả khách hàng','全部客户'],
+    ['All Brand','Tất cả thương hiệu','全部品牌'],
+    ['All Category','Tất cả danh mục','全部品类'],
+    ['All Product Line','Tất cả line sản phẩm','全部产品线'],
+    ['All Type','Tất cả loại','全部类型'],
+    ['Category','Danh mục','品类'],
+    ['Brand','Thương hiệu','品牌'],
+    ['Line','Line sản phẩm','产品线'],
+    ['Type','Loại','类型'],
+    ['Channel','Kênh','渠道'],
+    ['Region','Khu vực','地区'],
+    ['Material code...','Mã sản phẩm...','产品编码...'],
+    ['Order No...','Số đơn hàng...','订单号...'],
+    ['Search by name, barcode, product code...','Tìm theo tên, barcode, product code...','按名称、条码、产品编码搜索...'],
+    ['Tìm theo tên, barcode, product code...','Tìm theo tên, barcode, product code...','按名称、条码、产品编码搜索...'],
+    ['All Category','Tất cả Category','全部品类'],
+    ['All Status','Tất cả Trạng thái','全部状态'],
+    ['Active (Đang bán)','Active (Đang bán)','启用（在售）'],
+    ['Inactive (Tạm ngưng)','Inactive (Tạm ngưng)','停用（暂停销售）'],
+    ['Tất cả Kênh (Channel)','Tất cả Kênh (Channel)','全部渠道'],
+    ['Tất cả Trạng thái','Tất cả Trạng thái','全部状态'],
+    ['Tất cả Khu vực','Tất cả Khu vực','全部地区'],
+    ['Tất cả Rank khách hàng','Tất cả Rank khách hàng','全部客户等级'],
+
+    // Authentication & User Management
+    ['Login to OPS PORTAL','Đăng nhập OPS PORTAL','登录 OPS PORTAL'],
+    ['Email / Username','Email / Tên đăng nhập','邮箱 / 用户名'],
+    ['Password','Mật khẩu','密码'],
+    ['Sign In','Đăng nhập','登录'],
+    ['Sign Out','Đăng xuất','退出登录'],
+    ['Remember me','Ghi nhớ đăng nhập','记住登录状态'],
+    ['Invalid username or password.','Tên đăng nhập hoặc mật khẩu không đúng.','用户名或密码错误。'],
+    ['Your account is inactive.','Tài khoản của bạn đang bị khóa.','您的账户已被停用。'],
+    ['You do not have permission to access this module.','Bạn không có quyền truy cập module này.','您没有权限访问此模块。'],
+    ['User Management','Quản lý tài khoản','用户管理'],
+    ['Create Account','Tạo tài khoản','创建账户'],
+    ['Edit Account','Chỉnh sửa tài khoản','编辑账户'],
+    ['Role','Vai trò','角色'],
+    ['Permissions','Phân quyền','权限'],
+    ['Account Status','Trạng thái tài khoản','账户状态'],
+    ['Active Account','Đang hoạt động','启用账户'],
+    ['Inactive Account','Đã khóa','已停用'],
+    ['Full Name','Họ và tên','姓名'],
+    ['Username','Tên đăng nhập','用户名'],
+    ['Confirm Password','Xác nhận mật khẩu','确认密码'],
+    ['Save Account','Lưu tài khoản','保存账户'],
+    ['Delete Account','Xóa tài khoản','删除账户'],
+    ['Reset Password','Đặt lại mật khẩu','重置密码'],
+    ['No accounts yet.','Chưa có tài khoản nào.','暂无账户。'],
+    ['Admin','Quản trị viên','管理员'],
+    ['Operations','Vận hành','运营'],
+    ['Sales','Kinh doanh','销售'],
+    ['Warehouse','Kho hàng','仓库'],
+    ['Viewer','Chỉ xem','只读'],
+    ['Dashboard Access','Quyền Dashboard','仪表盘权限'],
+    ['Order Processing Access','Quyền Xử lý đơn hàng','订单处理权限'],
+    ['CRM Access','Quyền CRM','客户管理权限'],
+    ['Product Management Access','Quyền Quản lý sản phẩm','产品管理权限'],
+    ['Promotion Management Access','Quyền Quản lý khuyến mãi','促销管理权限'],
+    ['Warehouse Access','Quyền Kho hàng','仓库权限'],
+    ['Analytics Access','Quyền Báo cáo & Phân tích','报表与分析权限'],
+    ['Base Data Access','Quyền Dữ liệu nền','基础数据权限'],
+    ['Settings Access','Quyền Cài đặt','设置权限'],
+    ['All Permissions','Tất cả quyền','全部权限'],
+    ['Account created successfully.','Tạo tài khoản thành công.','账户创建成功。'],
+    ['Account updated successfully.','Cập nhật tài khoản thành công.','账户更新成功。'],
+    ['Account deleted successfully.','Xóa tài khoản thành công.','账户删除成功。'],
+    ['Cannot delete the current account.','Không thể xóa tài khoản đang đăng nhập.','无法删除当前登录账户。'],
+    ['At least one permission is required.','Cần chọn ít nhất một quyền.','至少需要选择一项权限。'],
+    ['Current User','Người dùng hiện tại','当前用户'],
+    ['Last Login','Đăng nhập gần nhất','最近登录'],
+    ['Security note: This static portal stores accounts locally. For production security, connect authentication to a backend / SSO.','Lưu ý bảo mật: Portal HTML này lưu tài khoản cục bộ. Khi triển khai thật, cần kết nối backend / SSO để bảo mật.','安全提示：此 HTML Portal 将账户存储在本地。正式部署时应连接后端 / SSO 以确保安全。'],
+
+    // Product Management
+    ['Listing Price','Giá niêm yết','标价'],
+    ['Daily Price','Giá Daily','日常价'],
+    ['Giá Sỉ Chuẩn (52%)','Giá Sỉ Chuẩn (52%)','标准批发价（52%）'],
+    ['Hiển thị','Hiển thị','显示'],
+    ['Hiển thị 243 sp','Hiển thị 243 sp','显示 243 个产品'],
+    ['✕ Xóa lọc','✕ Xóa lọc','✕ 清除筛选'],
+    ['Product Management','Quản lý sản phẩm','产品管理'],
+    ['Quản lý danh mục sản phẩm, thông tin, giá bán và trạng thái.','Quản lý danh mục sản phẩm, thông tin, giá bán và trạng thái.','管理产品目录、信息、价格和状态。'],
+
+    // Order Processing
+    ['CHECK STOCK','CHECK STOCK','库存检查'],
+    ['Check product availability before processing orders.','Kiểm tra tồn kho trước khi xử lý đơn hàng.','处理订单前检查产品库存。'],
+    ['QUICK CHECK','KIỂM TRA NHANH','快速检查'],
+    ['UPLOAD FILE TO CHECK','TẢI FILE ĐỂ KIỂM TRA','上传文件检查'],
+    ['CREATE ORDER','TẠO ĐƠN HÀNG','创建订单'],
+    ['Create orders via manual input or file upload with auto promotions.','Tạo đơn thủ công hoặc upload file với tự động tính khuyến mãi.','手动或上传文件创建订单，并自动计算促销。'],
+    ['TRANSFORM ORDER','BÓC TÁCH ĐƠN HÀNG','订单转换'],
+    ['Transform orders from PO files to structured data.','Bóc tách đơn hàng từ file PO thành dữ liệu chuẩn.','将 PO 文件转换为结构化数据。'],
+    ['Promotion Calculation','Tính khuyến mãi','促销计算'],
+    ['Stock Check','Kiểm tra tồn kho','库存检查'],
+    ['Order Detail','Chi tiết đơn hàng','订单详情'],
+    ['Export to Excel','Xuất Excel','导出 Excel'],
+    ['Export to PDF','Xuất PDF','导出 PDF'],
+
+    // Promotions
+    ['Promotion Management','Quản lý khuyến mãi','促销管理'],
+    ['Danh sách chương trình','Danh sách chương trình','促销方案列表'],
+    ['Tên chương trình','Tên chương trình','方案名称'],
+    ['Loại CTKM','Loại CTKM','促销类型'],
+    ['Khu vực','Khu vực','地区'],
+    ['Kênh','Kênh','渠道'],
+    ['Rank KH','Rank KH','客户等级'],
+    ['Priority CTKM','Priority CTKM','促销优先级'],
+    ['Sản phẩm / Scheme','Sản phẩm / Scheme','产品 / 方案'],
+    ['Thời gian áp dụng','Thời gian áp dụng','适用时间'],
+    ['Đang chạy','Đang chạy','进行中'],
+    ['Sắp chạy','Sắp chạy','即将开始'],
+    ['Đã kết thúc','Đã kết thúc','已结束'],
+    ['Tạm dừng','Tạm dừng','已暂停'],
+    ['Xóa bộ lọc','Xóa bộ lọc','清除筛选'],
+    ['Cập nhật theo thời gian thực','Cập nhật theo thời gian thực','实时更新'],
+
+    // Warehouse / analytics
+    ['Total Stock','Tổng tồn kho','总库存'],
+    ['Low Stock','Tồn kho thấp','低库存'],
+    ['Stock Day','Số ngày tồn kho','库存天数'],
+    ['OOS','Hết hàng','缺货'],
+    ['SKU','SKU','SKU'],
+    ['0 SKU','0 SKU','0 SKU'],
+    ['Manage stock, create orders and transform orders efficiently.','Quản lý tồn kho, tạo đơn và bóc tách đơn hàng hiệu quả.','高效管理库存、创建订单和转换订单。'],
+
+    // Geography / channels kept as proper business labels
+    ['Online','Online','线上'],
+    ['Offline','Offline','线下'],
+    ['MT','MT','MT'],
+    ['GT','GT','GT'],
+    ['KA','KA','KA'],
+    ['Key Account','Key Account','重点客户'],
+    ['Toàn quốc','Toàn quốc','全国'],
+    ['GT SOUTH (Miền Nam)','GT SOUTH (Miền Nam)','GT SOUTH（南部）'],
+    ['GT CENTRAL (Miền Trung)','GT CENTRAL (Miền Trung)','GT CENTRAL（中部）'],
+    ['GT NORTH (Miền Bắc)','GT NORTH (Miền Bắc)','GT NORTH（北部）'],
+    ['TP. Hồ Chí Minh','TP. Hồ Chí Minh','胡志明市'],
+    ['Hà Nội','Hà Nội','河内'],
+    ['Đà Nẵng','Đà Nẵng','岘港'],
+
+    // Misc
+    ['0 món','0 món','0 件'],
+    ['Trạng thái','Trạng thái','状态'],
+    ['Đang áp dụng: 0 CTKM','Đang áp dụng: 0 CTKM','当前适用：0 个促销'],
+    ['Chưa chọn khách hàng','Chưa chọn khách hàng','尚未选择客户'],
+    ['Tất cả','Tất cả','全部'],
+    ['10 / trang','10 / trang','10 / 页'],
+    ['20 / trang','20 / trang','20 / 页']
+  ];
+
+
+    // Extended UI phrases — bilingual/mixed labels that also need full translation.
+    [
+      ['Sales visual được ưu tiên làm chỉ số chính của Dashboard, đồng bộ trực tiếp từ Sales Data.','Sales visuals are prioritized as the main Dashboard indicators and synced directly from Sales Data.','销售可视化作为仪表盘的核心指标，并直接从销售数据同步。'],
+      ['Các biểu đồ và KPI sẽ cập nhật theo bộ lọc đang chọn.','Charts and KPIs will update according to the selected filters.','图表和 KPI 将根据当前筛选条件更新。'],
+      ['By Final Revenue · Tên khách hàng','By Final Revenue · Customer Name','按最终销售额 · 客户名称'],
+      ['By Final Revenue · Tên sản phẩm','By Final Revenue · Product Name','按最终销售额 · 产品名称'],
+      ['By Final Revenue · Category','By Final Revenue · Category','按最终销售额 · 品类'],
+      ['By Final Revenue · Product Line','By Final Revenue · Product Line','按最终销售额 · 产品线'],
+      ['Top teams by Final Revenue','Top teams by Final Revenue','最终销售额最高的团队'],
+      ['Các chỉ số vận hành được đặt sau Sales visual','Operational indicators are placed after the Sales visuals.','运营指标位于销售可视化之后。'],
+      ['Tìm nhanh tồn kho (Barcode, Keyword, Tên)','Quickly search inventory (Barcode, Keyword, Name)','快速搜索库存（条码、关键词、名称）'],
+      ['Upload file để kiểm tra tồn kho (Barcode, Số lượng, Kho)','Upload a file to check inventory (Barcode, Quantity, Warehouse)','上传文件检查库存（条码、数量、仓库）'],
+      ['TÍNH KHUYẾN MÃI TỰ ĐỘNG','AUTO PROMOTION CALCULATION','自动计算促销'],
+      ['Áp dụng đa CTKM, xuất 1 dòng mua 1 dòng quà','Apply multiple promotions; output one purchase line and one gift line.','支持多促销；每条购买明细对应一条赠品明细。'],
+      ['TẢI FILE MẪU ĐƠN HÀNG','DOWNLOAD ORDER TEMPLATE','下载订单模板'],
+      ['File mẫu .XLSX kiểm tra 133 cây son và mốc 10tr','XLSX template for checking 133 lip products and the 10M threshold.','用于检查 133 个唇部产品和 1000 万越南盾门槛的 XLSX 模板。'],
+      ['1. Tính Khuyến Mãi Tự Động (Create Order)','1. Auto Promotion Calculation (Create Order)','1. 自动计算促销（创建订单）'],
+      ['SUB-PANEL A: CREATE ORDER & PROMOTION ENGINE (ĐA CTKM, 1 MUA 1 QUÀ)','SUB-PANEL A: CREATE ORDER & PROMOTION ENGINE (MULTIPLE PROMOTIONS, 1 PURCHASE + 1 GIFT)','子面板 A：创建订单与促销引擎（多促销，1 购买 + 1 赠品）'],
+      ['1. Chọn CTKM Áp Dụng (Đa CTKM)','1. Select Applicable Promotions (Multiple Promotions)','1. 选择适用促销（多促销）'],
+      ['3. Upload File Đơn Hàng (.xlsx, .xls)','3. Upload Order File (.xlsx, .xls)','3. 上传订单文件（.xlsx、.xls）'],
+      ['Tải file có cột Mã SP (Barcode) và Số Lượng Đặt.','Upload a file containing Product Code (Barcode) and Order Quantity columns.','上传包含产品编码（条码）和订购数量列的文件。'],
+      ['BẢNG KẾT QUẢ ĐƠN HÀNG: 1 DÒNG MUA LIỀN KỀ 1 DÒNG QUÀ 0Đ','ORDER RESULT: EACH PURCHASE LINE IS FOLLOWED BY A 0-VND GIFT LINE','订单结果：每条购买明细紧邻一条 0 越南盾赠品明细'],
+      ['Bảng Chi Tiết Đơn Hàng (Dòng Mua & Dòng Hàng Tặng Kèm 0đ)','Order Detail Table (Purchase Lines & 0-VND Gift Lines)','订单明细表（购买明细和 0 越南盾赠品明细）'],
+      ['Tên Sản Phẩm / Tên Quà Tặng','Product Name / Gift Name','产品名称 / 赠品名称'],
+      ['Giá Niêm Yết','Listing Price','标价'],
+      ['Đơn Giá Sau CK','Unit Price After Discount','折后单价'],
+      ['Chương Trình Khuyến Mãi','Promotion Program','促销方案'],
+      ['Quà Tặng Thưởng Theo Mốc Doanh Số (MOQ Bundle)','Sales Threshold Gift (MOQ Bundle)','销售额门槛赠品（MOQ 套装）'],
+      ['Đạt điều kiện doanh số toàn đơn hoặc nhóm sản phẩm chỉ định','Meets the sales threshold for the whole order or specified product group.','满足整单或指定产品组的销售额门槛。'],
+      ['Tổng số lượng đặt mua:','Total Purchase Quantity:','购买总数量：'],
+      ['Tổng sản phẩm quà tặng (0đ):','Total Gift Products (0 VND):','赠品总数量（0 越南盾）：'],
+      ['TỔNG CỘNG THANH TOÁN (ĐÃ GỒM VAT):','TOTAL PAYMENT (VAT INCLUDED):','应付总额（含 VAT）：'],
+      ['Chưa có dữ liệu đơn hàng','No order data yet','暂无订单数据'],
+      ['Tải lên file Excel đơn hàng của bạn hoặc bấm "Tải File Mẫu Đơn Hàng" để kiểm tra tính toán quà tặng tự động.','Upload your order Excel file or click "Download Order Template" to check automatic gift calculations.','上传订单 Excel 文件，或点击“下载订单模板”检查自动赠品计算。'],
+      ['Mục tiêu Auto-match','Auto-match Target','自动匹配目标'],
+      ['Từ các file PDF vừa đọc','From the PDF files just read','来自刚读取的 PDF 文件'],
+      ['Đã Auto-Match (ON)','Auto-Matched (ON)','已自动匹配（ON）'],
+      ['Khớp Master & Đang kinh doanh','Matched Master & Currently Selling','匹配主数据且正在销售'],
+      ['Ngừng KD (OFF) / Lỗi OCR / Chưa có mã','Discontinued (OFF) / OCR Error / No Code','停售（OFF）/ OCR 错误 / 无编码'],
+      ['1. Chọn Khách Hàng / Đối Tác Nhận Đơn PO','1. Select Customer / Partner Receiving PO','1. 选择接收 PO 的客户 / 合作伙伴'],
+      ['Vui lòng chọn khách hàng trước khi tải lên file Purchase Order (PDF) để hệ thống áp dụng đúng mẫu bóc tách.','Please select a customer before uploading the Purchase Order (PDF) so the system can apply the correct extraction template.','请先选择客户，再上传采购订单（PDF），以便系统应用正确的解析模板。'],
+      ['Nhấp để chọn file hoặc kéo thả file Purchase Order (.pdf) vào đây','Click to select a file or drag and drop a Purchase Order (.pdf) here','点击选择文件，或将采购订单（.pdf）拖放到此处'],
+      ['Hệ thống tự động bóc tách Barcode, Product Code, Package Name, Số lượng và mapping với Master Product (382 SKU)','The system automatically extracts Barcode, Product Code, Package Name and Quantity, then maps them to Master Product (382 SKUs).','系统自动提取条码、产品编码、包装名称和数量，并与产品主数据（382 个 SKU）匹配。'],
+      ['Thông tin đơn hàng trích xuất (PO Header Metadata)','Extracted Order Information (PO Header Metadata)','提取的订单信息（PO 头信息）'],
+      ['Địa chỉ giao hàng (Delivery Address):','Delivery Address:','配送地址：'],
+      ['Kiểm tra thông tin Barcode, Product Code, Package Name và số lượng trước khi xuất file.','Check Barcode, Product Code, Package Name and Quantity before exporting the file.','导出文件前请检查条码、产品编码、包装名称和数量。'],
+      ['Chưa có mã (Not Found)','No Code (Not Found)','无编码（未找到）'],
+      ['Đẩy Sang Tính Khuyến Mãi','Send to Promotion Calculation','进入促销计算'],
+      ['Package Name (Tên Master)','Package Name (Master Name)','包装名称（主数据名称）'],
+      ['Quy tắc xuất đơn: Các mã trạng thái','Order export rule: status codes','订单导出规则：状态编码'],
+      ['sẽ được cảnh báo để Ops kiểm tra trước khi tạo Order Form.','will be flagged for Ops review before creating the Order Form.','将在创建订单表前提示 Ops 检查。'],
+      ['Lịch Sử Xuất Đơn PO (Audit Log)','PO Export History (Audit Log)','PO 导出历史（审计日志）'],
+      ['Chưa có lịch sử xuất file.','No export history yet.','暂无导出记录。'],
+      ['Quản lý thông tin khách hàng, phân nhóm và kênh bán hàng.','Manage customer information, segmentation and sales channels.','管理客户信息、分组和销售渠道。'],
+      ['Tất cả Kênh (Channel)','All Channels','全部渠道'],
+      ['Kênh MT','MT Channel','MT 渠道'],
+      ['Kênh GT','GT Channel','GT 渠道'],
+      ['TÊN KHÁCH HÀNG','CUSTOMER NAME','客户名称'],
+      ['KÊNH (CHANNEL)','CHANNEL','渠道'],
+      ['TÊN LIÊN HỆ (PIC)','CONTACT NAME (PIC)','联系人姓名（PIC）'],
+      ['+ Thêm chương trình','+ Add Promotion','+ 新增促销方案'],
+      ['BẢNG DANH SÁCH CHƯƠNG TRÌNH KHUYẾN MÃI','PROMOTION PROGRAM LIST','促销方案列表'],
+      ['Danh sách chương trình (12)','Promotion List (12)','促销方案列表（12）'],
+      ['Xóa các mục đã chọn','Delete Selected Items','删除所选项目'],
+      ['FOOTER PHÂN TRANG (PAGINATION)','PAGINATION FOOTER','分页底部'],
+      ['Hiển thị 1 - 8 / 12 chương trình','Showing 1 - 8 / 12 promotions','显示 1 - 8 / 12 个促销方案'],
+      ['Current Inventory Status • Chưa đồng bộ API','Current Inventory Status • API Not Synced','当前库存状态 • API 未同步'],
+      ['Có thể kết hợp nhiều điều kiện','Multiple conditions can be combined','可组合多个条件'],
+      ['Click status để drill-down','Click status to drill down','点击状态查看明细'],
+      ['Click group để drill-down','Click group to drill down','点击分组查看明细'],
+      ['Click Warehouse để filter toàn bộ Dashboard','Click Warehouse to filter the entire Dashboard','点击仓库以筛选整个仪表盘'],
+      ['Chưa sync','Not synced yet','尚未同步'],
+      ['Lọc trên toàn bộ Sales Revenue dataset đã sync.','Filter the entire synced Sales Revenue dataset.','筛选已同步的全部销售收入数据集。'],
+      ['Safety Stock Day mặc định dùng cho Inventory Dashboard. Có thể thay đổi sau này.','Default Safety Stock Days used for the Inventory Dashboard. It can be changed later.','库存仪表盘默认使用安全库存天数，之后可以调整。'],
+      ['Quy định % chiết khấu và hệ số giá dùng cho Order.','Define discount percentages and price factors used for orders.','设置订单使用的折扣比例和价格系数。'],
+      ['Cấu hình hệ thống, phân quyền người dùng và chính sách chiết khấu.','Configure system settings, user permissions and discount policies.','配置系统设置、用户权限和折扣政策。'],
+      ['KA = 1 (100% Niêm yết)','KA = 1 (100% Listing Price)','KA = 1（100% 标价）'],
+      ['MODAL 1: TẠO / SỬA CTKM (HỖ TRỢ ĐA KHU VỰC, PHÂN LOẠI CTKM)','MODAL 1: CREATE / EDIT PROMOTION (MULTI-REGION & PROMOTION TYPES)','弹窗 1：创建 / 编辑促销（多地区及促销类型）'],
+      ['Tạo Chương Trình Khuyến Mãi Mới','Create New Promotion Program','创建新促销方案'],
+      ['Tên Chương Trình Khuyến Mãi *','Promotion Program Name *','促销方案名称 *'],
+      ['PHÂN LOẠI CTKM (3 LỰA CHỌN)','PROMOTION TYPE (3 OPTIONS)','促销类型（3 个选项）'],
+      ['Phân Loại CTKM *','Promotion Type *','促销类型 *'],
+      ['Quà tặng kèm / Thưởng MOQ (Theo mốc doanh số)','Gift / MOQ Reward (By Sales Threshold)','赠品 / MOQ 奖励（按销售额门槛）'],
+      ['Thứ Tự Ưu Tiên (Priority) *','Priority Order *','优先级 *'],
+      ['Mô Tả Chi Tiết','Detailed Description','详细说明'],
+      ['Lưu Chương Trình','Save Program','保存方案'],
+      ['MODAL 2: THÊM SCHEME VÀO CTKM (THEO ĐÚNG TRANG 7-10 PDF)','MODAL 2: ADD SCHEME TO PROMOTION (AS SPECIFIED IN PDF PAGES 7-10)','弹窗 2：向促销添加方案（按 PDF 第 7-10 页）'],
+      ['Thêm scheme vào CTKM','Add Scheme to Promotion','向促销添加方案'],
+      ['DANH SÁCH SCHEME ĐANG CÓ TRONG CÙNG CTKM','SCHEMES IN THIS PROMOTION','当前促销中的方案列表'],
+      ['Một chương trình có thể có nhiều scheme.','A promotion program can contain multiple schemes.','一个促销方案可以包含多个方案。'],
+      ['Chưa có scheme','No schemes yet','暂无方案'],
+      ['Thêm scheme mới vào CTKM','Add New Scheme to Promotion','向促销添加新方案'],
+      ['Tên scheme *','Scheme Name *','方案名称 *'],
+      ['Cùng loại: sản phẩm tặng chính là sản phẩm mua, không cần chọn lại sản phẩm tặng.','Same type: the gift is the purchased product, so you do not need to select the gift product again.','同类型：赠品就是购买产品，无需再次选择赠品产品。'],
+      ['3. Số lượng','3. Quantity','3. 数量'],
+      ['Số lượng mua *','Purchase Quantity *','购买数量 *'],
+      ['Số lượng tặng *','Gift Quantity *','赠送数量 *'],
+      ['Gộp số lượng các sản phẩm để tính điều kiện mua','Combine product quantities to calculate the purchase condition','合并产品数量计算购买条件'],
+      ['Tên sản phẩm tặng','Gift Product Name','赠品名称'],
+      ['Số lượng tặng lấy theo cấu hình ở mục 3.','Gift quantity follows the configuration in section 3.','赠品数量按第 3 项配置。'],
+      ['2. Điều kiện mua','2. Purchase Conditions','2. 购买条件'],
+      ['Số lượng tối thiểu','Minimum Quantity','最低数量'],
+      ['Giá trị tối thiểu (VNĐ)','Minimum Value (VND)','最低金额（越南盾）'],
+      ['3. Hình thức ưu đãi','3. Benefit Type','3. 优惠形式'],
+      ['2. Điều kiện doanh số','2. Sales Threshold Conditions','2. 销售额门槛条件'],
+      ['Toàn bộ đơn hàng','Entire Order','整张订单'],
+      ['Theo sản phẩm nhất định','Specific Products','指定产品'],
+      ['Giữ Ctrl/Cmd để chọn nhiều sản phẩm.','Hold Ctrl/Cmd to select multiple products.','按住 Ctrl/Cmd 选择多个产品。'],
+      ['Nếu đơn đạt nhiều mốc, hệ thống chỉ áp dụng','If an order reaches multiple thresholds, the system only applies','如果订单达到多个门槛，系统仅应用'],
+      ['. Ví dụ đơn 100 triệu chỉ nhận quà mốc 100 triệu, không cộng mốc 50 triệu + 20 triệu.','. For example, a 100M order receives only the 100M gift; thresholds of 50M + 20M are not accumulated.','。例如，1 亿越南盾订单只获得 1 亿门槛赠品，不叠加 5000 万 + 2000 万门槛。'],
+      ['+ Thêm mốc doanh số','+ Add Sales Threshold','+ 添加销售额门槛'],
+      ['Lưu Scheme','Save Scheme','保存方案'],
+      ['MODAL 4: XEM CHI TIẾT & CHỈNH SỬA / THÊM SẢN PHẨM (PRODUCT MANAGEMENT)','MODAL 4: VIEW DETAILS & EDIT / ADD PRODUCT (PRODUCT MANAGEMENT)','弹窗 4：查看详情及编辑 / 新增产品（产品管理）'],
+      ['Thông tin định danh, quy cách đóng gói và giá niêm yết','Identification, packaging specifications and listing price','产品标识、包装规格和标价信息'],
+      ['NHÓM 1: ĐỊNH DANH SẢN PHẨM','GROUP 1: PRODUCT IDENTIFICATION','第 1 组：产品标识'],
+      ['Thông Tin Định Danh','Identification Information','标识信息'],
+      ['Product Name (Tên Sản Phẩm) *','Product Name *','产品名称 *'],
+      ['NHÓM 2: PHÂN LOẠI & THƯƠNG HIỆU','GROUP 2: CATEGORY & BRAND','第 2 组：分类与品牌'],
+      ['Brand (Thương hiệu)','Brand','品牌'],
+      ['Makeup (Trang điểm)','Makeup','彩妆'],
+      ['Skincare (Chăm sóc da)','Skincare','护肤'],
+      ['Fragrance (Nước hoa)','Fragrance','香水'],
+      ['Body (Toàn thân)','Body Care','身体护理'],
+      ['-- Chưa phân team --','-- No Team Assigned --','-- 未分配团队 --'],
+      ['Listing Price (Niêm yết - VAT) *','Listing Price (VAT Included) *','标价（含 VAT）*'],
+      ['Active (ON - Đang kinh doanh)','Active (ON - Currently Selling)','启用（ON - 在售）'],
+      ['Inactive (OFF - Tạm ngưng KD)','Inactive (OFF - Discontinued)','停用（OFF - 暂停销售）'],
+      ['NHÓM 4: QUY CÁCH KÍCH THƯỚC & ĐÓNG GÓI','GROUP 4: SIZE & PACKAGING SPECIFICATIONS','第 4 组：尺寸与包装规格'],
+      ['Quy Cách Kích Thước & Đóng Thùng','Size & Carton Specifications','尺寸与装箱规格'],
+      ['Đóng','Close','关闭'],
+      ['Lưu Sản Phẩm','Save Product','保存产品'],
+      ['MODAL 3: THÊM / CHỈNH SỬA THÔNG TIN KHÁCH HÀNG (CRM)','MODAL 3: ADD / EDIT CUSTOMER INFORMATION (CRM)','弹窗 3：新增 / 编辑客户信息（CRM）'],
+      ['Thêm Khách Hàng Mới','Add New Customer','新增客户'],
+      ['Cập nhật thông tin phân nhóm, cấp bậc, chiết khấu và khu vực','Update segmentation, rank, discount and region information','更新客户分组、等级、折扣和地区信息'],
+      ['Tên Khách Hàng / Đơn Vị *','Customer / Company Name *','客户 / 公司名称 *'],
+      ['Key Account (KA = 100% Niêm yết)','Key Account (KA = 100% Listing Price)','重点客户（KA = 100% 标价）'],
+      ['Kênh Bán (Channel) *','Sales Channel *','销售渠道 *'],
+      ['Bình Dương','Binh Duong','平阳'],
+      ['Tên Người Liên Hệ Phụ Trách (PIC)','Contact Person (PIC)','负责人（PIC）'],
+      ['Địa Chỉ Giao Hàng / Xuất Hóa Đơn','Delivery / Billing Address','送货 / 开票地址'],
+      ['Lưu Khách Hàng','Save Customer','保存客户']
+    ].forEach(row => I18N.push(row));
+
+  // Complete coverage for remaining visible Vietnamese/mixed UI phrases.
+  [
+      ['SIDEBAR (Theo giao diện OPS PORTAL trong tài liệu)','SIDEBAR (Based on the OPS PORTAL interface in the document)','侧边栏（根据文档中的 OPS PORTAL 界面）'],
+      ['Võ Ngọc Bảo Trang (Tera)','Võ Ngọc Bảo Trang (Tera)','Võ Ngọc Bảo Trang (Tera)'],
+      ['Sales visual được ưu tiên làm chỉ số chính của Dashboard, đồng bộ trực tiếp từ Sales Data.','Sales visuals are prioritized as the main Dashboard indicators and synced directly from Sales Data.','销售可视化作为仪表盘的核心指标，并直接从销售数据同步。'],
+      ['Các biểu đồ và KPI sẽ cập nhật theo bộ lọc đang chọn.','Charts and KPIs update according to the selected filters.','图表和 KPI 将根据当前筛选条件更新。'],
+      ['By Final Revenue · Tên khách hàng','By Final Revenue · Customer Name','按最终销售额 · 客户名称'],
+      ['By Final Revenue · Tên sản phẩm','By Final Revenue · Product Name','按最终销售额 · 产品名称'],
+      ['Các chỉ số vận hành được đặt sau Sales visual','Operational indicators are placed after Sales visuals','运营指标位于销售可视化之后'],
+      ['Tìm nhanh tồn kho (Barcode, Keyword, Tên)','Quick inventory search (Barcode, Keyword, Name)','快速搜索库存（条码、关键词、名称）'],
+      ['Upload file để kiểm tra tồn kho (Barcode, Số lượng, Kho)','Upload a file to check inventory (Barcode, Quantity, Warehouse)','上传文件检查库存（条码、数量、仓库）'],
+      ['TÍNH KHUYẾN MÃI TỰ ĐỘNG','AUTO PROMOTION CALCULATION','自动计算促销'],
+      ['Áp dụng đa CTKM, xuất 1 dòng mua 1 dòng quà','Apply multiple promotions; output one purchase line and one gift line','支持多促销；每条购买明细对应一条赠品明细'],
+      ['TẢI FILE MẪU ĐƠN HÀNG','DOWNLOAD ORDER TEMPLATE','下载订单模板'],
+      ['File mẫu .XLSX kiểm tra 133 cây son và mốc 10tr','XLSX template for checking 133 lip products and the 10M threshold','用于检查 133 个唇部产品和 1000 万越南盾门槛的 XLSX 模板'],
+      ['• Chọn khách hàng • Tải file PO • Xuất file Excel','• Select customer • Upload PO • Export Excel','• 选择客户 • 上传 PO • 导出 Excel'],
+      ['1. Tính Khuyến Mãi Tự Động (Create Order)','1. Auto Promotion Calculation (Create Order)','1. 自动计算促销（创建订单）'],
+      ['2. Bóc Tách PO PDF (Transform Order)','2. Extract PO PDF (Transform Order)','2. 解析 PO PDF（订单转换）'],
+      ['SUB-PANEL A: CREATE ORDER & PROMOTION ENGINE (ĐA CTKM, 1 MUA 1 QUÀ)','SUB-PANEL A: CREATE ORDER & PROMOTION ENGINE (MULTIPLE PROMOTIONS, 1 PURCHASE + 1 GIFT)','子面板 A：创建订单与促销引擎（多促销，1 购买 + 1 赠品）'],
+      ['1. Chọn CTKM Áp Dụng (Đa CTKM)','1. Select Applicable Promotions (Multiple Promotions)','1. 选择适用促销（多促销）'],
+      ['Khớp KV Khách','Customer Region Match','匹配客户地区'],
+      ['Đang áp dụng: 0 CTKM','Currently applied: 0 promotions','当前适用：0 个促销方案'],
+      ['2. Chọn Khách Hàng','2. Select Customer','2. 选择客户'],
+      ['Chưa chọn khách hàng','No customer selected','未选择客户'],
+      ['3. Upload File Đơn Hàng (.xlsx, .xls)','3. Upload Order File (.xlsx, .xls)','3. 上传订单文件（.xlsx、.xls）'],
+      ['Tải file có cột Mã SP (Barcode) và Số Lượng Đặt.','Upload a file with Product Code (Barcode) and Order Quantity columns.','上传包含产品编码（条码）和订购数量列的文件。'],
+      ['BẢNG KẾT QUẢ ĐƠN HÀNG: 1 DÒNG MUA LIỀN KỀ 1 DÒNG QUÀ 0Đ','ORDER RESULT: EACH PURCHASE LINE IS FOLLOWED BY A 0-VND GIFT LINE','订单结果：每条购买明细紧邻一条 0 越南盾赠品明细'],
+      ['Bảng Chi Tiết Đơn Hàng (Dòng Mua & Dòng Hàng Tặng Kèm 0đ)','Order Detail Table (Purchase Lines & 0-VND Gift Lines)','订单明细表（购买明细和 0 越南盾赠品明细）'],
+      ['0 dòng','0 rows','0 行'],
+      ['Xuất File Excel','Export Excel File','导出 Excel 文件'],
+      ['Xuất File PDF','Export PDF File','导出 PDF 文件'],
+      ['Loại','Type','类型'],
+      ['Mã Sản Phẩm','Product Code','产品编码'],
+      ['Tên Sản Phẩm / Tên Quà Tặng','Product Name / Gift Name','产品名称 / 赠品名称'],
+      ['Giá Niêm Yết','Listing Price','标价'],
+      ['Đơn Giá Sau CK','Unit Price After Discount','折后单价'],
+      ['Thành Tiền (VAT)','Amount (VAT Included)','金额（含 VAT）'],
+      ['Chương Trình Khuyến Mãi','Promotion Program','促销方案'],
+      ['GÓI QUÀ MOQ BUNDLE','MOQ GIFT BUNDLE','MOQ 赠品套装'],
+      ['Quà Tặng Thưởng Theo Mốc Doanh Số (MOQ Bundle)','Sales Threshold Gift (MOQ Bundle)','销售额门槛赠品（MOQ 套装）'],
+      ['Đạt điều kiện doanh số toàn đơn hoặc nhóm sản phẩm chỉ định','Meets the sales threshold for the whole order or specified product group','满足整单或指定产品组的销售额门槛'],
+      ['FOOTER TỔNG KẾT TIỀN','PAYMENT SUMMARY FOOTER','金额汇总'],
+      ['Tổng số lượng đặt mua:','Total Purchase Quantity:','购买总数量：'],
+      ['Tổng sản phẩm quà tặng (0đ):','Total Gift Products (0 VND):','赠品总数量（0 越南盾）：'],
+      ['Tổng quà tặng mốc MOQ / Bundle:','Total MOQ / Bundle Gifts:','MOQ / 套装赠品总数：'],
+      ['TỔNG CỘNG THANH TOÁN (ĐÃ GỒM VAT):','TOTAL PAYMENT (VAT INCLUDED):','应付总额（含 VAT）：'],
+      ['0 đ','0 VND','0 越南盾'],
+      ['Chưa có dữ liệu đơn hàng','No order data yet','暂无订单数据'],
+      ['Tải lên file Excel đơn hàng của bạn hoặc bấm "Tải File Mẫu Đơn Hàng" để kiểm tra tính toán quà tặng tự động.','Upload your order Excel file or click "Download Order Template" to check automatic gift calculations.','上传订单 Excel 文件，或点击“下载订单模板”检查自动赠品计算。'],
+      ['Tải file mẫu .XLSX thử nghiệm','Download Test XLSX Template','下载测试 XLSX 模板'],
+      ['SUB-PANEL B: TRANSFORM ORDER (BÓC TÁCH PO PDF SANG ORDER FORM CHUẨN)','SUB-PANEL B: TRANSFORM ORDER (EXTRACT PO PDF TO STANDARD ORDER FORM)','子面板 B：订单转换（将 PO PDF 解析为标准订单表）'],
+      ['Mục tiêu Auto-match','Auto-match Target','自动匹配目标'],
+      ['Chuẩn hóa quy trình Ops','Standardize Ops Process','标准化 Ops 流程'],
+      ['Tổng mã trích xuất','Total Extracted Codes','提取编码总数'],
+      ['Từ các file PDF vừa đọc','From the PDF files just read','来自刚读取的 PDF 文件'],
+      ['Đã Auto-Match (ON)','Auto-Matched (ON)','已自动匹配（ON）'],
+      ['Khớp Master & Đang kinh doanh','Matched Master & Currently Selling','匹配主数据且正在销售'],
+      ['Cần Ops Kiểm tra','Needs Ops Review','需要 Ops 检查'],
+      ['Ngừng KD (OFF) / Lỗi OCR / Chưa có mã','Discontinued (OFF) / OCR Error / No Code','停售（OFF）/ OCR 错误 / 无编码'],
+      ['1. Chọn Khách Hàng / Đối Tác Nhận Đơn PO','1. Select Customer / Partner Receiving PO','1. 选择接收 PO 的客户 / 合作伙伴'],
+      ['Vui lòng chọn khách hàng trước khi tải lên file Purchase Order (PDF) để hệ thống áp dụng đúng mẫu bóc tách.','Please select a customer before uploading the Purchase Order (PDF) so the system can apply the correct extraction template.','请先选择客户，再上传采购订单（PDF），以便系统应用正确的解析模板。'],
+      [' -- Chọn Khách Hàng / Chuỗi --',' -- Select Customer / Chain --',' -- 选择客户 / 连锁 --'],
+      ['Nhấp để chọn file hoặc kéo thả file Purchase Order (.pdf) vào đây','Click to select a file or drag and drop a Purchase Order (.pdf) here','点击选择文件，或将采购订单（.pdf）拖放到此处'],
+      ['Hệ thống tự động bóc tách Barcode, Product Code, Package Name, Số lượng và mapping với Master Product (382 SKU)','The system automatically extracts Barcode, Product Code, Package Name and Quantity, then maps them to Master Product (382 SKUs)','系统自动提取条码、产品编码、包装名称和数量，并与产品主数据（382 个 SKU）匹配'],
+      ['Thông tin đơn hàng trích xuất (PO Header Metadata)','Extracted Order Information (PO Header Metadata)','提取的订单信息（PO 头信息）'],
+      ['Mã PO (PO Number):','PO Number:','PO 编号：'],
+      ['Ngày giao hàng (Expired Date / Delivery Date):','Delivery Date (Expired Date / Delivery Date):','交货日期（到期日 / 交货日期）：'],
+      ['Địa chỉ giao hàng (Delivery Address):','Delivery Address:','配送地址：'],
+      ['Bảng Kết Quả Bóc Tách & Mapping Order Form','Extraction & Order Form Mapping Results','解析及订单表匹配结果'],
+      ['2. Kết Quả Bóc Tách & Mapping Order Form','2. Extraction & Order Form Mapping Results','2. 解析及订单表匹配结果'],
+      ['Kiểm tra thông tin Barcode, Product Code, Package Name và số lượng trước khi xuất file.','Check Barcode, Product Code, Package Name and Quantity before exporting the file.','导出文件前请检查条码、产品编码、包装名称和数量。'],
+      ['Tất cả trạng thái','All statuses','全部状态'],
+      ['Ngừng kinh doanh (OFF)','Discontinued (OFF)','停售（OFF）'],
+      ['Cần duyệt OCR (Potential Match)','Needs OCR Review (Potential Match)','需要 OCR 审核（潜在匹配）'],
+      ['Chưa có mã (Not Found)','No Code (Not Found)','无编码（未找到）'],
+      ['Xuất File Excel Chuẩn (.xlsx)','Export Standard Excel (.xlsx)','导出标准 Excel（.xlsx）'],
+      ['Đẩy Sang Tính Khuyến Mãi','Send to Promotion Calculation','进入促销计算'],
+      ['Package Name (Tên Master)','Package Name (Master Name)','包装名称（主数据名称）'],
+      ['Quantity (下单数量)','Quantity (Order Quantity)','数量（下单数量）'],
+      ['Quy tắc xuất đơn: Các mã trạng thái','Order Export Rule: Status Codes','订单导出规则：状态编码'],
+      ['Ngừng KD (OFF)','Discontinued (OFF)','停售（OFF）'],
+      ['sẽ được cảnh báo để Ops kiểm tra trước khi tạo Order Form.','will be flagged for Ops review before creating the Order Form.','将在创建订单表前提示 Ops 检查。'],
+      ['Duyệt nhanh tất cả gợi ý OCR','Quick Approve All OCR Suggestions','快速批准所有 OCR 建议'],
+      ['Lịch Sử Xuất Đơn PO (Audit Log)','PO Export History (Audit Log)','PO 导出历史（审计日志）'],
+      ['Thời gian','Time','时间'],
+      ['Khách hàng','Customer','客户'],
+      ['File Nguồn','Source File','源文件'],
+      ['Tổng mã','Total Codes','编码总数'],
+      ['Tỷ lệ Match','Match Rate','匹配率'],
+      ['File Xuất','Export File','导出文件'],
+      ['Chưa có lịch sử xuất file.','No export history yet.','暂无导出记录。'],
+      ['Quản lý thông tin khách hàng, phân nhóm và kênh bán hàng.','Manage customer information, segmentation and sales channels.','管理客户信息、分组和销售渠道。'],
+      ['+ ADD KHÁCH HÀNG','+ ADD CUSTOMER','+ 新增客户'],
+      ['Bộ Lọc Danh Sách Khách Hàng','Customer List Filters','客户列表筛选'],
+      ['/ 190 khách hàng','/ 190 customers','/ 190 个客户'],
+      ['✕ Xóa bộ lọc','✕ Clear filters','✕ 清除筛选'],
+      ['Tất cả Rank / Grade','All Rank / Grade','全部等级'],
+      ['Các rank khác','Other ranks','其他等级'],
+      ['Kênh MT','MT Channel','MT 渠道'],
+      ['Kênh GT','GT Channel','GT 渠道'],
+      ['Tất cả Khu Vực','All Regions','全部地区'],
+      ['Miền Nam (GT SOUTH)','South (GT SOUTH)','南部（GT SOUTH）'],
+      ['Miền Trung (GT CENTRAL)','Central (GT CENTRAL)','中部（GT CENTRAL）'],
+      ['Miền Bắc (GT NORTH)','North (GT NORTH)','北部（GT NORTH）'],
+      ['MÃ KH','CUSTOMER CODE','客户编码'],
+      ['TÊN KHÁCH HÀNG','CUSTOMER NAME','客户名称'],
+      ['CHÍNH SÁCH CHIẾT KHẤU','DISCOUNT POLICY','折扣政策'],
+      ['KÊNH (CHANNEL)','CHANNEL','渠道'],
+      ['KHU VỰC','REGION','地区'],
+      ['TÊN LIÊN HỆ (PIC)','CONTACT NAME (PIC)','联系人姓名（PIC）'],
+      ['TRẠNG THÁI','STATUS','状态'],
+      ['THAO TÁC','ACTIONS','操作'],
+      ['Quản lý danh mục sản phẩm, thông tin, giá bán và trạng thái.','Manage product catalog, information, pricing and status.','管理产品目录、信息、价格和状态。'],
+      ['Tất cả Category','All Categories','全部品类'],
+      ['Active (Đang bán)','Active (Currently Selling)','启用（在售）'],
+      ['Giá Sỉ Chuẩn (52%)','Standard Wholesale Price (52%)','标准批发价（52%）'],
+      ['+ Thêm chương trình','+ Add Promotion','+ 新增促销方案'],
+      ['BỘ LỌC TÌM KIẾM (FILTER BAR)','SEARCH FILTER BAR','搜索筛选栏'],
+      ['Tất cả Khu vực','All Regions','全部地区'],
+      ['Đà Nẵng','Da Nang','岘港'],
+      ['Tất cả Rank khách hàng','All Customer Ranks','全部客户等级'],
+      ['Tất cả','All','全部'],
+      ['Xóa bộ lọc','Clear filters','清除筛选'],
+      ['BẢNG DANH SÁCH CHƯƠNG TRÌNH KHUYẾN MÃI','PROMOTION PROGRAM LIST','促销方案列表'],
+      ['Danh sách chương trình (12)','Promotion List (12)','促销方案列表（12）'],
+      ['Xóa các mục đã chọn','Delete Selected Items','删除所选项目'],
+      ['Cập nhật theo thời gian thực','Real-time Updates','实时更新'],
+      ['Mã CTKM','Promotion Code','促销编码'],
+      ['Tên chương trình','Program Name','方案名称'],
+      ['Loại CTKM','Promotion Type','促销类型'],
+      ['Khu vực','Region','地区'],
+      ['Kênh','Channel','渠道'],
+      ['Sản phẩm / Scheme','Product / Scheme','产品 / 方案'],
+      ['Thời gian áp dụng','Effective Period','适用时间'],
+      ['FOOTER PHÂN TRANG (PAGINATION)','PAGINATION FOOTER','分页底部'],
+      ['Hiển thị 1 - 8 / 12 chương trình','Showing 1 - 8 / 12 promotions','显示 1 - 8 / 12 个促销方案'],
+      ['Current Inventory Status • Chưa đồng bộ API','Current Inventory Status • API Not Synced','当前库存状态 • API 未同步'],
+      ['SKU trong phạm vi filter','SKUs in current filter','当前筛选范围内的 SKU'],
+      ['Tổng Stock Qty','Total Stock Qty','库存总数量'],
+      ['Có thể kết hợp nhiều điều kiện','Multiple conditions can be combined','可组合多个条件'],
+      ['Click status để drill-down','Click status to drill down','点击状态查看明细'],
+      ['Click group để drill-down','Click group to drill down','点击分组查看明细'],
+      ['Các SKU cần Ops theo dõi hoặc xử lý','SKUs requiring Ops monitoring or action','需要 Ops 跟进或处理的 SKU'],
+      ['Click Warehouse để filter toàn bộ Dashboard','Click Warehouse to filter the entire Dashboard','点击仓库以筛选整个仪表盘'],
+      ['Chưa sync','Not synced yet','尚未同步'],
+      ['Lọc trên toàn bộ Sales Revenue dataset đã sync.','Filter the entire synced Sales Revenue dataset.','筛选已同步的全部销售收入数据集。'],
+      ['Chưa có dữ liệu','No data yet','暂无数据'],
+      ['Quản lý dữ liệu chuẩn dùng chung cho Product, Customer, CTKM và Order.','Manage shared master data for Product, Customer, Promotions and Orders.','管理产品、客户、促销和订单共用的基础数据。'],
+      ['Safety Stock Day mặc định dùng cho Inventory Dashboard. Có thể thay đổi sau này.','Default Safety Stock Days used for the Inventory Dashboard. It can be changed later.','库存仪表盘默认使用安全库存天数，之后可以调整。'],
+      ['Lưu','Save','保存'],
+      ['Quy định % chiết khấu và hệ số giá dùng cho Order.','Define discount percentages and price factors used for Orders.','设置订单使用的折扣比例和价格系数。'],
+      ['Quản lý chính sách →','Manage Policies →','管理政策 →'],
+      ['Gán Base Data trực tiếp cho Product / Customer hiện có.','Assign Base Data directly to existing Products / Customers.','直接将基础数据分配给现有产品 / 客户。'],
+      ['Cấu hình hệ thống, phân quyền người dùng và chính sách chiết khấu.','Configure system settings, user permissions and discount policies.','配置系统设置、用户权限和折扣政策。'],
+      ['Chính Sách Chiết Khấu Hạng Khách Hàng (Rank Discount)','Customer Rank Discount Policy','客户等级折扣政策'],
+      ['Chiết khấu 57% (Factor 0.43)','57% Discount (Factor 0.43)','57% 折扣（系数 0.43）'],
+      ['Chiết khấu 54% (Factor 0.46)','54% Discount (Factor 0.46)','54% 折扣（系数 0.46）'],
+      ['Chiết khấu 52% (Factor 0.48)','52% Discount (Factor 0.48)','52% 折扣（系数 0.48）'],
+      ['KA = 1 (100% Niêm yết)','KA = 1 (100% Listing Price)','KA = 1（100% 标价）'],
+      ['Mua hàng tặng hàng (Mua X tặng Y)','Buy X Get Y','买 X 赠 Y'],
+      ['Giảm giá / Discount (Theo % hoặc Tiền)','Discount (By % or Amount)','折扣（按百分比或金额）'],
+      ['Quà tặng kèm / Thưởng MOQ (Theo mốc doanh số)','Gift / MOQ Reward (By Sales Threshold)','赠品 / MOQ 奖励（按销售额门槛）'],
+      ['Áp Dụng Quý *','Applicable Quarter *','适用季度 *'],
+      ['Quý 1 (Q1)','Quarter 1 (Q1)','第一季度（Q1）'],
+      ['Quý 2 (Q2)','Quarter 2 (Q2)','第二季度（Q2）'],
+      ['Quý 3 (Q3)','Quarter 3 (Q3)','第三季度（Q3）'],
+      ['Quý 4 (Q4)','Quarter 4 (Q4)','第四季度（Q4）'],
+      ['Thứ Tự Ưu Tiên (Priority) *','Priority Order *','优先级 *'],
+      ['Khu Vực Áp Dụng (Chọn một hoặc nhiều) *','Applicable Regions (Select one or more) *','适用地区（可多选）*'],
+      ['Mô Tả Chi Tiết','Detailed Description','详细说明'],
+      ['Lưu Chương Trình','Save Program','保存方案'],
+      ['Áp dụng cho CTKM','Apply to Promotion','适用于促销方案'],
+      ['DANH SÁCH SCHEME ĐANG CÓ TRONG CÙNG CTKM','SCHEMES IN THIS PROMOTION','当前促销中的方案列表'],
+      ['Các scheme thuộc CTKM','Schemes in this promotion','该促销中的方案'],
+      ['Một chương trình có thể có nhiều scheme.','A promotion program can contain multiple schemes.','一个促销方案可以包含多个方案。'],
+      ['Chưa có scheme','No schemes yet','暂无方案'],
+      ['Thêm scheme mới vào CTKM','Add New Scheme to Promotion','向促销添加新方案'],
+      ['Tên scheme *','Scheme Name *','方案名称 *'],
+      ['2. Tính chất sản phẩm','2. Product Type','2. 产品属性'],
+      ['Cùng loại','Same Product Type','同类型'],
+      ['Khác loại','Different Product Type','不同类型'],
+      ['Cùng loại: sản phẩm tặng chính là sản phẩm mua, không cần chọn lại sản phẩm tặng.','Same type: the gift is the purchased product, so you do not need to select the gift product again.','同类型：赠品就是购买产品，无需再次选择赠品产品。'],
+      ['3. Số lượng','3. Quantity','3. 数量'],
+      ['Số lượng mua *','Purchase Quantity *','购买数量 *'],
+      ['Số lượng tặng *','Gift Quantity *','赠送数量 *'],
+      ['4. Sản phẩm mua','4. Purchase Products','4. 购买产品'],
+      ['Danh sách sản phẩm mua','Purchase Product List','购买产品列表'],
+      ['Gộp số lượng các sản phẩm để tính điều kiện mua','Combine product quantities to calculate the purchase condition','合并产品数量计算购买条件'],
+      ['5. Sản phẩm tặng','5. Gift Products','5. 赠品'],
+      ['Tên sản phẩm tặng','Gift Product Name','赠品名称'],
+      ['Số lượng tặng lấy theo cấu hình ở mục 3.','Gift quantity follows the configuration in section 3.','赠品数量按第 3 项配置。'],
+      ['2. Điều kiện mua','2. Purchase Conditions','2. 购买条件'],
+      ['Số lượng tối thiểu','Minimum Quantity','最低数量'],
+      ['Giá trị tối thiểu (VNĐ)','Minimum Value (VND)','最低金额（越南盾）'],
+      ['3. Hình thức ưu đãi','3. Benefit Type','3. 优惠形式'],
+      ['Giảm theo %','Discount by %','按百分比折扣'],
+      ['Giảm theo tiền','Discount by Amount','按金额折扣'],
+      ['2. Điều kiện doanh số','2. Sales Threshold Conditions','2. 销售额门槛条件'],
+      ['Phạm vi áp dụng *','Applicable Scope *','适用范围 *'],
+      ['Toàn bộ đơn hàng','Entire Order','整张订单'],
+      ['Theo sản phẩm nhất định','Specific Products','指定产品'],
+      ['Chọn Category *','Select Category *','选择品类 *'],
+      ['-- Chọn Category --','-- Select Category --','-- 选择品类 --'],
+      ['Chọn danh sách sản phẩm *','Select Product List *','选择产品列表 *'],
+      ['Giữ Ctrl/Cmd để chọn nhiều sản phẩm.','Hold Ctrl/Cmd to select multiple products.','按住 Ctrl/Cmd 选择多个产品。'],
+      ['Prefix nhóm SP (tuỳ chọn)','Product Group Prefix (Optional)','产品组前缀（可选）'],
+      ['3. Mốc doanh số & quà tặng','3. Sales Thresholds & Gifts','3. 销售额门槛与赠品'],
+      ['Nếu đơn đạt nhiều mốc, hệ thống chỉ áp dụng','If an order reaches multiple thresholds, the system only applies','如果订单达到多个门槛，系统仅应用'],
+      ['01 gói quà của mốc cao nhất','1 gift bundle from the highest threshold','最高门槛的 1 个赠品套装'],
+      ['. Ví dụ đơn 100 triệu chỉ nhận quà mốc 100 triệu, không cộng mốc 50 triệu + 20 triệu.','. For example, a 100M order receives only the 100M gift; thresholds of 50M + 20M are not accumulated.','。例如，1 亿越南盾订单只获得 1 亿门槛赠品，不叠加 5000 万 + 2000 万门槛。'],
+      ['+ Thêm mốc doanh số','+ Add Sales Threshold','+ 添加销售额门槛'],
+      ['Lưu Scheme','Save Scheme','保存方案'],
+      ['Chi Tiết Sản Phẩm','Product Details','产品详情'],
+      ['Thông tin định danh, quy cách đóng gói và giá niêm yết','Identification, packaging specifications and listing price','产品标识、包装规格和标价信息'],
+      ['NHÓM 1: ĐỊNH DANH SẢN PHẨM','GROUP 1: PRODUCT IDENTIFICATION','第 1 组：产品标识'],
+      ['Thông Tin Định Danh','Identification Information','标识信息'],
+      ['Product Code (Mã SP) *','Product Code *','产品编码 *'],
+      ['Barcode (Mã Vạch) *','Barcode *','条码 *'],
+      ['Product Name (Tên Sản Phẩm) *','Product Name *','产品名称 *'],
+      ['NHÓM 2: PHÂN LOẠI & THƯƠNG HIỆU','GROUP 2: CATEGORY & BRAND','第 2 组：分类与品牌'],
+      ['Brand (Thương hiệu)','Brand','品牌'],
+      ['Category (Ngành)','Category','品类'],
+      ['Makeup (Trang điểm)','Makeup','彩妆'],
+      ['Skincare (Chăm sóc da)','Skincare','护肤'],
+      ['Fragrance (Nước hoa)','Fragrance','香水'],
+      ['Body (Toàn thân)','Body Care','身体护理'],
+      ['Tools (Phụ kiện/Dụng cụ)','Tools / Accessories','工具 / 配件'],
+      ['Product Line (Dòng)','Product Line','产品线'],
+      ['Type (Loại)','Type','类型'],
+      ['Standard (Hàng bán)','Standard (Sellable)','标准商品（销售品）'],
+      ['Gift / Sample (Quà tặng)','Gift / Sample','赠品 / 试用装'],
+      ['Team phụ trách','Responsible Team','负责团队'],
+      ['-- Chưa phân team --','-- No Team Assigned --','-- 未分配团队 --'],
+      ['NHÓM 3: GIÁ BÁN & TRẠNG THÁI','GROUP 3: PRICE & STATUS','第 3 组：价格与状态'],
+      ['Listing Price (Niêm yết - VAT) *','Listing Price (VAT Included) *','标价（含 VAT）*'],
+      ['Daily Price (Giá Bán Lẻ) *','Daily Price (Retail Price) *','日常价（零售价）*'],
+      ['Status (Trạng Thái) *','Status *','状态 *'],
+      ['Active (ON - Đang kinh doanh)','Active (ON - Currently Selling)','启用（ON - 在售）'],
+      ['Inactive (OFF - Tạm ngưng KD)','Inactive (OFF - Discontinued)','停用（OFF - 暂停销售）'],
+      ['NHÓM 4: QUY CÁCH KÍCH THƯỚC & ĐÓNG GÓI','GROUP 4: SIZE & PACKAGING SPECIFICATIONS','第 4 组：尺寸与包装规格'],
+      ['Quy Cách Kích Thước & Đóng Thùng','Size & Carton Specifications','尺寸与装箱规格'],
+      ['Chuyển Sang Chỉnh Sửa','Switch to Edit','切换到编辑'],
+      ['Đóng','Close','关闭'],
+      ['Lưu Sản Phẩm','Save Product','保存产品'],
+      ['Thêm Khách Hàng Mới','Add New Customer','新增客户'],
+      ['Cập nhật thông tin phân nhóm, cấp bậc, chiết khấu và khu vực','Update segmentation, rank, discount and region information','更新客户分组、等级、折扣和地区信息'],
+      ['Mã Khách Hàng (Mã KH) *','Customer Code *','客户编码 *'],
+      ['Tên Khách Hàng / Đơn Vị *','Customer / Company Name *','客户 / 公司名称 *'],
+      ['Retailer 1 (Chiết khấu 52%)','Retailer 1 (52% Discount)','零售商 1（52% 折扣）'],
+      ['Retailer 2 (Chiết khấu 54%)','Retailer 2 (54% Discount)','零售商 2（54% 折扣）'],
+      ['Distributor (Chiết khấu 57%)','Distributor (57% Discount)','分销商（57% 折扣）'],
+      ['Key Account (KA = 100% Niêm yết)','Key Account (KA = 100% Listing Price)','重点客户（KA = 100% 标价）'],
+      ['TGSF (Thế Giới Skin Food)','TGSF (The Gioi Skin Food)','TGSF（The Gioi Skin Food）'],
+      ['Lam Thảo (LT)','Lam Thao (LT)','Lam Thao（LT）'],
+      ['Lam Thảo 2H','Lam Thao 2H','Lam Thao 2H'],
+      ['Chính Sách Chiết Khấu','Discount Policy','折扣政策'],
+      ['Hệ số: 0.48','Factor: 0.48','系数：0.48'],
+      ['Kênh Bán (Channel) *','Sales Channel *','销售渠道 *'],
+      ['Khu Vực (Region) *','Region *','地区 *'],
+      ['Bình Dương','Binh Duong','平阳'],
+      ['Tên Người Liên Hệ Phụ Trách (PIC)','Contact Person (PIC)','负责人（PIC）'],
+      ['Địa Chỉ Giao Hàng / Xuất Hóa Đơn','Delivery / Billing Address','送货 / 开票地址'],
+      ['Lưu Khách Hàng','Save Customer','保存客户'],
+      ['Trạng Thái *','Status *','状态 *'],
+      ['0 món','0 items','0 件'],
+      ['Đang chạy','Active','进行中'],
+      ['Sắp chạy','Upcoming','即将开始'],
+      ['Đã kết thúc','Ended','已结束'],
+      ['Tạm dừng','Paused','已暂停'],
+      ['Toàn quốc','Nationwide','全国'],
+      ['GT SOUTH (Miền Nam)','GT SOUTH (South)','GT SOUTH（南部）'],
+      ['GT CENTRAL (Miền Trung)','GT CENTRAL (Central)','GT CENTRAL（中部）'],
+      ['GT NORTH (Miền Bắc)','GT NORTH (North)','GT NORTH（北部）'],
+      ['TP. Hồ Chí Minh','Ho Chi Minh City','胡志明市'],
+      ['Hà Nội','Hanoi','河内'],
+  ].forEach(row => I18N.push(row));
+
+  // ============================================================================
+  // STABLE 3-LANGUAGE ENGINE
+  // - Every phrase can be recognized from VI / EN / 中文.
+  // - Duplicate translation rows are resolved by preferring the row that contains
+  //   three distinct language values.
+  // - Each DOM text node is bound to its translation row once, so switching
+  //   languages never uses the previous translated text as the source of truth.
+  // - Dynamically rendered UI is translated through the same lookup.
+  // ============================================================================
+  const LOOKUP = new Map();
+  const NODE_KEYS = new WeakMap();
+
+  function norm(s){
+    return String(s ?? '')
+      .replace(/\u00A0/g, ' ')
+      .replace(/\s+/g, ' ')
+      .trim();
+  }
+
+  function rowQuality(row){
+    const vals = row.slice(0,3).map(norm).filter(Boolean);
+    const distinct = new Set(vals).size;
+    // Prefer complete 3-language rows; then prefer longer/more specific phrases.
+    return distinct * 100000 + vals.reduce((n,v)=>n + v.length, 0);
+  }
+
+  function registerRow(row){
+    if (!Array.isArray(row) || row.length < 3) return;
+    const quality = rowQuality(row);
+
+    row.slice(0,3).forEach(phrase=>{
+      const key = norm(phrase);
+      if (!key) return;
+
+      const existing = LOOKUP.get(key);
+      if (!existing || quality > existing.quality){
+        LOOKUP.set(key, { row, quality });
+      }
+    });
+  }
+
+  I18N.forEach(registerRow);
+
+  function findTranslation(raw){
+    const key = norm(raw);
+    if (!key) return null;
+    return LOOKUP.get(key) || null;
+  }
+
+  function bindNode(node){
+    if (!node || node.nodeType !== Node.TEXT_NODE) return null;
+    let row = NODE_KEYS.get(node);
+    if (row) return row;
+
+    const hit = findTranslation(node.nodeValue || '');
+    if (!hit) return null;
+
+    row = hit.row;
+    NODE_KEYS.set(node, row);
+    return row;
+  }
+
+  function translateTextNode(node, langIndex){
+    if (!node || node.nodeType !== Node.TEXT_NODE) return;
+
+    const raw = node.nodeValue || '';
+    if (!norm(raw)) return;
+
+    const row = bindNode(node);
+    if (!row) return;
+
+    const next = row[langIndex];
+    if (typeof next !== 'string' || !next) return;
+
+    const lead = raw.match(/^\s*/)?.[0] || '';
+    const trail = raw.match(/\s*$/)?.[0] || '';
+    const target = lead + next + trail;
+
+    if (node.nodeValue !== target) node.nodeValue = target;
+  }
+
+  function bindExistingDOM(){
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    while (walker.nextNode()) {
+      const node = walker.currentNode;
+      if (node.parentElement?.closest('#language-switcher')) continue;
+      nodes.push(node);
+    }
+    nodes.forEach(bindNode);
+  }
+
+  function translateElement(el, langIndex){
+    if (!el || el.id === 'language-switcher') return;
+    if (['SCRIPT','STYLE','INPUT','TEXTAREA'].includes(el.tagName)) return;
+
+    if (el.tagName === 'SELECT') {
+      Array.from(el.options).forEach(opt=>{
+        if (opt.firstChild) translateTextNode(opt.firstChild, langIndex);
+      });
+      return;
+    }
+
+    const walker = document.createTreeWalker(el, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    while (walker.nextNode()) {
+      if (walker.currentNode.parentElement?.closest('#language-switcher')) continue;
+      nodes.push(walker.currentNode);
+    }
+    nodes.forEach(n=>translateTextNode(n, langIndex));
+  }
+
+  function translatePlaceholders(langIndex){
+    document.querySelectorAll('input[placeholder], textarea[placeholder]').forEach(el=>{
+      const raw = el.getAttribute('placeholder');
+      const hit = findTranslation(raw);
+      if (hit) el.setAttribute('placeholder', hit.row[langIndex]);
+    });
+  }
+
+  function refreshLanguageButtons(lang){
+    document.querySelectorAll('#language-switcher [data-lang]').forEach(btn=>{
+      const active = btn.dataset.lang === lang;
+      btn.classList.toggle('bg-blue-600', active);
+      btn.classList.toggle('text-white', active);
+      btn.classList.toggle('bg-transparent', !active);
+      btn.classList.toggle('text-slate-500', !active);
+    });
+  }
+
+
+  // ============================================================================
+  // DETERMINISTIC UI COPY
+  // Titles/subtitles/helper descriptions are keyed explicitly so they never
+  // inherit a previous language or remain half-translated.
+  // ============================================================================
+  const UI_COPY = [
+    ['Sales visual được ưu tiên làm chỉ số chính của Dashboard, đồng bộ trực tiếp từ Sales Data.',
+     'Sales visuals are prioritized as the main Dashboard indicators and synced directly from Sales Data.',
+     '销售可视化作为仪表盘的核心指标，并直接从销售数据同步。'],
+
+    ['Các biểu đồ và KPI sẽ cập nhật theo bộ lọc đang chọn.',
+     'Charts and KPIs update according to the selected filters.',
+     '图表和 KPI 将根据当前筛选条件更新。'],
+
+    ['Final Revenue by Month',
+     'Final Revenue by Month',
+     '按月份查看最终销售额'],
+
+    ['Final Revenue contribution',
+     'Final Revenue contribution',
+     '最终销售额贡献'],
+
+    ['Quản lý danh mục sản phẩm, thông tin, giá bán và trạng thái.',
+     'Manage product catalog, information, pricing and status.',
+     '管理产品目录、产品信息、销售价格和状态。'],
+
+    ['Quản lý thông tin khách hàng, phân nhóm và kênh bán hàng.',
+     'Manage customer information, segmentation and sales channels.',
+     '管理客户信息、客户分组和销售渠道。'],
+
+    ['Quản lý kho, tồn kho, stock day và cảnh báo tồn kho.',
+     'Manage warehouse, inventory, stock days and inventory alerts.',
+     '管理仓库、库存、库存天数和库存预警。'],
+
+    ['Theo dõi doanh thu, hiệu suất bán hàng và các chỉ số kinh doanh.',
+     'Track revenue, sales performance and business metrics.',
+     '跟踪销售额、销售表现和业务指标。'],
+
+    ['Quản lý các chương trình khuyến mãi và scheme áp dụng.',
+     'Manage promotion programs and applicable schemes.',
+     '管理促销方案及适用的促销规则。'],
+
+    ['Quản lý các danh mục dữ liệu nền dùng cho toàn bộ Portal.',
+     'Manage master data used across the Portal.',
+     '管理整个 Portal 使用的基础主数据。'],
+
+    ['Cấu hình hệ thống, phân quyền người dùng và chính sách chiết khấu.',
+     'Configure system settings, user permissions and discount policies.',
+     '配置系统设置、用户权限和折扣政策。'],
+
+    ['Sales visual được ưu tiên làm chỉ số chính của Dashboard, đồng bộ trực tiếp từ Sales Data.',
+     'Sales visuals are prioritized as the main Dashboard indicators and synced directly from Sales Data.',
+     '销售可视化作为仪表盘的核心指标，并直接从销售数据同步。'],
+
+    ['Final Revenue', 'Final Revenue', '最终销售额'],
+    ['Orders Qty', 'Orders Qty', '订单数量'],
+    ['Sales Qty', 'Sales Qty', '销售数量'],
+    ['Khách hàng', 'Customers', '客户'],
+    ['Giá trị đơn hàng TB', 'Average Order Value', '平均订单金额'],
+    ['Xu hướng doanh thu', 'Sales Revenue Trend', '销售额趋势'],
+    ['Doanh thu theo kênh', 'Revenue by Channel', '按渠道查看销售额'],
+    ['Doanh thu theo tháng', 'Revenue by Month', '按月份查看销售额'],
+  ];
+
+  const UI_COPY_MAP = new Map();
+  UI_COPY.forEach(row => row.forEach(v => UI_COPY_MAP.set(norm(v), row)));
+
+  function applyDeterministicCopy(langIndex){
+    const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+    const nodes = [];
+    while (walker.nextNode()) {
+      const n = walker.currentNode;
+      if (n.parentElement?.closest('#language-switcher')) continue;
+      nodes.push(n);
+    }
+
+    nodes.forEach(n => {
+      const raw = n.nodeValue || '';
+      const row = UI_COPY_MAP.get(norm(raw));
+      if (!row) return;
+
+      const lead = raw.match(/^\s*/)?.[0] || '';
+      const trail = raw.match(/\s*$/)?.[0] || '';
+      const next = row[langIndex];
+      if (next && n.nodeValue !== lead + next + trail) {
+        n.nodeValue = lead + next + trail;
+      }
+    });
+  }
+
+  window.setLanguage = function(lang){
+    const normalized = ['vi','en','zh'].includes(lang) ? lang : 'vi';
+    const langIndex = normalized === 'en' ? 0 : normalized === 'zh' ? 2 : 1;
+
+    // Bind against the currently rendered text BEFORE translating it.
+    // This also catches dynamically rendered labels.
+    bindExistingDOM();
+
+    translateElement(document.body, langIndex);
+    translatePlaceholders(langIndex);
+    applyDeterministicCopy(langIndex);
+
+    document.documentElement.lang = normalized === 'zh' ? 'zh-CN' : normalized;
+    localStorage.setItem('opsPortalLanguage', normalized);
+    refreshLanguageButtons(normalized);
+    if (typeof window.applyAuthLanguage === 'function') window.applyAuthLanguage(normalized);
+
+    if (typeof lucide !== 'undefined' && lucide.createIcons) {
+      lucide.createIcons();
+    }
+  };
+
+  const observer = new MutationObserver(mutations=>{
+    const lang = localStorage.getItem('opsPortalLanguage') || 'vi';
+    const langIndex = lang === 'en' ? 0 : lang === 'zh' ? 2 : 1;
+
+    mutations.forEach(m=>{
+      if (m.type !== 'childList') return;
+
+      m.addedNodes.forEach(node=>{
+        if (node.nodeType === Node.TEXT_NODE) {
+          bindNode(node);
+          translateTextNode(node, langIndex);
+        } else if (node.nodeType === Node.ELEMENT_NODE) {
+          if (node.id !== 'language-switcher') {
+            // Bind first while the renderer's source language is still present.
+            translateElement(node, langIndex);
+          }
+        }
+      });
+    });
+  });
+
+  observer.observe(document.body, {childList:true, subtree:true});
+
+  window.addEventListener('DOMContentLoaded', ()=>{
+    const saved = localStorage.getItem('opsPortalLanguage') || 'vi';
+    setLanguage(['vi','en','zh'].includes(saved) ? saved : 'vi');
+    applyDeterministicCopy(['vi','en','zh'].includes(saved) ? (saved === 'en' ? 0 : saved === 'zh' ? 2 : 1) : 1);
+  });
+})();
+
 </script>
 </body>
 </html>
