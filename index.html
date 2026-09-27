@@ -213,6 +213,13 @@
   .user-name-display{min-width:0;}
 }
 </style>
+<style id="logout-button-style">
+.logout-portal-btn{display:inline-flex;align-items:center;justify-content:center;white-space:nowrap;}
+@media (max-width: 767px){
+  .logout-label{display:none;}
+  .logout-portal-btn{width:36px;height:36px;padding:0;}
+}
+</style>
 </head>
 <body class="bg-slate-50 text-slate-800 flex h-screen overflow-hidden">
 
@@ -291,7 +298,13 @@
             BT
           </div>
           <div class="text-xs">
-            <div class="font-bold text-slate-800 user-name-display whitespace-nowrap">Võ Ngọc Bảo Trang (Tera)</div>
+            <div class="flex items-center gap-2">
+              <div class="font-bold text-slate-800 user-name-display whitespace-nowrap">Võ Ngọc Bảo Trang (Tera)</div>
+              <button type="button" onclick="logoutPortal()" title="Đăng xuất" class="logout-portal-btn px-2.5 py-1.5 rounded-lg border border-slate-200 bg-white text-slate-500 hover:bg-red-50 hover:text-red-600 hover:border-red-200 text-[11px] font-bold transition">
+                <i data-lucide="log-out" class="w-3.5 h-3.5 inline-block align-middle"></i>
+                <span class="logout-label ml-1">Đăng xuất</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -5953,6 +5966,20 @@ document.addEventListener('DOMContentLoaded', () => {
     showGate(true);
     document.getElementById('login-password').value='';
   };
+
+  window.logoutPortal = function(){
+  const u = currentUser();
+  if(!u) return;
+  if(!confirm('Bạn có chắc muốn đăng xuất khỏi OPS PORTAL?')) return;
+  localStorage.removeItem(SESSION_KEY);
+  showGate(true);
+  const pw=document.getElementById('login-password');
+  const un=document.getElementById('login-username');
+  if(pw) pw.value='';
+  if(un) un.value='';
+  // Return to a neutral tab state until another account signs in.
+  try { switchTab('dashboard'); } catch(e) {}
+};
 
   window.requirePermission=function(module){
     if(!currentUser()){
