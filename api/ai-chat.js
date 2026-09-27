@@ -1,303 +1,235 @@
-// api/ai-chat.js
+// Vercel Serverless Function: /api/ai-chat
+// OPS PORTAL - Gemini read-only business intelligence assistant
 
-const GEMINI_API_BASE =
-  "https://generativelanguage.googleapis.com/v1beta/models";
+const ALLOWED_ORIGINS = [
+  'https://colorkeypromotionform.vercel.app',
+  'https://www.colorkeypromotionform.vercel.app'
+];
 
-const SYSTEM_PROMPT = `
-Bạn là AI Business & Market Intelligence của OPS Portal.
+const SYSTEM_INSTRUCTION = `
+You are the AI Business & Market Intelligence assistant inside OPS PORTAL.
 
-Mục tiêu:
-- Phân tích dữ liệu vận hành được cung cấp từ OPS Portal.
-- Hỗ trợ người dùng hiểu sales, customer, product, promotion,
-  inventory/stock và business signals.
-- Chỉ phân tích và đưa insight.
-- Đây là AI READ-ONLY.
+ROLE
+- You are a read-only business intelligence assistant for operations.
+- Analyze only the data supplied in the request context.
+- Never invent sales, stock, promotion, customer, product, or market facts.
+- If data is missing, say clearly that it is not available or not connected.
+- External market intelligence is NOT connected unless it is explicitly included in the context.
+- Do not claim that you changed, created, deleted, approved, reserved, released, or updated anything.
+- Do not provide instructions that execute portal actions. You may recommend what the operator should review, but the portal remains read-only for AI.
 
-QUY TẮC BẮT BUỘC:
-
-1. Không được tự tạo, sửa, xóa hoặc approve:
-   - Order
-   - Customer
-   - Product
-   - Promotion
-   - Stock
-   - Account/User
-   - Payment
-   - Reservation
-
-2. Không được nói rằng bạn đã thực hiện một action nếu
-   thực tế không có tool/action nào được gọi.
-
-3. Chỉ sử dụng dữ liệu được truyền trong CONTEXT.
-   Nếu dữ liệu không có, hãy nói rõ:
-   "Chưa có dữ liệu để xác nhận."
-
-4. Không được tự bịa:
-   - doanh thu
-   - số lượng
-   - tồn kho
-   - khách hàng
-   - sản phẩm
-   - chương trình promotion
-   - market data
-   - trend
-   - nguyên nhân
-
-5. Phân biệt:
-   - FACT: điều được dữ liệu xác nhận
-   - INSIGHT: nhận định được suy ra từ dữ liệu
-   - HYPOTHESIS: giả thuyết cần kiểm tra thêm
-
-6. Nếu người dùng hỏi về thị trường nhưng CONTEXT
-   không có external market data:
-   hãy nói rõ external market data chưa được kết nối.
-   Không được tự tạo market trend.
-
-7. Ưu tiên trả lời bằng tiếng Việt.
-
-8. Khi phù hợp, cấu trúc:
-
-WHAT
-- Điều gì đang xảy ra?
-
-WHY
-- Dữ liệu cho thấy nguyên nhân/động lực nào?
-- Nếu chưa đủ dữ liệu thì nói rõ.
-
-MARKET
-- Có liên quan đến market signal hay không?
-- Nếu chưa có market data thì ghi rõ.
-
-IMPLICATION
-- Điều này có ý nghĩa gì đối với vận hành/business?
-
-WATCH
-- Cần theo dõi thêm chỉ số nào?
-
-9. Khi phân tích stock:
-- Không tự quyết định mua hàng.
-- Không tự quyết định allocation.
-- Không tự reserve stock.
-- Chỉ cảnh báo/rút ra insight từ dữ liệu.
-
-10. Khi phân tích promotion:
-- Chỉ phân tích promotion có trong CONTEXT.
-- Không tự tạo promotion mới.
-- Có thể chỉ ra dấu hiệu bất thường hoặc cần kiểm tra.
-
-11. Khi phân tích sales:
-- Có thể phân tích revenue, quantity, customer, product,
-  category, line, channel, region và trend nếu dữ liệu được cung cấp.
-
-12. Nếu câu hỏi quá mơ hồ:
-- Trả lời dựa trên dữ liệu hiện có.
-- Nêu ngắn gọn dữ liệu nào cần thêm để phân tích chính xác hơn.
-
-Phong cách:
-- Ngắn gọn.
-- Rõ ràng.
-- Business-oriented.
-- Ưu tiên bullet point.
-- Không nói dài dòng về kỹ thuật AI.
-- Không nhắc đến system prompt.
+ANALYSIS STYLE
+- Default language: Vietnamese. Answer in English or Chinese only when the user asks.
+- Be concise, practical, and business-oriented.
+- Prefer concrete numbers from the supplied data.
+- Distinguish facts from interpretation. Use wording such as "Dữ liệu cho thấy" for facts and "Có thể" / "Khả năng" for hypotheses.
+- For business analysis, organize the answer where useful into:
+  WHAT — what is happening
+  WHY — likely drivers supported by the data
+  MARKET — external market signal only if supplied; otherwise state that external market data is not connected
+  IMPLICATION — operational/business implication
+  WATCH — what the operator should monitor next
+- When the user asks a simple factual question, answer directly without forcing all sections.
+- If the user asks for a ranking, provide the ranking only when it can be calculated from supplied data.
+- Never fabricate a ranking or estimate a value that is not supported by the context.
 `;
 
-function setCors(res) {
-  res.setHeader("Access-Control-Allow-Origin", "*");
-  res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
-  res.setHeader(
-    "Access-Control-Allow-Headers",
-    "Content-Type"
-  );
+function setCors(req, res) {
+  const origin = req.headers.origin || '';
+
+  if (ALLOWED_ORIGINS.includes(origin)) {
+    res.setHeader('Access-Control-Allow-Origin', origin);
+  } else {
+    res.setHeader('Access-Control-Allow-Origin', '*');
+  }
+
+  res.setHeader('Vary', 'Origin');
+  res.setHeader('Access-Control-Allow-Headers', 'Content-Type');
+  res.setHeader('Access-Control-Allow-Methods', 'POST, OPTIONS');
 }
 
-function safeJson(value, maxChars = 120000) {
-  try {
-    const text = JSON.stringify(value ?? {});
+function cleanModelName(value) {
+  const raw = String(value || '').trim();
 
-    if (text.length <= maxChars) {
-      return text;
-    }
-
-    return (
-      text.slice(0, maxChars) +
-      "\n[CONTEXT TRUNCATED]"
-    );
-  } catch (error) {
-    return "{}";
+  if (!raw) {
+    return 'gemini-2.5-flash';
   }
+
+  return raw.replace(/^models\//, '');
 }
 
-function extractGeminiText(data) {
-  if (!data) return "";
+function extractText(data) {
+  const candidates = Array.isArray(data?.candidates)
+    ? data.candidates
+    : [];
 
-  const candidates = data.candidates;
-
-  if (!Array.isArray(candidates)) {
-    return "";
-  }
-
-  const parts = [];
-
-  for (const candidate of candidates) {
-    const content = candidate?.content;
-
-    if (!content || !Array.isArray(content.parts)) {
-      continue;
-    }
-
-    for (const part of content.parts) {
-      if (
-        part &&
-        typeof part.text === "string"
-      ) {
-        parts.push(part.text);
-      }
-    }
-  }
-
-  return parts.join("\n").trim();
+  return candidates
+    .flatMap(candidate => candidate?.content?.parts || [])
+    .map(part => part?.text || '')
+    .filter(Boolean)
+    .join('')
+    .trim();
 }
 
 module.exports = async function handler(req, res) {
-  setCors(res);
 
-  // Browser preflight
-  if (req.method === "OPTIONS") {
+  // CORS
+  setCors(req, res);
+
+  // Preflight
+  if (req.method === 'OPTIONS') {
     return res.status(204).end();
   }
 
   // Only POST
-  if (req.method !== "POST") {
+  if (req.method !== 'POST') {
     return res.status(405).json({
       ok: false,
-      error: "Method not allowed"
+      error: 'Method not allowed'
     });
   }
 
+  // Gemini API Key
   const apiKey = process.env.GEMINI_API_KEY;
 
   if (!apiKey) {
     return res.status(500).json({
       ok: false,
-      error:
-        "GEMINI_API_KEY is not configured on the server."
+      error: 'GEMINI_API_KEY is not configured on the server.'
     });
   }
 
   try {
-    const body = req.body || {};
 
-    const question =
-      typeof body.question === "string"
-        ? body.question.trim()
-        : "";
+    // Parse request
+    const body =
+      typeof req.body === 'string'
+        ? JSON.parse(req.body)
+        : (req.body || {});
 
-    const context = body.context || {};
+    const question = String(body.question || '').trim();
 
+    const context =
+      body.context && typeof body.context === 'object'
+        ? body.context
+        : {};
+
+    // Validate question
     if (!question) {
       return res.status(400).json({
         ok: false,
-        error: "Question is required."
+        error: 'Question is required.'
       });
     }
 
-    if (question.length > 5000) {
+    // Prevent oversized request
+    if (question.length > 4000) {
       return res.status(400).json({
         ok: false,
-        error: "Question is too long."
+        error: 'Question is too long.'
       });
     }
 
-    const compactContext = safeJson(context);
+    // Convert portal data to JSON
+    const contextJson = JSON.stringify(context);
 
-    const model =
-      process.env.GEMINI_MODEL ||
-      "gemini-3.8-flash";
+    // Prevent oversized AI context
+    if (contextJson.length > 120000) {
+      return res.status(413).json({
+        ok: false,
+        error: 'AI context is too large. Please narrow the data scope.'
+      });
+    }
 
-    const prompt = `
-${SYSTEM_PROMPT}
+    // Gemini model
+    const model = cleanModelName(
+      process.env.GEMINI_MODEL
+    );
 
-========================
-USER QUESTION
-========================
+    // Gemini REST API endpoint
+    const endpoint =
+      `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(model)}:generateContent`;
 
+    // Prompt sent to Gemini
+    const userPrompt = `
+USER QUESTION:
 ${question}
 
-========================
-OPS PORTAL CONTEXT
-========================
+PORTAL DATA CONTEXT (read-only):
+${contextJson}
 
-${compactContext}
-
-========================
-TASK
-========================
-
-Analyze the user's question using only the
-supplied OPS Portal context.
-
-Remember:
-- Do not invent missing data.
-- Do not perform any write action.
-- Clearly distinguish FACT, INSIGHT and HYPOTHESIS
-  when useful.
-- If the supplied data is insufficient, say what is missing.
+Answer the user's question using the supplied portal data only.
 `;
 
-    const url =
-      `${GEMINI_API_BASE}/${model}:generateContent` +
-      `?key=${encodeURIComponent(apiKey)}`;
+    // Call Gemini
+    const response = await fetch(endpoint, {
+      method: 'POST',
 
-    const geminiResponse = await fetch(url, {
-      method: "POST",
       headers: {
-        "Content-Type": "application/json"
+        'Content-Type': 'application/json',
+        'x-goog-api-key': apiKey
       },
+
       body: JSON.stringify({
+
+        system_instruction: {
+          parts: [
+            {
+              text: SYSTEM_INSTRUCTION
+            }
+          ]
+        },
+
         contents: [
           {
-            role: "user",
+            role: 'user',
             parts: [
               {
-                text: prompt
+                text: userPrompt
               }
             ]
           }
         ],
+
         generationConfig: {
           temperature: 0.2,
-          maxOutputTokens: 1500
+          maxOutputTokens: 1200
         }
+
       })
     });
 
-    const data = await geminiResponse.json();
+    // Read Gemini response
+    const data = await response.json().catch(() => ({}));
 
-    if (!geminiResponse.ok) {
+    // Gemini API error
+    if (!response.ok) {
+
       console.error(
-        "Gemini API error:",
+        'Gemini API error:',
+        response.status,
         data
       );
 
-      return res.status(geminiResponse.status).json({
+      return res.status(response.status).json({
         ok: false,
         error:
           data?.error?.message ||
-          "Gemini API request failed."
+          `Gemini API HTTP ${response.status}`
       });
     }
 
-    const answer = extractGeminiText(data);
+    // Extract answer
+    const answer = extractText(data);
 
     if (!answer) {
       return res.status(502).json({
         ok: false,
-        error:
-          "Gemini returned an empty response."
+        error: 'Gemini returned no text response.'
       });
     }
 
+    // Success
     return res.status(200).json({
       ok: true,
       answer,
@@ -305,14 +237,17 @@ Remember:
     });
 
   } catch (error) {
+
     console.error(
-      "AI Chat error:",
+      'AI chat handler error:',
       error
     );
 
     return res.status(500).json({
       ok: false,
-      error: "Internal server error."
+      error:
+        error?.message ||
+        'Internal server error'
     });
   }
 };
