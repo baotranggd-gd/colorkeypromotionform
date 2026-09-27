@@ -140,210 +140,108 @@
       <!-- VIEW 1: DASHBOARD (Trang 1 PDF) -->
       <!-- ========================================================================= -->
       <section id="view-dashboard" class="h-full overflow-y-auto p-8 space-y-6">
-        <div class="flex justify-between items-center">
+        <div class="flex flex-col md:flex-row md:items-center justify-between gap-4">
           <div>
-            <h2 class="text-xl font-bold text-slate-800">Welcome back, Trang!</h2>
-            <p class="text-xs text-slate-500 mt-0.5">Here's what's happening with your operations today.</p>
+            <div class="flex items-center gap-2">
+              <h2 class="text-xl font-bold text-slate-800">Sales Dashboard</h2>
+              <span id="dashboard-sales-status" class="px-2.5 py-1 rounded-lg text-[10px] font-semibold bg-slate-100 text-slate-500">Đang tải...</span>
+            </div>
+            <p class="text-xs text-slate-500 mt-0.5">Sales visual được ưu tiên làm chỉ số chính của Dashboard, đồng bộ trực tiếp từ Sales Data.</p>
           </div>
-          <div class="text-xs font-semibold text-slate-600 bg-white px-3.5 py-1.5 rounded-xl border border-slate-200 shadow-sm">
-            Operational Dashboard • Q3 2026
+          <div class="flex items-center gap-2">
+            <span id="dashboard-sales-rows" class="px-3 py-2 rounded-xl bg-emerald-50 text-emerald-700 text-xs font-bold">0 rows</span>
+            <button onclick="syncSalesData(true)" class="px-4 py-2.5 rounded-xl bg-blue-600 hover:bg-blue-700 text-white text-xs font-bold shadow-sm">↻ Sync Sales Data</button>
+            <button onclick="switchTab('analytics')" class="px-4 py-2.5 rounded-xl bg-white border border-slate-200 text-slate-700 text-xs font-bold hover:bg-slate-50">View Report</button>
           </div>
         </div>
 
-        <!-- 4 KPI CARDS -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-            <div class="flex items-center justify-between text-slate-500 text-xs font-semibold mb-1">
-              <span>Total Orders</span>
-              <span class="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full text-[11px] font-bold">↑ 12%</span>
-            </div>
-            <div class="text-2xl font-black text-slate-800">1,245</div>
-            <div class="text-[11px] text-slate-400 mt-0.5">vs. yesterday</div>
+        <!-- SALES KPI -->
+        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-4">
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm lg:col-span-2">
+            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Final Revenue</div>
+            <div id="dashboard-sales-revenue" class="text-2xl font-black text-slate-800 mt-2">—</div>
+            <div class="text-[11px] text-slate-400 mt-1">VND</div>
           </div>
-
-          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-            <div class="flex items-center justify-between text-slate-500 text-xs font-semibold mb-1">
-              <span>Completed Orders</span>
-              <span class="text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full text-[11px] font-bold">↑ 8%</span>
-            </div>
-            <div class="text-2xl font-black text-emerald-600">980</div>
-            <div class="text-[11px] text-slate-400 mt-0.5">vs. yesterday</div>
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Orders Qty</div>
+            <div id="dashboard-sales-orders" class="text-2xl font-black text-blue-600 mt-2">—</div>
+            <div class="text-[11px] text-slate-400 mt-1">Unique Order No.</div>
           </div>
-
-          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-            <div class="flex items-center justify-between text-slate-500 text-xs font-semibold mb-1">
-              <span>Pending Orders</span>
-              <span class="text-amber-600 bg-amber-50 px-2 py-0.5 rounded-full text-[11px] font-bold">↑ 15%</span>
-            </div>
-            <div class="text-2xl font-black text-amber-500">128</div>
-            <div class="text-[11px] text-slate-400 mt-0.5">vs. yesterday</div>
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Sales Qty</div>
+            <div id="dashboard-sales-qty" class="text-2xl font-black text-slate-800 mt-2">—</div>
+            <div class="text-[11px] text-slate-400 mt-1">Units</div>
           </div>
-
-          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm">
-            <div class="flex items-center justify-between text-slate-500 text-xs font-semibold mb-1">
-              <span>Cancelled Orders</span>
-              <span class="text-rose-600 bg-rose-50 px-2 py-0.5 rounded-full text-[11px] font-bold">↓ 20%</span>
-            </div>
-            <div class="text-2xl font-black text-rose-500">37</div>
-            <div class="text-[11px] text-slate-400 mt-0.5">vs. yesterday</div>
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wide">Customers</div>
+            <div id="dashboard-sales-customers" class="text-2xl font-black text-slate-800 mt-2">—</div>
+            <div class="text-[11px] text-slate-400 mt-1">Unique Customer Code</div>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wide">AOV</div>
+            <div id="dashboard-sales-aov" class="text-2xl font-black text-emerald-600 mt-2">—</div>
+            <div class="text-[11px] text-slate-400 mt-1">Revenue / Order</div>
           </div>
         </div>
 
-        <!-- CHARTS SECTION: Order Trend & Order Status -->
+        <!-- MAIN SALES VISUAL -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm lg:col-span-2">
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm lg:col-span-2">
             <div class="flex items-center justify-between mb-4">
               <div>
-                <h3 class="font-bold text-slate-800 text-sm">Order Trend</h3>
-                <p class="text-[11px] text-slate-400">Order Quantity & Value (M VND)</p>
+                <h3 class="font-bold text-slate-800 text-sm">Sales Revenue Trend</h3>
+                <p class="text-[11px] text-slate-400">Final Revenue by Month</p>
               </div>
-              <div class="flex items-center gap-4 text-xs">
-                <span class="flex items-center gap-1.5"><span class="w-3 h-3 rounded-sm bg-blue-300 inline-block"></span> Order Qty</span>
-                <span class="flex items-center gap-1.5"><span class="w-3 h-1 bg-[#0A192F] inline-block"></span> Order Value (M VND)</span>
-              </div>
+              <span class="text-[10px] px-2 py-1 rounded-lg bg-blue-50 text-blue-700 font-semibold">Sales</span>
             </div>
-            <div class="h-60 w-full">
-              <canvas id="chart-order-trend"></canvas>
-            </div>
+            <div class="h-72"><canvas id="chart-sales-revenue-trend"></canvas></div>
           </div>
 
-          <div class="bg-white p-5 rounded-2xl border border-slate-200/80 shadow-sm flex flex-col justify-between">
-            <div>
-              <h3 class="font-bold text-slate-800 text-sm mb-1">Order Status</h3>
-              <p class="text-[11px] text-slate-400 mb-2">Tỷ lệ trạng thái đơn hàng hôm nay</p>
-              <div class="h-44 relative flex items-center justify-center">
-                <canvas id="chart-order-status"></canvas>
-                <div class="absolute text-center pointer-events-none">
-                  <div class="text-lg font-black text-slate-800">1,245</div>
-                  <div class="text-[10px] text-slate-400">Total Orders</div>
-                </div>
-              </div>
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <div class="mb-4">
+              <h3 class="font-bold text-slate-800 text-sm">Revenue by Channel</h3>
+              <p class="text-[11px] text-slate-400">Final Revenue contribution</p>
             </div>
-            <div class="grid grid-cols-2 gap-2 text-xs pt-3 border-t border-slate-100">
-              <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-emerald-500"></span> Completed: <b>78.7%</b></div>
-              <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-amber-400"></span> Pending: <b>10.3%</b></div>
-              <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-blue-500"></span> Processing: <b>8.0%</b></div>
-              <div class="flex items-center gap-1.5"><span class="w-2.5 h-2.5 rounded-full bg-rose-500"></span> Cancelled: <b>3.0%</b></div>
-            </div>
+            <div class="h-72"><canvas id="chart-sales-channel"></canvas></div>
           </div>
         </div>
 
-        <!-- QUICK ACTIONS & NOTIFICATIONS -->
+        <!-- SALES BREAKDOWN -->
         <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-            <h3 class="font-bold text-slate-800 text-sm">Quick Actions</h3>
-            <div class="grid grid-cols-2 gap-2.5 text-xs">
-              <button onclick="switchTab('order-processing')" class="p-3 bg-blue-50 hover:bg-blue-100 text-blue-800 rounded-xl font-bold flex flex-col items-center gap-1 text-center transition border border-blue-100">
-                <i data-lucide="search" class="w-5 h-5 text-blue-600"></i> Check Stock
-                <span class="text-[10px] font-normal text-slate-500">Search or upload</span>
-              </button>
-              <button onclick="switchTab('order-processing')" class="p-3 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 rounded-xl font-bold flex flex-col items-center gap-1 text-center transition border border-emerald-100">
-                <i data-lucide="plus-circle" class="w-5 h-5 text-emerald-600"></i> Create Order
-                <span class="text-[10px] font-normal text-slate-500">Manual or file upload</span>
-              </button>
-              <button onclick="switchTab('products')" class="p-3 bg-purple-50 hover:bg-purple-100 text-purple-800 rounded-xl font-bold flex flex-col items-center gap-1 text-center transition border border-purple-100">
-                <i data-lucide="package" class="w-5 h-5 text-purple-600"></i> Manage SKU
-                <span class="text-[10px] font-normal text-slate-500">382 products</span>
-              </button>
-              <button onclick="switchTab('promotions')" class="p-3 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-xl font-bold flex flex-col items-center gap-1 text-center transition border border-amber-100">
-                <i data-lucide="tag" class="w-5 h-5 text-amber-600"></i> Promotions
-                <span class="text-[10px] font-normal text-slate-500">Create & manage</span>
-              </button>
-            </div>
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 class="font-bold text-slate-800 text-sm">Top Customers</h3>
+            <p class="text-[11px] text-slate-400 mb-4">By Final Revenue</p>
+            <div id="dashboard-sales-top-customers" class="space-y-3"></div>
           </div>
-
-          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm lg:col-span-2 space-y-3">
-            <div class="flex items-center justify-between">
-              <h3 class="font-bold text-slate-800 text-sm">Alerts & Notifications</h3>
-              <span class="text-xs text-blue-600 font-semibold cursor-pointer hover:underline">View all</span>
-            </div>
-            <div class="grid grid-cols-1 sm:grid-cols-2 gap-2.5 text-xs">
-              <div class="p-3 bg-amber-50 border border-amber-200 rounded-xl flex items-start gap-2.5">
-                <i data-lucide="alert-triangle" class="w-4 h-4 text-amber-600 flex-shrink-0 mt-0.5"></i>
-                <div>
-                  <div class="font-bold text-amber-900">Low Stock Alert (12 SKU)</div>
-                  <div class="text-[11px] text-amber-700">12 SKUs are below safety stock • 1 hour ago</div>
-                </div>
-              </div>
-              <div class="p-3 bg-blue-50 border border-blue-200 rounded-xl flex items-start gap-2.5">
-                <i data-lucide="clock" class="w-4 h-4 text-blue-600 flex-shrink-0 mt-0.5"></i>
-                <div>
-                  <div class="font-bold text-blue-900">Pending Approval (28 orders)</div>
-                  <div class="text-[11px] text-blue-700">28 orders waiting for approval • 2 hours ago</div>
-                </div>
-              </div>
-              <div class="p-3 bg-rose-50 border border-rose-200 rounded-xl flex items-start gap-2.5">
-                <i data-lucide="x-circle" class="w-4 h-4 text-rose-600 flex-shrink-0 mt-0.5"></i>
-                <div>
-                  <div class="font-bold text-rose-900">Failed Orders (5 orders)</div>
-                  <div class="text-[11px] text-rose-700">5 orders failed to process • 3 hours ago</div>
-                </div>
-              </div>
-              <div class="p-3 bg-emerald-50 border border-emerald-200 rounded-xl flex items-start gap-2.5">
-                <i data-lucide="tag" class="w-4 h-4 text-emerald-600 flex-shrink-0 mt-0.5"></i>
-                <div>
-                  <div class="font-bold text-emerald-900">Promotion Ending Soon</div>
-                  <div class="text-[11px] text-emerald-700">3 promotions will end in 3 days • 4 hours ago</div>
-                </div>
-              </div>
-            </div>
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 class="font-bold text-slate-800 text-sm">Top Products</h3>
+            <p class="text-[11px] text-slate-400 mb-4">By Final Revenue</p>
+            <div id="dashboard-sales-top-products" class="space-y-3"></div>
+          </div>
+          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+            <h3 class="font-bold text-slate-800 text-sm">Revenue by Team PIC</h3>
+            <p class="text-[11px] text-slate-400 mb-4">Top teams by Final Revenue</p>
+            <div id="dashboard-sales-top-teams" class="space-y-3"></div>
           </div>
         </div>
 
-        <!-- TOP TABLES -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-            <div class="flex justify-between items-center">
-              <h3 class="font-bold text-sm text-slate-800">Top 5 SKUs by Sell-out</h3>
-              <span class="text-xs text-blue-600 cursor-pointer">View all</span>
+        <!-- SECONDARY OPERATIONAL VISUALS -->
+        <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm">
+          <div class="flex items-center justify-between mb-4">
+            <div>
+              <h3 class="font-bold text-slate-800 text-sm">Operational Snapshot</h3>
+              <p class="text-[11px] text-slate-400">Các chỉ số vận hành được đặt sau Sales visual</p>
             </div>
-            <table class="w-full text-left text-xs">
-              <thead>
-                <tr class="text-slate-400 font-semibold border-b pb-2">
-                  <th class="pb-2">#</th>
-                  <th class="pb-2">SKU</th>
-                  <th class="pb-2">Product Name</th>
-                  <th class="pb-2 text-right">Qty</th>
-                  <th class="pb-2 text-right">Amount (VND)</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y text-slate-700">
-                <tr><td class="py-2 font-bold">1</td><td class="font-mono text-slate-500">8931234567890</td><td class="font-medium text-slate-800">Colorkey Hydrating Mask</td><td class="text-right font-bold">1,250</td><td class="text-right font-semibold">312,500,000</td></tr>
-                <tr><td class="py-2 font-bold">2</td><td class="font-mono text-slate-500">8931234567891</td><td class="font-medium text-slate-800">Colorkey Cushion SPF50+</td><td class="text-right font-bold">980</td><td class="text-right font-semibold">294,000,000</td></tr>
-                <tr><td class="py-2 font-bold">3</td><td class="font-mono text-slate-500">8931234567892</td><td class="font-medium text-slate-800">Colorkey Lip Tint R300</td><td class="text-right font-bold">875</td><td class="text-right font-semibold">218,750,000</td></tr>
-                <tr><td class="py-2 font-bold">4</td><td class="font-mono text-slate-500">8931234567893</td><td class="font-medium text-slate-800">Colorkey Luminous Toner</td><td class="text-right font-bold">620</td><td class="text-right font-semibold">155,000,000</td></tr>
-                <tr><td class="py-2 font-bold">5</td><td class="font-mono text-slate-500">8931234567894</td><td class="font-medium text-slate-800">Colorkey Lotus Cleanser</td><td class="text-right font-bold">540</td><td class="text-right font-semibold">135,000,000</td></tr>
-              </tbody>
-            </table>
           </div>
-
-          <div class="bg-white p-5 rounded-2xl border border-slate-200 shadow-sm space-y-3">
-            <div class="flex justify-between items-center">
-              <h3 class="font-bold text-sm text-slate-800">Top 5 Customers by Order Value</h3>
-              <span class="text-xs text-blue-600 cursor-pointer">View all</span>
-            </div>
-            <table class="w-full text-left text-xs">
-              <thead>
-                <tr class="text-slate-400 font-semibold border-b pb-2">
-                  <th class="pb-2">#</th>
-                  <th class="pb-2">Customer Name</th>
-                  <th class="pb-2 text-right">Orders</th>
-                  <th class="pb-2 text-right">Amount (VND)</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y text-slate-700">
-                <tr><td class="py-2 font-bold">1</td><td class="font-medium text-slate-800">AEON Việt Nam</td><td class="text-right font-bold">145</td><td class="text-right font-semibold text-blue-600">580,000,000</td></tr>
-                <tr><td class="py-2 font-bold">2</td><td class="font-medium text-slate-800">Guardian Retail</td><td class="text-right font-bold">132</td><td class="text-right font-semibold text-blue-600">420,500,000</td></tr>
-                <tr><td class="py-2 font-bold">3</td><td class="font-medium text-slate-800">Watsons Vietnam</td><td class="text-right font-bold">120</td><td class="text-right font-semibold text-blue-600">398,750,000</td></tr>
-                <tr><td class="py-2 font-bold">4</td><td class="font-medium text-slate-800">Hasaki Beauty & Clinic</td><td class="text-right font-bold">98</td><td class="text-right font-semibold text-blue-600">310,200,000</td></tr>
-                <tr><td class="py-2 font-bold">5</td><td class="font-medium text-slate-800">WinCommerce</td><td class="text-right font-bold">85</td><td class="text-right font-semibold text-blue-600">265,000,000</td></tr>
-              </tbody>
-            </table>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3">
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-100"><div class="text-[10px] font-bold text-slate-400 uppercase">Order Processing</div><div class="text-lg font-black text-slate-700 mt-1">—</div><div class="text-[10px] text-slate-400">Operational data</div></div>
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-100"><div class="text-[10px] font-bold text-slate-400 uppercase">Inventory</div><div class="text-lg font-black text-slate-700 mt-1">—</div><div class="text-[10px] text-slate-400">Operational data</div></div>
+            <div class="p-4 rounded-xl bg-slate-50 border border-slate-100"><div class="text-[10px] font-bold text-slate-400 uppercase">Promotion</div><div class="text-lg font-black text-slate-700 mt-1">—</div><div class="text-[10px] text-slate-400">Operational data</div></div>
           </div>
         </div>
       </section>
 
-            <!-- ========================================================================= -->
+      <!-- ========================================================================= -->
       <!-- VIEW 2: ORDER PROCESSING (Trang 2 PDF - 3 Workflows & Order Calculator & Transform Order) -->
       <!-- ========================================================================= -->
       <section id="view-order-processing" class="hidden h-full overflow-y-auto p-8 space-y-6">
@@ -1144,7 +1042,7 @@
           <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5"><div class="text-[11px] text-slate-400 font-semibold uppercase">Final Revenue</div><div id="analytics-kpi-revenue" class="text-xl font-bold text-slate-800 mt-2">—</div></div>
           <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5"><div class="text-[11px] text-slate-400 font-semibold uppercase">Amount</div><div id="analytics-kpi-amount" class="text-xl font-bold text-slate-800 mt-2">—</div></div>
           <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5"><div class="text-[11px] text-slate-400 font-semibold uppercase">Sales Qty</div><div id="analytics-kpi-qty" class="text-xl font-bold text-slate-800 mt-2">—</div></div>
-          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5"><div class="text-[11px] text-slate-400 font-semibold uppercase">Documents</div><div id="analytics-kpi-docs" class="text-xl font-bold text-slate-800 mt-2">—</div></div>
+          <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5"><div class="text-[11px] text-slate-400 font-semibold uppercase">Orders Qty</div><div id="analytics-kpi-docs" class="text-xl font-bold text-slate-800 mt-2">—</div></div>
           <div class="bg-white rounded-2xl border border-slate-200 shadow-sm p-5"><div class="text-[11px] text-slate-400 font-semibold uppercase">Customers</div><div id="analytics-kpi-customers" class="text-xl font-bold text-slate-800 mt-2">—</div></div>
         </div>
 
@@ -1153,13 +1051,24 @@
             <div><h3 class="font-bold text-slate-800">Sales Filters</h3><p class="text-[11px] text-slate-400">Lọc trên toàn bộ Sales Revenue dataset đã sync.</p></div>
             <button onclick="resetSalesFilters()" class="px-3 py-2 rounded-xl border border-slate-200 text-xs font-semibold text-slate-600 hover:bg-slate-50">Reset</button>
           </div>
-          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-3">
+          <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3">
             <select id="sales-filter-quarter" onchange="renderSalesAnalytics()" class="border border-slate-200 rounded-xl px-3 py-2.5 text-xs bg-white"><option value="">All Quarter</option></select>
             <select id="sales-filter-month" onchange="renderSalesAnalytics()" class="border border-slate-200 rounded-xl px-3 py-2.5 text-xs bg-white"><option value="">All Month</option></select>
+            <select id="sales-filter-doc-type" onchange="renderSalesAnalytics()" class="border border-slate-200 rounded-xl px-3 py-2.5 text-xs bg-white"><option value="">All Document Type</option></select>
             <select id="sales-filter-channel" onchange="renderSalesAnalytics()" class="border border-slate-200 rounded-xl px-3 py-2.5 text-xs bg-white"><option value="">All Channel</option></select>
+            <select id="sales-filter-team-pic" onchange="renderSalesAnalytics()" class="border border-slate-200 rounded-xl px-3 py-2.5 text-xs bg-white"><option value="">All Team PIC</option></select>
+
+            <select id="sales-filter-pic" onchange="renderSalesAnalytics()" class="border border-slate-200 rounded-xl px-3 py-2.5 text-xs bg-white"><option value="">All PIC</option></select>
+            <select id="sales-filter-region" onchange="renderSalesAnalytics()" class="border border-slate-200 rounded-xl px-3 py-2.5 text-xs bg-white"><option value="">All Region</option></select>
+            <select id="sales-filter-rank" onchange="renderSalesAnalytics()" class="border border-slate-200 rounded-xl px-3 py-2.5 text-xs bg-white"><option value="">All Customer Rank</option></select>
             <select id="sales-filter-customer" onchange="renderSalesAnalytics()" class="border border-slate-200 rounded-xl px-3 py-2.5 text-xs bg-white"><option value="">All Customer</option></select>
+            <select id="sales-filter-brand" onchange="renderSalesAnalytics()" class="border border-slate-200 rounded-xl px-3 py-2.5 text-xs bg-white"><option value="">All Brand</option></select>
+
+            <select id="sales-filter-category" onchange="renderSalesAnalytics()" class="border border-slate-200 rounded-xl px-3 py-2.5 text-xs bg-white"><option value="">All Category</option></select>
+            <select id="sales-filter-line" onchange="renderSalesAnalytics()" class="border border-slate-200 rounded-xl px-3 py-2.5 text-xs bg-white"><option value="">All Product Line</option></select>
+            <select id="sales-filter-type" onchange="renderSalesAnalytics()" class="border border-slate-200 rounded-xl px-3 py-2.5 text-xs bg-white"><option value="">All Type</option></select>
             <input id="sales-filter-material" oninput="renderSalesAnalytics()" placeholder="Material code..." class="border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-blue-500" />
-            <input id="sales-filter-doc" oninput="renderSalesAnalytics()" placeholder="Doc No..." class="border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-blue-500" />
+            <input id="sales-filter-doc" oninput="renderSalesAnalytics()" placeholder="Order No..." class="border border-slate-200 rounded-xl px-3 py-2.5 text-xs focus:outline-none focus:border-blue-500" />
           </div>
         </div>
 
@@ -2423,6 +2332,7 @@
       filterProdManagementTable();
       filterCrmTable();
       initDashboardCharts();
+      initSalesDashboard();
       initWarehouseCharts();
       initPdfDropHandlers();
       initTransformOrderButtons();
@@ -2462,6 +2372,7 @@
         activeBtn.classList.remove('text-slate-400');
       }
       if (tabId === 'warehouse') initWarehouseCharts();
+      if (tabId === 'dashboard') { initSalesDashboard(); }
       if (tabId === 'analytics') initSalesAnalytics();
 
       // Kích hoạt render lại dữ liệu tương ứng cho từng tab
@@ -5119,11 +5030,22 @@
       return normalized;
     }
 
+    function normalizeSalesDocType(value) {
+      const raw = salesText(value);
+      const v = raw.toLowerCase().replace(/[\-_]+/g, ' ').replace(/\s+/g, ' ');
+      if (v.includes('return') || v.includes('sales return')) return 'Return';
+      if (v.includes('back margin') || v.includes('backmargin')) return 'Back Margin';
+      if (v.includes('sales order') || v.includes('normal order') || v === 'normal') return 'Normal Order';
+      return raw || 'Other';
+    }
+
     function mapSalesCustomer(row) {
       const code = salesText(row['Customer code']);
       const customer = Array.isArray(customers) ? customers.find(c => salesText(c.code) === code) : null;
       row._crm = customer || null;
       row._customerFound = !!customer;
+      row._customerRegion = customer ? salesText(customer.region) : '';
+      row._customerRank = customer ? salesText(customer.rank) : '';
       return row;
     }
 
@@ -5132,6 +5054,10 @@
       const product = Array.isArray(products) ? products.find(p => salesText(p.productCode) === materialCode) : null;
       row._product = product || null;
       row._productFound = !!product;
+      row._brand = product ? salesText(product.brand) : '';
+      row._category = product ? salesText(product.category) : '';
+      row._productLine = product ? salesText(product.productLine) : '';
+      row._productType = product ? salesText(product.type) : salesText(row['Type']);
       return row;
     }
 
@@ -5155,10 +5081,15 @@
 
       try {
         const rawData = await fetchSalesData();
-        salesRevenueData = rawData.map(normalizeSalesRow).map(mapSalesCustomer).map(mapSalesProduct);
+        salesRevenueData = rawData
+          .map(normalizeSalesRow)
+          .map(row => { row._docTypeGroup = normalizeSalesDocType(row['Doc Type']); return row; })
+          .map(mapSalesCustomer)
+          .map(mapSalesProduct);
         setSalesApiStatus(`${salesRevenueData.length.toLocaleString('vi-VN')} rows`, 'success');
         renderSalesFilterOptions();
         renderSalesAnalytics();
+        renderSalesDashboard();
         return salesRevenueData;
       } catch (error) {
         console.error('Sales Data Sync Failed:', error);
@@ -5198,7 +5129,16 @@
       if (!salesRevenueData.length) return;
       setSelectOptions('sales-filter-quarter', uniqueSortedSales(salesRevenueData.map(r => r['Quarter'])), 'All Quarter');
       setSelectOptions('sales-filter-month', uniqueSortedSales(salesRevenueData.map(r => r['Month']), true), 'All Month');
+      setSelectOptions('sales-filter-doc-type', uniqueSortedSales(salesRevenueData.map(r => r._docTypeGroup)), 'All Document Type');
       setSelectOptions('sales-filter-channel', uniqueSortedSales(salesRevenueData.map(r => r['Channel'])), 'All Channel');
+      setSelectOptions('sales-filter-team-pic', uniqueSortedSales(salesRevenueData.map(r => r['Team PIC'])), 'All Team PIC');
+      setSelectOptions('sales-filter-pic', uniqueSortedSales(salesRevenueData.map(r => r['PIC'])), 'All PIC');
+      setSelectOptions('sales-filter-region', uniqueSortedSales(salesRevenueData.map(r => r._customerRegion)), 'All Region');
+      setSelectOptions('sales-filter-rank', uniqueSortedSales(salesRevenueData.map(r => r._customerRank)), 'All Customer Rank');
+      setSelectOptions('sales-filter-brand', uniqueSortedSales(salesRevenueData.map(r => r._brand)), 'All Brand');
+      setSelectOptions('sales-filter-category', uniqueSortedSales(salesRevenueData.map(r => r._category)), 'All Category');
+      setSelectOptions('sales-filter-line', uniqueSortedSales(salesRevenueData.map(r => r._productLine)), 'All Product Line');
+      setSelectOptions('sales-filter-type', uniqueSortedSales(salesRevenueData.map(r => r._productType)), 'All Type');
       const customerCodes = uniqueSortedSales(salesRevenueData.map(r => r['Customer code']));
       const customerEl = document.getElementById('sales-filter-customer');
       if (customerEl) {
@@ -5215,26 +5155,154 @@
     function getFilteredSalesData() {
       const quarter = salesText(document.getElementById('sales-filter-quarter')?.value);
       const month = salesText(document.getElementById('sales-filter-month')?.value);
+      const docType = salesText(document.getElementById('sales-filter-doc-type')?.value);
       const channel = salesText(document.getElementById('sales-filter-channel')?.value);
+      const teamPic = salesText(document.getElementById('sales-filter-team-pic')?.value);
+      const pic = salesText(document.getElementById('sales-filter-pic')?.value);
+      const region = salesText(document.getElementById('sales-filter-region')?.value);
+      const rank = salesText(document.getElementById('sales-filter-rank')?.value);
       const customer = salesText(document.getElementById('sales-filter-customer')?.value);
+      const brand = salesText(document.getElementById('sales-filter-brand')?.value);
+      const category = salesText(document.getElementById('sales-filter-category')?.value);
+      const line = salesText(document.getElementById('sales-filter-line')?.value);
+      const type = salesText(document.getElementById('sales-filter-type')?.value);
       const material = salesText(document.getElementById('sales-filter-material')?.value).toLowerCase();
       const doc = salesText(document.getElementById('sales-filter-doc')?.value).toLowerCase();
 
       return salesRevenueData.filter(row =>
         (!quarter || salesText(row['Quarter']) === quarter) &&
         (!month || salesText(row['Month']) === month) &&
+        (!docType || salesText(row._docTypeGroup) === docType) &&
         (!channel || salesText(row['Channel']) === channel) &&
+        (!teamPic || salesText(row['Team PIC']) === teamPic) &&
+        (!pic || salesText(row['PIC']) === pic) &&
+        (!region || salesText(row._customerRegion) === region) &&
+        (!rank || salesText(row._customerRank) === rank) &&
         (!customer || salesText(row['Customer code']) === customer) &&
+        (!brand || salesText(row._brand) === brand) &&
+        (!category || salesText(row._category) === category) &&
+        (!line || salesText(row._productLine) === line) &&
+        (!type || salesText(row._productType) === type) &&
         (!material || salesText(row['Material code']).toLowerCase().includes(material)) &&
         (!doc || salesText(row['Doc No.']).toLowerCase().includes(doc))
       );
     }
 
     function resetSalesFilters() {
-      ['sales-filter-quarter','sales-filter-month','sales-filter-channel','sales-filter-customer','sales-filter-material','sales-filter-doc'].forEach(id => {
+      ['sales-filter-quarter','sales-filter-month','sales-filter-doc-type','sales-filter-channel','sales-filter-team-pic','sales-filter-pic','sales-filter-region','sales-filter-rank','sales-filter-customer','sales-filter-brand','sales-filter-category','sales-filter-line','sales-filter-type','sales-filter-material','sales-filter-doc'].forEach(id => {
         const el = document.getElementById(id); if (el) el.value = '';
       });
       renderSalesAnalytics();
+    }
+
+    function setDashboardSalesStatus(text, type = 'idle') {
+      const el = document.getElementById('dashboard-sales-status');
+      if (!el) return;
+      el.textContent = text;
+      el.className = 'px-2.5 py-1.5 rounded-lg text-[10px] font-semibold ' +
+        (type === 'success' ? 'bg-emerald-50 text-emerald-700' : type === 'error' ? 'bg-red-50 text-red-700' : 'bg-slate-100 text-slate-500');
+    }
+
+    function renderDashboardSalesBreakdown(containerId, data, field) {
+      const el = document.getElementById(containerId);
+      if (!el) return;
+      const groups = {};
+      data.forEach(row => {
+        const key = salesText(row[field]) || 'Unknown';
+        groups[key] = (groups[key] || 0) + salesNum(row['Final Revenue']);
+      });
+      const entries = Object.entries(groups)
+        .sort((a,b) => field === 'Month' ? salesNum(a[0]) - salesNum(b[0]) : b[1] - a[1])
+        .slice(0, 12);
+      if (!entries.length) { el.innerHTML = '<div class="text-xs text-slate-400">No data</div>'; return; }
+      const max = entries[0][1] || 1;
+      el.innerHTML = entries.map(([key,value]) => `<div>
+        <div class="flex justify-between items-center mb-1"><span class="text-[11px] font-semibold text-slate-700">${escapeSalesHtml(key)}</span><span class="text-[11px] font-bold text-slate-800">${formatSalesMoney(value)}</span></div>
+        <div class="h-2 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-blue-500 rounded-full" style="width:${Math.max(2, Math.min(100, value / max * 100))}%"></div></div>
+      </div>`).join('');
+    }
+
+    function renderSalesDashboardCharts(data) {
+      if (typeof Chart === 'undefined') return;
+      window.__salesDashboardCharts = window.__salesDashboardCharts || {};
+      Object.values(window.__salesDashboardCharts).forEach(ch => { try { ch.destroy(); } catch(e) {} });
+      window.__salesDashboardCharts = {};
+
+      const monthMap = {};
+      const channelMap = {};
+      data.forEach(r => {
+        const month = salesText(r['Month']) || 'Unknown';
+        const channel = salesText(r['Channel']) || 'Unknown';
+        monthMap[month] = (monthMap[month] || 0) + salesNum(r['Final Revenue']);
+        channelMap[channel] = (channelMap[channel] || 0) + salesNum(r['Final Revenue']);
+      });
+      const months = Object.keys(monthMap).sort((a,b) => salesNum(a)-salesNum(b));
+      const channels = Object.entries(channelMap).sort((a,b)=>b[1]-a[1]);
+
+      const trendCanvas = document.getElementById('chart-sales-revenue-trend');
+      if (trendCanvas) {
+        window.__salesDashboardCharts.trend = new Chart(trendCanvas, {
+          type: 'line',
+          data: { labels: months.map(m => `M${m}`), datasets: [{ label:'Final Revenue', data: months.map(m=>monthMap[m]), borderWidth:3, tension:.3, fill:true }] },
+          options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}, tooltip:{callbacks:{label:c=>formatSalesMoney(c.raw)+' VND'}}}, scales:{y:{beginAtZero:true,ticks:{callback:v=>formatSalesMoney(v)}},x:{grid:{display:false}}} }
+        });
+      }
+
+      const channelCanvas = document.getElementById('chart-sales-channel');
+      if (channelCanvas) {
+        window.__salesDashboardCharts.channel = new Chart(channelCanvas, {
+          type:'doughnut',
+          data:{ labels:channels.map(x=>x[0]), datasets:[{data:channels.map(x=>x[1]), borderWidth:2}] },
+          options:{responsive:true,maintainAspectRatio:false,cutout:'62%',plugins:{legend:{position:'bottom',labels:{font:{size:10},boxWidth:10}},tooltip:{callbacks:{label:c=>`${c.label}: ${formatSalesMoney(c.raw)} VND`}}}}
+        });
+      }
+    }
+
+    function renderDashboardSalesList(containerId, entries) {
+      const el = document.getElementById(containerId); if (!el) return;
+      if (!entries.length) { el.innerHTML='<div class="text-xs text-slate-400">No data</div>'; return; }
+      const max=entries[0].value||1;
+      el.innerHTML=entries.slice(0,5).map((x,i)=>`<div>
+        <div class="flex items-center justify-between gap-2 mb-1"><span class="text-[11px] font-semibold text-slate-700 truncate"><span class="text-slate-400 mr-1">${i+1}.</span>${escapeSalesHtml(x.label)}</span><span class="text-[11px] font-bold text-slate-800 whitespace-nowrap">${formatSalesMoney(x.value)}</span></div>
+        <div class="h-1.5 bg-slate-100 rounded-full overflow-hidden"><div class="h-full bg-blue-500 rounded-full" style="width:${Math.max(3,Math.min(100,x.value/max*100))}%"></div></div>
+      </div>`).join('');
+    }
+
+    function renderSalesDashboard() {
+      if (!salesRevenueData.length) return;
+      const revenue = salesRevenueData.reduce((s,r)=>s+salesNum(r['Final Revenue']),0);
+      const qty = salesRevenueData.reduce((s,r)=>s+salesNum(r['Sales Qty']),0);
+      const orders = new Set(salesRevenueData.map(r=>salesText(r['Doc No.'])).filter(Boolean)).size;
+      const custs = new Set(salesRevenueData.map(r=>salesText(r['Customer code'])).filter(Boolean)).size;
+      const aov = orders ? revenue/orders : 0;
+      const set=(id,val)=>{const el=document.getElementById(id);if(el)el.textContent=val;};
+      set('dashboard-sales-revenue',formatSalesMoney(revenue));
+      set('dashboard-sales-orders',orders.toLocaleString('vi-VN'));
+      set('dashboard-sales-qty',formatSalesQty(qty));
+      set('dashboard-sales-customers',custs.toLocaleString('vi-VN'));
+      set('dashboard-sales-aov',formatSalesMoney(aov));
+      set('dashboard-sales-rows',`${salesRevenueData.length.toLocaleString('vi-VN')} rows`);
+      setDashboardSalesStatus('Sales data synced','success');
+
+      const aggregate=(field)=>{const m={};salesRevenueData.forEach(r=>{const k=salesText(r[field])||'Unknown';m[k]=(m[k]||0)+salesNum(r['Final Revenue']);});return Object.entries(m).map(([label,value])=>({label,value})).sort((a,b)=>b.value-a.value);};
+      const customerMap={}; salesRevenueData.forEach(r=>{const k=salesText(r['Customer code']);if(!k)return;customerMap[k]=(customerMap[k]||0)+salesNum(r['Final Revenue']);});
+      const productMap={}; salesRevenueData.forEach(r=>{const k=salesText(r['Material code']);if(!k)return;productMap[k]=(productMap[k]||0)+salesNum(r['Final Revenue']);});
+      renderDashboardSalesList('dashboard-sales-top-customers',Object.entries(customerMap).map(([label,value])=>({label,value})).sort((a,b)=>b.value-a.value));
+      renderDashboardSalesList('dashboard-sales-top-products',Object.entries(productMap).map(([label,value])=>({label,value})).sort((a,b)=>b.value-a.value));
+      renderDashboardSalesList('dashboard-sales-top-teams',aggregate('Team PIC'));
+      renderSalesDashboardCharts(salesRevenueData);
+    }
+
+    async function initSalesDashboard() {
+      try {
+        if (!salesRevenueData.length) {
+          setDashboardSalesStatus('Đang sync...', 'idle');
+          await syncSalesData(false);
+        }
+        renderSalesDashboard();
+      } catch (e) {
+        setDashboardSalesStatus('Sync failed', 'error');
+      }
     }
 
     function renderSalesAnalytics() {
@@ -5275,7 +5343,7 @@
       const limit = 500;
       if (summary) summary.textContent = `${data.length.toLocaleString('vi-VN')} filtered rows · showing first ${Math.min(limit, data.length).toLocaleString('vi-VN')}`;
       if (!data.length) { body.innerHTML = '<tr><td colspan="17" class="p-8 text-center text-slate-400">Không có dữ liệu phù hợp bộ lọc.</td></tr>'; return; }
-      body.innerHTML = data.slice(0, limit).map(r => `<tr class="hover:bg-slate-50">\n        <td class="p-3">${escapeSalesHtml(r['Quarter'])}</td><td class="p-3">${escapeSalesHtml(r['Month'])}</td><td class="p-3">${escapeSalesHtml(r['Doc Type'])}</td><td class="p-3">${escapeSalesHtml(r['Doc No.'])}</td><td class="p-3 font-semibold text-blue-700">${escapeSalesHtml(r['Customer code'])}</td><td class="p-3 max-w-[220px] truncate" title="${escapeSalesHtml(r['Customer Name'])}">${escapeSalesHtml(r['Customer Name'])}</td><td class="p-3">${escapeSalesHtml(r['Channel'])}</td><td class="p-3">${escapeSalesHtml(r['PIC'])}</td><td class="p-3">${escapeSalesHtml(r['Team PIC'])}</td><td class="p-3 font-semibold text-emerald-700">${escapeSalesHtml(r['Material code'])}</td><td class="p-3">${escapeSalesHtml(r['Type'])}</td><td class="p-3 text-right">${formatSalesQty(r['Sales Qty'])}</td><td class="p-3 text-right">${formatSalesMoney(r['U/P'])}</td><td class="p-3 text-right">${formatSalesMoney(r['Amount'])}</td><td class="p-3 text-right">${r['Back Margin'] === '' ? '' : formatSalesMoney(r['Back Margin'])}</td><td class="p-3 text-right">${r['Addtional BM'] === '' ? '' : formatSalesMoney(r['Addtional BM'])}</td><td class="p-3 text-right font-bold">${formatSalesMoney(r['Final Revenue'])}</td>\n      </tr>`).join('');
+      body.innerHTML = data.slice(0, limit).map(r => `<tr class="hover:bg-slate-50">\n        <td class="p-3">${escapeSalesHtml(r['Quarter'])}</td><td class="p-3">${escapeSalesHtml(r['Month'])}</td><td class="p-3">${escapeSalesHtml(r._docTypeGroup)}</td><td class="p-3">${escapeSalesHtml(r['Doc No.'])}</td><td class="p-3 font-semibold text-blue-700">${escapeSalesHtml(r['Customer code'])}</td><td class="p-3 max-w-[220px] truncate" title="${escapeSalesHtml(r['Customer Name'])}">${escapeSalesHtml(r['Customer Name'])}</td><td class="p-3">${escapeSalesHtml(r['Channel'])}</td><td class="p-3">${escapeSalesHtml(r['PIC'])}</td><td class="p-3">${escapeSalesHtml(r['Team PIC'])}</td><td class="p-3 font-semibold text-emerald-700">${escapeSalesHtml(r['Material code'])}</td><td class="p-3">${escapeSalesHtml(r['Type'])}</td><td class="p-3 text-right">${formatSalesQty(r['Sales Qty'])}</td><td class="p-3 text-right">${formatSalesMoney(r['U/P'])}</td><td class="p-3 text-right">${formatSalesMoney(r['Amount'])}</td><td class="p-3 text-right">${r['Back Margin'] === '' ? '' : formatSalesMoney(r['Back Margin'])}</td><td class="p-3 text-right">${r['Addtional BM'] === '' ? '' : formatSalesMoney(r['Addtional BM'])}</td><td class="p-3 text-right font-bold">${formatSalesMoney(r['Final Revenue'])}</td>\n      </tr>`).join('');
     }
 
     window.onload = init;
